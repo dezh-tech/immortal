@@ -1,6 +1,6 @@
 package types
 
-import "time"
+import "slices"
 
 type Range uint8
 
@@ -14,7 +14,7 @@ const (
 type Event struct {
 	ID        string     `json:"id"`
 	PublicKey string     `json:"pubkey"`
-	CreatedAt time.Time  `json:"created_at"`
+	CreatedAt int64  `json:"created_at"`
 	Kind      uint16     `json:"kind"`
 	Tags      [][]string `json:"tags"`
 	Content   string     `json:"content"`
@@ -50,5 +50,23 @@ func (e *Event) Range() Range {
 }
 
 func (e *Event) Match(f Filter) bool {
-	return false // TODO:::
+	if e.CreatedAt < f.Since || e.CreatedAt > f.Until {
+		return false
+	}
+
+	if !slices.Contains(f.Authors, e.PublicKey) {
+		return false
+	}
+
+	if !slices.Contains(f.IDs, e.ID) {
+		return false
+	}
+
+	// TODO:: check tags
+
+	return true
+}
+
+func (e *Event) IsValid() bool {
+	return false // TODO::
 }
