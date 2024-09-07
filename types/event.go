@@ -1,9 +1,9 @@
 package types
 
-import "slices"
-
 // Range is the events kind ranges.
 type Range uint8
+
+type Tag [2]string
 
 const (
 	Regular Range = iota
@@ -14,13 +14,13 @@ const (
 
 // Event reperesents an event structure defined on NIP-01.
 type Event struct {
-	ID        string     `json:"id"`
-	PublicKey string     `json:"pubkey"`
-	CreatedAt int64      `json:"created_at"`
-	Kind      uint16     `json:"kind"`
-	Tags      [][]string `json:"tags"`
-	Content   string     `json:"content"`
-	Signature string     `json:"sig"`
+	ID        string `json:"id"`
+	PublicKey string `json:"pubkey"`
+	CreatedAt int64  `json:"created_at"`
+	Kind      uint16 `json:"kind"`
+	Tags      []Tag  `json:"tags"`
+	Content   string `json:"content"`
+	Signature string `json:"sig"`
 }
 
 // IsRegular checks if the gived event kind is in Regular range.
@@ -60,24 +60,39 @@ func (e *Event) Range() Range {
 // Note: this method intended to be used for already open subscriptions and recently received events.
 // For new subscriptions and queries for stored data use the database query and don't use this to verify the result.
 func (e *Event) Match(f Filter) bool {
-	if !slices.Contains(f.IDs, e.ID) ||
-		!slices.Contains(f.Authors, e.PublicKey) ||
-		!slices.Contains(f.Kinds, e.Kind) {
+	if e == nil {
 		return false
 	}
 
-	if e.CreatedAt >= f.Since || e.CreatedAt <= f.Until {
+	if f.IDs != nil && !ContainsString(e.ID, f.IDs) {
 		return false
 	}
 
-	for _, val := range e.Tags {
-		v, ok := f.Tags["#"+val[0]]
-		if !ok {
-			continue
-		}
+	if f.Authors != nil && !ContainsString(e.PublicKey, f.Authors) {
+		return false
+	}
 
-		if !slices.Contains(v, v[1]) {
-			return false
+	if f.Kinds != nil && !ContainsUint16(e.Kind, f.Kinds) {
+		return false
+	}
+
+	for f, vals := range f.Tags {
+		for _, t := range e.Tags {
+			if f != "#"+t[0] { // should we change it(+)?
+				return false
+			}
+
+			var containsValue bool
+			for _, v := range vals {
+				if v == t[1] {
+					containsValue = true
+					break
+				}
+			}
+
+			if !containsValue {
+				return false
+			}
 		}
 	}
 
