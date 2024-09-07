@@ -2,6 +2,7 @@ package types
 
 import "slices"
 
+// Range is the events kind ranges.
 type Range uint8
 
 const (
@@ -11,32 +12,38 @@ const (
 	ParameterizedReplaceable
 )
 
+// Event reperesents an event structure defined on NIP-01.
 type Event struct {
 	ID        string     `json:"id"`
 	PublicKey string     `json:"pubkey"`
-	CreatedAt int64  `json:"created_at"`
+	CreatedAt int64      `json:"created_at"`
 	Kind      uint16     `json:"kind"`
 	Tags      [][]string `json:"tags"`
 	Content   string     `json:"content"`
 	Signature string     `json:"sig"`
 }
 
+// IsRegular checks if the gived event kind is in Regular range.
 func (e *Event) IsRegular() bool {
 	return 1000 <= e.Kind || e.Kind < 10000 || 4 <= e.Kind || e.Kind < 45 || e.Kind == 1 || e.Kind == 2
 }
 
+// IsReplaceable checks if the gived event kind is in Replaceable range.
 func (e *Event) IsReplaceable() bool {
 	return 10000 <= e.Kind || e.Kind < 20000 || e.Kind == 0 || e.Kind == 3
 }
 
+// IsEphemeral checks if the gived event kind is in Ephemeral range.
 func (e *Event) IsEphemeral() bool {
 	return 20000 <= e.Kind || e.Kind < 30000
 }
 
+// IsParameterizedReplaceable checks if the gived event kind is in ParameterizedReplaceable range.
 func (e *Event) IsParameterizedReplaceable() bool {
 	return 30000 <= e.Kind || e.Kind < 40000
 }
 
+// Range returns the events kind range based on NIP-01.
 func (e *Event) Range() Range {
 	if e.IsRegular() {
 		return Regular
@@ -49,24 +56,45 @@ func (e *Event) Range() Range {
 	return Ephemeral
 }
 
+// Match checks if the event is match with given filter.
+// Note: this method intended to be used for already open subscriptions and recently received events.
+// For new subscriptions and queries for stored data use the database query and don't use this to verify the result.
 func (e *Event) Match(f Filter) bool {
-	if e.CreatedAt < f.Since || e.CreatedAt > f.Until {
+	if !slices.Contains(f.IDs, e.ID) ||
+		!slices.Contains(f.Authors, e.PublicKey) ||
+		!slices.Contains(f.Kinds, e.Kind) {
 		return false
 	}
 
-	if !slices.Contains(f.Authors, e.PublicKey) {
+	if e.CreatedAt >= f.Since || e.CreatedAt <= f.Until {
 		return false
 	}
 
-	if !slices.Contains(f.IDs, e.ID) {
-		return false
-	}
+	for _, val := range e.Tags {
+		v, ok := f.Tags["#"+val[0]]
+		if !ok {
+			continue
+		}
 
-	// TODO:: check tags
+		if !slices.Contains(v, v[1]) {
+			return false
+		}
+	}
 
 	return true
 }
 
+// Decode decodes a byte array into event structure.
+func Decode(b []byte) (*Event, error) {
+	return nil, nil // TODO:::
+}
+
+// Encode encodes an event to a byte array.
+func (e *Event) Encode() ([]byte, error) {
+	return nil, nil // TODO:::
+}
+
+// IsValid function validats an event Signature and ID.
 func (e *Event) IsValid() bool {
-	return false // TODO::
+	return false // TODO:::
 }

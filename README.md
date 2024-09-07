@@ -6,12 +6,12 @@ Immortal aimed and designed to be **scalable**, **high-performance**, and **conf
 
 ## Supported NIPs
 
-- [ ] 1
+- [ ] 1 (WIP)
 - [ ] 2
 - [ ] 3
 - [ ] 4
 - [ ] 9
-- [ ] 11
+- [ ] 11 (WIP)
 - [ ] 12
 - [ ] 13
 - [ ] 15
@@ -35,21 +35,29 @@ Immortal aimed and designed to be **scalable**, **high-performance**, and **conf
 - [ ] 96
 - [ ] 98
 
+<!-- ## Benchmarks -->
+
+<!-- TODO -->
+
 ## Updates
 
 Updates and changes or community discussions can be followed on the Github issue/disscisions and/or the [Dezh Technologies Nostr profile](https://njump.me/dezh.tech).
 
 ## Contribution
 
-All kind of contributions are welcomed!
-
+All kind of contributions are welcome!
 Make sure you read the [Contribution guides](./CONTRIBUTING.md) before any contribution.
 
 ## Donation
 
 Donations and financial support of the development process is possible using Bitcoin and lightning:
 
-**on-chain**: ```TODO```
+**on-chain**:
+
+```
+
+```
+
 **lightning**: ```TODO```
 
 ## License
