@@ -76,6 +76,10 @@ func (e *Event) Match(f Filter) bool {
 		return false
 	}
 
+	if e.CreatedAt >= f.Since || e.CreatedAt <= f.Until {
+		return false
+	}
+
 	for f, vals := range f.Tags {
 		for _, t := range e.Tags {
 			if f != "#"+t[0] { // should we change it(+)?
