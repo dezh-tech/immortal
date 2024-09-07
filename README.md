@@ -24,7 +24,7 @@ Donations and financial support of the development process is possible using Bit
 **on-chain**:
 
 ```
-
+bc1qxd3p6a46uzae86elteha7tygcz7f56mvvlznza
 ```
 
 **lightning**: ```TODO```
