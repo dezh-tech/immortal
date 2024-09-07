@@ -6,38 +6,7 @@ Immortal aimed and designed to be **scalable**, **high-performance**, and **conf
 
 ## Supported NIPs
 
-- [ ] 1 (WIP)
-- [ ] 2
-- [ ] 3
-- [ ] 4
-- [ ] 9
-- [ ] 11 (WIP)
-- [ ] 12
-- [ ] 13
-- [ ] 15
-- [ ] 16
-- [ ] 17
-- [ ] 20
-- [ ] 22
-- [ ] 23
-- [ ] 26
-- [ ] 28
-- [ ] 29
-- [ ] 33
-- [ ] 40
-- [ ] 42
-- [ ] 45
-- [ ] 50
-- [ ] 56
-- [ ] 59
-- [ ] 70
-- [ ] 94
-- [ ] 96
-- [ ] 98
-
-<!-- ## Benchmarks -->
-
-<!-- TODO -->
+You can find supported NIPs details [here](./documents/NIPs.md).
 
 ## Updates
 
