@@ -64,16 +64,22 @@ func easyjsonF642ad3eDecodeGithubComDezhTechImmortalTypesEvent(in *jlexer.Lexer,
 					var v1 types.Tag
 					if in.IsNull() {
 						in.Skip()
+						v1 = nil
 					} else {
 						in.Delim('[')
-						v2 := 0
-						for !in.IsDelim(']') {
-							if v2 < 2 {
-								(v1)[v2] = string(in.String())
-								v2++
+						if v1 == nil {
+							if !in.IsDelim(']') {
+								v1 = make(types.Tag, 0, 4)
 							} else {
-								in.SkipRecursive()
+								v1 = types.Tag{}
 							}
+						} else {
+							v1 = (v1)[:0]
+						}
+						for !in.IsDelim(']') {
+							var v2 string
+							v2 = string(in.String())
+							v1 = append(v1, v2)
 							in.WantComma()
 						}
 						in.Delim(']')
@@ -132,14 +138,18 @@ func easyjsonF642ad3eEncodeGithubComDezhTechImmortalTypesEvent(out *jwriter.Writ
 				if v3 > 0 {
 					out.RawByte(',')
 				}
-				out.RawByte('[')
-				for v5 := range v4 {
-					if v5 > 0 {
-						out.RawByte(',')
+				if v4 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+					out.RawString("null")
+				} else {
+					out.RawByte('[')
+					for v5, v6 := range v4 {
+						if v5 > 0 {
+							out.RawByte(',')
+						}
+						out.String(string(v6))
 					}
-					out.String(string((v4)[v5]))
+					out.RawByte(']')
 				}
-				out.RawByte(']')
 			}
 			out.RawByte(']')
 		}

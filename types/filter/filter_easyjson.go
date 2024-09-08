@@ -118,16 +118,22 @@ func easyjson4d398eaaDecodeGithubComDezhTechImmortalTypesFilter(in *jlexer.Lexer
 					var v4 types.Tag
 					if in.IsNull() {
 						in.Skip()
+						v4 = nil
 					} else {
 						in.Delim('[')
-						v5 := 0
-						for !in.IsDelim(']') {
-							if v5 < 2 {
-								(v4)[v5] = string(in.String())
-								v5++
+						if v4 == nil {
+							if !in.IsDelim(']') {
+								v4 = make(types.Tag, 0, 4)
 							} else {
-								in.SkipRecursive()
+								v4 = types.Tag{}
 							}
+						} else {
+							v4 = (v4)[:0]
+						}
+						for !in.IsDelim(']') {
+							var v5 string
+							v5 = string(in.String())
+							v4 = append(v4, v5)
 							in.WantComma()
 						}
 						in.Delim(']')
@@ -142,7 +148,7 @@ func easyjson4d398eaaDecodeGithubComDezhTechImmortalTypesFilter(in *jlexer.Lexer
 		case "until":
 			out.Until = int64(in.Int64())
 		case "limit":
-			out.Limit = int16(in.Int16())
+			out.Limit = uint16(in.Uint16())
 		case "search":
 			out.Search = string(in.String())
 		default:
@@ -223,14 +229,18 @@ func easyjson4d398eaaEncodeGithubComDezhTechImmortalTypesFilter(out *jwriter.Wri
 				}
 				out.String(string(v12Name))
 				out.RawByte(':')
-				out.RawByte('[')
-				for v13 := range v12Value {
-					if v13 > 0 {
-						out.RawByte(',')
+				if v12Value == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+					out.RawString("null")
+				} else {
+					out.RawByte('[')
+					for v13, v14 := range v12Value {
+						if v13 > 0 {
+							out.RawByte(',')
+						}
+						out.String(string(v14))
 					}
-					out.String(string((v12Value)[v13]))
+					out.RawByte(']')
 				}
-				out.RawByte(']')
 			}
 			out.RawByte('}')
 		}
@@ -248,7 +258,7 @@ func easyjson4d398eaaEncodeGithubComDezhTechImmortalTypesFilter(out *jwriter.Wri
 	{
 		const prefix string = ",\"limit\":"
 		out.RawString(prefix)
-		out.Int16(int16(in.Limit))
+		out.Uint16(uint16(in.Limit))
 	}
 	{
 		const prefix string = ",\"search\":"

@@ -1,3 +1,3 @@
 package types
 
-type Tag [2]string
+type Tag []string

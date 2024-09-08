@@ -13,7 +13,7 @@ type Filter struct {
 	Tags    map[string]types.Tag `json:"tags"`
 	Since   int64                `json:"since"`
 	Until   int64                `json:"until"`
-	Limit   int16                `json:"limit"`
+	Limit   uint16               `json:"limit"`
 
 	// Sould we proxy Searchs to index server and elastic search?
 	Search string `json:"search"` // Check NIP-50

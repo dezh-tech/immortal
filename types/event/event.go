@@ -43,6 +43,10 @@ func (e *Event) Match(f filter.Filter) bool {
 
 	for f, vals := range f.Tags {
 		for _, t := range e.Tags {
+			if len(t) < 2 {
+				continue
+			}
+
 			if f != "#"+t[0] { // TODO:: should we replace + with strings.Builder?
 				return false
 			}
