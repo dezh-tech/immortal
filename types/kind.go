@@ -6,7 +6,7 @@ type (
 )
 
 const (
-	// Ranges
+	// Ranges.
 	Regular Range = iota
 	Replaceable
 	Ephemeral

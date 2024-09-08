@@ -61,6 +61,7 @@ func (e *Event) Match(f filter.Filter) bool {
 			for _, v := range vals {
 				if v == t[1] {
 					containsValue = true
+
 					break
 				}
 			}
@@ -86,8 +87,8 @@ func Decode(b []byte) (*Event, error) {
 }
 
 // Encode encodes an Event to a byte array.
-func (e *Event) Encode() ([]byte, error) {
-	b, err := easyjson.Marshal(e)
+func (evt *Event) Encode() ([]byte, error) {
+	b, err := easyjson.Marshal(evt)
 	if err != nil {
 		return nil, err
 	}
@@ -146,5 +147,6 @@ func (e *Event) IsValid() (bool, error) {
 
 	// check signature
 	hash := sha256.Sum256(e.Serialize())
+
 	return sig.Verify(hash[:], pubkey), nil
 }
