@@ -50,6 +50,7 @@ func ParseMessage(message []byte) Envelope {
 	if err := v.UnmarshalJSON(message); err != nil {
 		return nil
 	}
+
 	return v
 }
 
@@ -80,6 +81,7 @@ func (_ EventEnvelope) Label() string { return "EVENT" }
 
 func (c EventEnvelope) String() string {
 	v, _ := json.Marshal(c)
+
 	return string(v)
 }
 
@@ -88,11 +90,14 @@ func (v *EventEnvelope) UnmarshalJSON(data []byte) error {
 	arr := r.Array()
 	switch len(arr) {
 	case 2:
+
 		return easyjson.Unmarshal([]byte(arr[1].Raw), &v.Event)
 	case 3:
 		v.SubscriptionID = &arr[1].Str
+
 		return easyjson.Unmarshal([]byte(arr[2].Raw), &v.Event)
 	default:
+
 		return fmt.Errorf("failed to decode EVENT envelope")
 	}
 }
@@ -105,6 +110,7 @@ func (v EventEnvelope) MarshalJSON() ([]byte, error) {
 	}
 	v.Event.MarshalEasyJSON(&w)
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -117,6 +123,7 @@ func (_ ReqEnvelope) Label() string { return "REQ" }
 
 func (c ReqEnvelope) String() string {
 	v, _ := json.Marshal(c)
+
 	return string(v)
 }
 
@@ -148,6 +155,7 @@ func (v ReqEnvelope) MarshalJSON() ([]byte, error) {
 		filter.MarshalEasyJSON(&w)
 	}
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -160,16 +168,17 @@ type CountEnvelope struct {
 func (_ CountEnvelope) Label() string { return "COUNT" }
 func (c CountEnvelope) String() string {
 	v, _ := json.Marshal(c)
+
 	return string(v)
 }
 
-func (v *CountEnvelope) UnmarshalJSON(data []byte) error {
+func (c *CountEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 3 {
 		return fmt.Errorf("failed to decode COUNT envelope: missing filters")
 	}
-	v.SubscriptionID = arr[1].Str
+	c.SubscriptionID = arr[1].Str
 
 	if len(arr) < 3 {
 		return fmt.Errorf("COUNT array must have at least 3 items")
@@ -179,16 +188,17 @@ func (v *CountEnvelope) UnmarshalJSON(data []byte) error {
 		Count *int64 `json:"count"`
 	}
 	if err := json.Unmarshal([]byte(arr[2].Raw), &countResult); err == nil && countResult.Count != nil {
-		v.Count = countResult.Count
+		c.Count = countResult.Count
+		
 		return nil
 	}
 
-	v.Filters = make([]filter.Filter, len(arr)-2)
+	c.Filters = make([]filter.Filter, len(arr)-2)
 	f := 0
 	for i := 2; i < len(arr); i++ {
 		item := []byte(arr[i].Raw)
 
-		if err := easyjson.Unmarshal(item, &v.Filters[f]); err != nil {
+		if err := easyjson.Unmarshal(item, &c.Filters[f]); err != nil {
 			return fmt.Errorf("%w -- on filter %d", err, f)
 		}
 
@@ -213,6 +223,7 @@ func (v CountEnvelope) MarshalJSON() ([]byte, error) {
 		}
 	}
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -221,6 +232,7 @@ type NoticeEnvelope string
 func (_ NoticeEnvelope) Label() string { return "NOTICE" }
 func (n NoticeEnvelope) String() string {
 	v, _ := json.Marshal(n)
+
 	return string(v)
 }
 
@@ -231,6 +243,7 @@ func (v *NoticeEnvelope) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("failed to decode NOTICE envelope")
 	}
 	*v = NoticeEnvelope(arr[1].Str)
+
 	return nil
 }
 
@@ -239,6 +252,7 @@ func (v NoticeEnvelope) MarshalJSON() ([]byte, error) {
 	w.RawString(`["NOTICE",`)
 	w.Raw(json.Marshal(string(v)))
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -247,6 +261,7 @@ type EOSEEnvelope string
 func (_ EOSEEnvelope) Label() string { return "EOSE" }
 func (e EOSEEnvelope) String() string {
 	v, _ := json.Marshal(e)
+
 	return string(v)
 }
 
@@ -257,6 +272,7 @@ func (v *EOSEEnvelope) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("failed to decode EOSE envelope")
 	}
 	*v = EOSEEnvelope(arr[1].Str)
+
 	return nil
 }
 
@@ -265,6 +281,7 @@ func (v EOSEEnvelope) MarshalJSON() ([]byte, error) {
 	w.RawString(`["EOSE",`)
 	w.Raw(json.Marshal(string(v)))
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -273,6 +290,7 @@ type CloseEnvelope string
 func (_ CloseEnvelope) Label() string { return "CLOSE" }
 func (c CloseEnvelope) String() string {
 	v, _ := json.Marshal(c)
+
 	return string(v)
 }
 
@@ -282,8 +300,10 @@ func (v *CloseEnvelope) UnmarshalJSON(data []byte) error {
 	switch len(arr) {
 	case 2:
 		*v = CloseEnvelope(arr[1].Str)
+		
 		return nil
 	default:
+
 		return fmt.Errorf("failed to decode CLOSE envelope")
 	}
 }
@@ -293,6 +313,7 @@ func (v CloseEnvelope) MarshalJSON() ([]byte, error) {
 	w.RawString(`["CLOSE",`)
 	w.Raw(json.Marshal(string(v)))
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -304,6 +325,7 @@ type ClosedEnvelope struct {
 func (_ ClosedEnvelope) Label() string { return "CLOSED" }
 func (c ClosedEnvelope) String() string {
 	v, _ := json.Marshal(c)
+	
 	return string(v)
 }
 
@@ -313,8 +335,10 @@ func (v *ClosedEnvelope) UnmarshalJSON(data []byte) error {
 	switch len(arr) {
 	case 3:
 		*v = ClosedEnvelope{arr[1].Str, arr[2].Str}
+
 		return nil
 	default:
+
 		return fmt.Errorf("failed to decode CLOSED envelope")
 	}
 }
@@ -326,6 +350,7 @@ func (v ClosedEnvelope) MarshalJSON() ([]byte, error) {
 	w.RawString(`,`)
 	w.Raw(json.Marshal(v.Reason))
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -338,6 +363,7 @@ type OKEnvelope struct {
 func (_ OKEnvelope) Label() string { return "OK" }
 func (o OKEnvelope) String() string {
 	v, _ := json.Marshal(o)
+
 	return string(v)
 }
 
@@ -366,6 +392,7 @@ func (v OKEnvelope) MarshalJSON() ([]byte, error) {
 	w.RawString(`,`)
 	w.Raw(json.Marshal(v.Reason))
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }
 
@@ -377,6 +404,7 @@ type AuthEnvelope struct {
 func (_ AuthEnvelope) Label() string { return "AUTH" }
 func (a AuthEnvelope) String() string {
 	v, _ := json.Marshal(a)
+
 	return string(v)
 }
 
@@ -391,6 +419,7 @@ func (v *AuthEnvelope) UnmarshalJSON(data []byte) error {
 	} else {
 		v.Challenge = &arr[1].Str
 	}
+
 	return nil
 }
 
@@ -402,6 +431,8 @@ func (v AuthEnvelope) MarshalJSON() ([]byte, error) {
 	} else {
 		v.Event.MarshalEasyJSON(&w)
 	}
+
 	w.RawString(`]`)
+
 	return w.BuildBytes()
 }

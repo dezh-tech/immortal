@@ -12,6 +12,7 @@ func (tag Tag) MarshalTo(dst []byte) []byte {
 		dst = EscapeString(dst, s)
 	}
 	dst = append(dst, ']')
+
 	return dst
 }
 
@@ -26,5 +27,6 @@ func MarshalTo(tags []Tag, dst []byte) []byte {
 		dst = tag.MarshalTo(dst)
 	}
 	dst = append(dst, ']')
+	
 	return dst
 }
