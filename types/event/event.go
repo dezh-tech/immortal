@@ -81,12 +81,12 @@ func Decode(b []byte) (*Event, error) {
 
 // Encode encodes an Event to a byte array.
 func (e *Event) Encode() ([]byte, error) {
-	ee, err := easyjson.Marshal(e)
+	b, err := easyjson.Marshal(e)
 	if err != nil {
 		return nil, err
 	}
 
-	return ee, nil
+	return b, nil
 }
 
 // IsValid function validats an event Signature and ID.
