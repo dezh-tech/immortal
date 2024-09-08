@@ -12,9 +12,9 @@ func ContainsString(target string, arr []string) bool {
 	return false
 }
 
-// ContainsUint16 checks if the target is presented in arr.
+// ContainsKind checks if the target is presented in arr.
 // This non-generic version of contains is faster than `slices.Contains`.
-func ContainsUint16(target uint16, arr []uint16) bool {
+func ContainsKind(target Kind, arr []Kind) bool {
 	for _, s := range arr {
 		if s == target {
 			return true

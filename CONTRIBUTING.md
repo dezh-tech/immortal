@@ -26,6 +26,14 @@ Please follow these guidelines when contributing to the project:
 Error and log messages should not start with a capital letter (unless it's a proper noun or acronym) and
 should not end with punctuation.
 
+#### Examples
+
+- Correct ✅: "unable to connect to client"
+- Incorrect ❌: "Unable to connect to client"
+- Incorrect ❌: "unable to connect to client."
+
+### Testing
+
 All changes on core must contain proper and well-defined unit-tests, also previous tests must be passed as well.
 This codebase used `testify` for unit tests, make sure you follow these guide for tests:
 
@@ -33,12 +41,9 @@ This codebase used `testify` for unit tests, make sure you follow these guide fo
 - For checking err using `assert.ErrorIs` make sure you pass expected error as second argument.
 - For checking equality using `assert.Equal` make sure you pass expected value as the first argument.
 
+### Benchmarking
 
-#### Examples
-
-- Correct ✅: "unable to connect to client"
-- Incorrect ❌: "Unable to connect to client"
-- Incorrect ❌: "unable to connect to client."
+Make sure you follow [this guide](https://100go.co/89-benchmarks) when you write or change benchmarks to reach an accurate result.
 
 ### Help Messages
 
