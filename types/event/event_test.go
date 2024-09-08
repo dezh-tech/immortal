@@ -3,6 +3,7 @@ package event_test
 import (
 	"testing"
 
+	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,20 @@ var (
 
 	DecodedEvent *event.Event
 	EncodedEvent []byte
+
+	events = []event.Event{
+		{
+			ID:        "dc90c95f09947507c1044e8f48bcf6350aa6bff1507dd4acfc755b9239b5c962",
+			PublicKey: "3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d",
+			CreatedAt: 1644271588,
+			Kind:      types.KindTextNote,
+			Tags:      []types.Tag{},
+			Content:   "now that https://blueskyweb.org/blog/2-7-2022-overview was announced we can stop working on nostr?",
+			Signature: "230e9d8f0ddaf7eb70b5f7741ccfa37e87a455c9a469282e3464e2052d3192cd63a167e196e381ef9d7e69e9ea43af2443b839974dc85d8aaab9efe1d9296524",
+		},
+	}
+
+	EventValidation bool
 )
 
 func TestDecode(t *testing.T) {
@@ -90,4 +105,23 @@ func TestMatch(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.True(t, e.Match(*f))
+}
+
+func TestValidate(t *testing.T) {
+	for _, e := range events {
+		valid, err := e.IsValid()
+
+		assert.NoError(t, err)
+		assert.True(t, valid)
+	}
+}
+
+func BenchmarkValidate(b *testing.B) {
+	var eventValidation bool
+	for i := 0; i < b.N; i++ {
+		for _, e := range events {
+			eventValidation, _ = e.IsValid()
+		}
+	}
+	EventValidation = eventValidation
 }

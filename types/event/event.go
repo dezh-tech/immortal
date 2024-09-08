@@ -1,9 +1,15 @@
 package event
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/mailru/easyjson"
+
+	"github.com/btcsuite/btcd/btcec/v2/schnorr"
 )
 
 // Event represents an event structure defined on NIP-01.
@@ -89,7 +95,56 @@ func (e *Event) Encode() ([]byte, error) {
 	return b, nil
 }
 
+func (evt *Event) Serialize() []byte {
+	// the serialization process is just putting everything into a JSON array
+	// so the order is kept. See NIP-01
+	dst := make([]byte, 0)
+
+	// the header portion is easy to serialize
+	// [0,"pubkey",created_at,kind,[
+	dst = append(dst, []byte(
+		fmt.Sprintf(
+			"[0,\"%s\",%d,%d,",
+			evt.PublicKey,
+			evt.CreatedAt,
+			evt.Kind,
+		))...)
+
+	// tags
+	dst = types.MarshalTo(evt.Tags, dst)
+	dst = append(dst, ',')
+
+	// content needs to be escaped in general as it is user generated.
+	dst = types.EscapeString(dst, evt.Content)
+	dst = append(dst, ']')
+
+	return dst
+}
+
 // IsValid function validats an event Signature and ID.
-func (e *Event) IsValid() bool {
-	return false // TODO:::
+func (e *Event) IsValid() (bool, error) {
+	// read and check pubkey
+	pk, err := hex.DecodeString(e.PublicKey)
+	if err != nil {
+		return false, fmt.Errorf("event pubkey '%s' is invalid hex: %w", e.PublicKey, err)
+	}
+
+	pubkey, err := schnorr.ParsePubKey(pk)
+	if err != nil {
+		return false, fmt.Errorf("event has invalid pubkey '%s': %w", e.PublicKey, err)
+	}
+
+	// read signature
+	s, err := hex.DecodeString(e.Signature)
+	if err != nil {
+		return false, fmt.Errorf("signature '%s' is invalid hex: %w", e.Signature, err)
+	}
+	sig, err := schnorr.ParseSignature(s)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse signature: %w", err)
+	}
+
+	// check signature
+	hash := sha256.Sum256(e.Serialize())
+	return sig.Verify(hash[:], pubkey), nil
 }
