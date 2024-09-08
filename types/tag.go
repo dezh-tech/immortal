@@ -27,6 +27,6 @@ func MarshalTo(tags []Tag, dst []byte) []byte {
 		dst = tag.MarshalTo(dst)
 	}
 	dst = append(dst, ']')
-	
+
 	return dst
 }

@@ -61,7 +61,7 @@ func (e *Event) Match(f filter.Filter) bool {
 			for _, v := range vals {
 				if v == t[1] {
 					containsValue = true
-					
+
 					break
 				}
 			}
@@ -147,6 +147,6 @@ func (e *Event) IsValid() (bool, error) {
 
 	// check signature
 	hash := sha256.Sum256(e.Serialize())
-	
+
 	return sig.Verify(hash[:], pubkey), nil
 }

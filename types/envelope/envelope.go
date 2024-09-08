@@ -189,7 +189,7 @@ func (c *CountEnvelope) UnmarshalJSON(data []byte) error {
 	}
 	if err := json.Unmarshal([]byte(arr[2].Raw), &countResult); err == nil && countResult.Count != nil {
 		c.Count = countResult.Count
-		
+
 		return nil
 	}
 
@@ -300,7 +300,7 @@ func (v *CloseEnvelope) UnmarshalJSON(data []byte) error {
 	switch len(arr) {
 	case 2:
 		*v = CloseEnvelope(arr[1].Str)
-		
+
 		return nil
 	default:
 
@@ -325,7 +325,7 @@ type ClosedEnvelope struct {
 func (_ ClosedEnvelope) Label() string { return "CLOSED" }
 func (c ClosedEnvelope) String() string {
 	v, _ := json.Marshal(c)
-	
+
 	return string(v)
 }
 
