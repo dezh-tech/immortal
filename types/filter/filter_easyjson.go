@@ -77,7 +77,7 @@ func easyjson4d398eaaDecodeGithubComDezhTechImmortalTypesFilter(in *jlexer.Lexer
 					out.Kinds = (out.Kinds)[:0]
 				}
 				for !in.IsDelim(']') {
-					v2 := types.Kind(in.Int())
+					v2 := types.Kind(in.Int16())
 					out.Kinds = append(out.Kinds, v2)
 					in.WantComma()
 				}
