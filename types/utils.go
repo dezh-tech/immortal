@@ -61,5 +61,6 @@ func EscapeString(dst []byte, s string) []byte {
 		}
 	}
 	dst = append(dst, '"')
+
 	return dst
 }

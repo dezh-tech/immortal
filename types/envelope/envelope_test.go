@@ -3,24 +3,66 @@ package envelope_test
 import (
 	"testing"
 
+	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/envelope"
+	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO::: write test for all cases.
+type testCase struct {
+	Name             string
+	Message          []byte
+	ExpectedEnvelope envelope.Envelope
+}
 
-func TestEventEnvelopeEncodingAndDecoding(t *testing.T) {
-	eventEnvelopes := []string{
-		`["EVENT","_",{"id":"dc90c95f09947507c1044e8f48bcf6350aa6bff1507dd4acfc755b9239b5c962","pubkey":"3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d","created_at":1644271588,"kind":1,"tags":[],"content":"now that https://blueskyweb.org/blog/2-7-2022-overview was announced we can stop working on nostr?","sig":"230e9d8f0ddaf7eb70b5f7741ccfa37e87a455c9a469282e3464e2052d3192cd63a167e196e381ef9d7e69e9ea43af2443b839974dc85d8aaab9efe1d9296524"}]`,
-	}
+var testCases = []testCase{
+	{
+		Name:             "nil",
+		Message:          nil,
+		ExpectedEnvelope: nil,
+	},
+	{
+		Name:             "invalid string",
+		Message:          []byte("invalid input"),
+		ExpectedEnvelope: nil,
+	},
+	{
+		Name:             "invalid string with a comma",
+		Message:          []byte("invalid, input"),
+		ExpectedEnvelope: nil,
+	},
+	{
+		Name:             "CLOSED envelope",
+		Message:          []byte(`["CLOSED",":1","error: we are broken"]`),
+		ExpectedEnvelope: &envelope.ClosedEnvelope{SubscriptionID: ":1", Reason: "error: we are broken"},
+	},
+	{
+		Name:    "REQ envelope",
+		Message: []byte(`["REQ","million", {"kinds": [1]}, {"kinds": [30023 ], "#d": ["buteko",    "batuke"]}]`),
+		ExpectedEnvelope: &envelope.ReqEnvelope{
+			SubscriptionID: "million",
+			Filters: filter.Filters{{Kinds: []types.Kind{1}}, {
+				Kinds: []types.Kind{30023},
+				Tags:  map[string]types.Tag{"d": []string{"buteko", "batuke"}},
+			}},
+		},
+	},
+}
 
-	for _, raw := range eventEnvelopes {
-		var env envelope.EventEnvelope
-		err := env.UnmarshalJSON([]byte(raw))
-		assert.NoError(t, err, "failed to parse event envelope json: %v", err)
+func TestEnvelope(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			parsedEnvelope := envelope.ParseMessage(tc.Message)
 
-		res, err := env.MarshalJSON()
-		assert.NoError(t, err, "failed to re marshal event as json: %v", err)
-		assert.Equal(t, raw, string(res))
+			if tc.ExpectedEnvelope == nil && parsedEnvelope == nil {
+				return
+			}
+
+			if tc.ExpectedEnvelope == nil {
+				assert.NotNil(t, parsedEnvelope)
+			}
+
+			assert.Equal(t, tc.ExpectedEnvelope.String(), parsedEnvelope.String())
+		})
 	}
 }
