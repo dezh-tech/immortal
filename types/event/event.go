@@ -92,5 +92,6 @@ func (e *Event) IsValid() bool {
 
 	hash := sha256.Sum256(e.Serialize())
 
+	// TODO::: replace with libsecp256k1 (C++ version).
 	return sig.Verify(hash[:], pubkey)
 }

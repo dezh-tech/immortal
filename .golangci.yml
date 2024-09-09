@@ -50,6 +50,7 @@ linters:
     - nilerr
     - nilnil
     - nlreturn
+    - nestif
     - noctx
     - nolintlint
     - nosprintfhostport
@@ -81,9 +82,8 @@ linters-settings:
 
   govet:
     enable-all: true
-    disable: fieldalignment
-    shadow:
-      strict: true
+    disable:
+      - fieldalignment
 
   predeclared:
     # Comma-separated list of predeclared identifiers to not report on.
@@ -129,6 +129,10 @@ issues:
         - gocognit
         - forbidigo
         - lll
+
+    - path: _easyjson.go
+      linters:
+        - nestif
 
     - linters:
         - govet
