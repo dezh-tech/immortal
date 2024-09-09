@@ -12,7 +12,7 @@ const (
 	Ephemeral
 	ParameterizedReplaceable
 
-	// Kinds
+	// Kinds.
 	KindProfileMetadata             Kind = 0
 	KindTextNote                    Kind = 1
 	KindRecommendServer             Kind = 2
@@ -67,22 +67,22 @@ const (
 	KindSimpleGroupMembers          Kind = 39002
 )
 
-// IsRegular checks if the gived kind is in Regular range.
+// IsRegular checks if the given kind is in Regular range.
 func (k Kind) IsRegular() bool {
 	return 1000 <= k || k < 10000 || 4 <= k || k < 45 || k == 1 || k == 2
 }
 
-// IsReplaceable checks if the gived kind is in Replaceable range.
+// IsReplaceable checks if the given kind is in Replaceable range.
 func (k Kind) IsReplaceable() bool {
 	return 10000 <= k || k < 20000 || k == 0 || k == 3
 }
 
-// IsEphemeral checks if the gived kind is in Ephemeral range.
+// IsEphemeral checks if the given kind is in Ephemeral range.
 func (k Kind) IsEphemeral() bool {
 	return 20000 <= k || k < 30000
 }
 
-// IsParameterizedReplaceable checks if the gived kind is in ParameterizedReplaceable range.
+// IsParameterizedReplaceable checks if the given kind is in ParameterizedReplaceable range.
 func (k Kind) IsParameterizedReplaceable() bool {
 	return 30000 <= k || k < 40000
 }

@@ -73,42 +73,47 @@ var (
 )
 
 type EventEnvelope struct {
-	SubscriptionID *string
-	Event          event.Event
+	SubscriptionID string
+	Event          *event.Event
 }
 
-func (_ EventEnvelope) Label() string { return "EVENT" }
+func (EventEnvelope) Label() string { return "EVENT" }
 
-func (c EventEnvelope) String() string {
-	v, _ := json.Marshal(c)
+func (ee EventEnvelope) String() string {
+	v, err := json.Marshal(ee)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (v *EventEnvelope) UnmarshalJSON(data []byte) error {
+func (ee *EventEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	switch len(arr) {
 	case 2:
 
-		return easyjson.Unmarshal([]byte(arr[1].Raw), &v.Event)
+		return easyjson.Unmarshal([]byte(arr[1].Raw), ee.Event)
 	case 3:
-		v.SubscriptionID = &arr[1].Str
+		ee.SubscriptionID = arr[1].Str
 
-		return easyjson.Unmarshal([]byte(arr[2].Raw), &v.Event)
+		return easyjson.Unmarshal([]byte(arr[2].Raw), ee.Event)
 	default:
 
 		return fmt.Errorf("failed to decode EVENT envelope")
 	}
 }
 
-func (v EventEnvelope) MarshalJSON() ([]byte, error) {
+func (ee EventEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["EVENT",`)
-	if v.SubscriptionID != nil {
-		w.RawString(`"` + *v.SubscriptionID + `",`)
+
+	if ee.SubscriptionID != "" {
+		w.RawString(`"` + ee.SubscriptionID + `",`)
 	}
-	v.Event.MarshalEasyJSON(&w)
+
+	ee.Event.MarshalEasyJSON(&w)
 	w.RawString(`]`)
 
 	return w.BuildBytes()
@@ -116,28 +121,22 @@ func (v EventEnvelope) MarshalJSON() ([]byte, error) {
 
 type ReqEnvelope struct {
 	SubscriptionID string
-	Filters        []filter.Filter
+	filter.Filters
 }
 
-func (_ ReqEnvelope) Label() string { return "REQ" }
+func (ReqEnvelope) Label() string { return "REQ" }
 
-func (c ReqEnvelope) String() string {
-	v, _ := json.Marshal(c)
-
-	return string(v)
-}
-
-func (v *ReqEnvelope) UnmarshalJSON(data []byte) error {
+func (re *ReqEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 3 {
 		return fmt.Errorf("failed to decode REQ envelope: missing filters")
 	}
-	v.SubscriptionID = arr[1].Str
-	v.Filters = make([]filter.Filter, len(arr)-2)
+	re.SubscriptionID = arr[1].Str
+	re.Filters = make(filter.Filters, len(arr)-2)
 	f := 0
 	for i := 2; i < len(arr); i++ {
-		if err := easyjson.Unmarshal([]byte(arr[i].Raw), &v.Filters[f]); err != nil {
+		if err := easyjson.Unmarshal([]byte(arr[i].Raw), &re.Filters[f]); err != nil {
 			return fmt.Errorf("%w -- on filter %d", err, f)
 		}
 		f++
@@ -146,11 +145,11 @@ func (v *ReqEnvelope) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (v ReqEnvelope) MarshalJSON() ([]byte, error) {
+func (re ReqEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["REQ",`)
-	w.RawString(`"` + v.SubscriptionID + `"`)
-	for _, filter := range v.Filters {
+	w.RawString(`"` + re.SubscriptionID + `"`)
+	for _, filter := range re.Filters {
 		w.RawString(`,`)
 		filter.MarshalEasyJSON(&w)
 	}
@@ -161,24 +160,27 @@ func (v ReqEnvelope) MarshalJSON() ([]byte, error) {
 
 type CountEnvelope struct {
 	SubscriptionID string
-	Filters        []filter.Filter
+	Filters        []*filter.Filter
 	Count          *int64
 }
 
-func (_ CountEnvelope) Label() string { return "COUNT" }
-func (c CountEnvelope) String() string {
-	v, _ := json.Marshal(c)
+func (CountEnvelope) Label() string { return "COUNT" }
+func (ce CountEnvelope) String() string {
+	v, err := json.Marshal(ce)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (c *CountEnvelope) UnmarshalJSON(data []byte) error {
+func (ce *CountEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 3 {
 		return fmt.Errorf("failed to decode COUNT envelope: missing filters")
 	}
-	c.SubscriptionID = arr[1].Str
+	ce.SubscriptionID = arr[1].Str
 
 	if len(arr) < 3 {
 		return fmt.Errorf("COUNT array must have at least 3 items")
@@ -188,17 +190,17 @@ func (c *CountEnvelope) UnmarshalJSON(data []byte) error {
 		Count *int64 `json:"count"`
 	}
 	if err := json.Unmarshal([]byte(arr[2].Raw), &countResult); err == nil && countResult.Count != nil {
-		c.Count = countResult.Count
+		ce.Count = countResult.Count
 
 		return nil
 	}
 
-	c.Filters = make([]filter.Filter, len(arr)-2)
+	ce.Filters = make([]*filter.Filter, len(arr)-2)
 	f := 0
 	for i := 2; i < len(arr); i++ {
 		item := []byte(arr[i].Raw)
 
-		if err := easyjson.Unmarshal(item, &c.Filters[f]); err != nil {
+		if err := easyjson.Unmarshal(item, ce.Filters[f]); err != nil {
 			return fmt.Errorf("%w -- on filter %d", err, f)
 		}
 
@@ -208,16 +210,16 @@ func (c *CountEnvelope) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (v CountEnvelope) MarshalJSON() ([]byte, error) {
+func (ce CountEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["COUNT",`)
-	w.RawString(`"` + v.SubscriptionID + `"`)
-	if v.Count != nil {
+	w.RawString(`"` + ce.SubscriptionID + `"`)
+	if ce.Count != nil {
 		w.RawString(`,{"count":`)
-		w.RawString(strconv.FormatInt(*v.Count, 10))
+		w.RawString(strconv.FormatInt(*ce.Count, 10))
 		w.RawString(`}`)
 	} else {
-		for _, filter := range v.Filters {
+		for _, filter := range ce.Filters {
 			w.RawString(`,`)
 			filter.MarshalEasyJSON(&w)
 		}
@@ -229,28 +231,31 @@ func (v CountEnvelope) MarshalJSON() ([]byte, error) {
 
 type NoticeEnvelope string
 
-func (_ NoticeEnvelope) Label() string { return "NOTICE" }
-func (n NoticeEnvelope) String() string {
-	v, _ := json.Marshal(n)
+func (NoticeEnvelope) Label() string { return "NOTICE" }
+func (ne NoticeEnvelope) String() string {
+	v, err := json.Marshal(ne)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (v *NoticeEnvelope) UnmarshalJSON(data []byte) error {
+func (ne *NoticeEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 2 {
 		return fmt.Errorf("failed to decode NOTICE envelope")
 	}
-	*v = NoticeEnvelope(arr[1].Str)
+	*ne = NoticeEnvelope(arr[1].Str)
 
 	return nil
 }
 
-func (v NoticeEnvelope) MarshalJSON() ([]byte, error) {
+func (ne NoticeEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["NOTICE",`)
-	w.Raw(json.Marshal(string(v)))
+	w.Raw(json.Marshal(string(ne)))
 	w.RawString(`]`)
 
 	return w.BuildBytes()
@@ -258,28 +263,31 @@ func (v NoticeEnvelope) MarshalJSON() ([]byte, error) {
 
 type EOSEEnvelope string
 
-func (_ EOSEEnvelope) Label() string { return "EOSE" }
-func (e EOSEEnvelope) String() string {
-	v, _ := json.Marshal(e)
+func (EOSEEnvelope) Label() string { return "EOSE" }
+func (ee EOSEEnvelope) String() string {
+	v, err := json.Marshal(ee)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (v *EOSEEnvelope) UnmarshalJSON(data []byte) error {
+func (ee *EOSEEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 2 {
 		return fmt.Errorf("failed to decode EOSE envelope")
 	}
-	*v = EOSEEnvelope(arr[1].Str)
+	*ee = EOSEEnvelope(arr[1].Str)
 
 	return nil
 }
 
-func (v EOSEEnvelope) MarshalJSON() ([]byte, error) {
+func (ee EOSEEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["EOSE",`)
-	w.Raw(json.Marshal(string(v)))
+	w.Raw(json.Marshal(string(ee)))
 	w.RawString(`]`)
 
 	return w.BuildBytes()
@@ -287,19 +295,22 @@ func (v EOSEEnvelope) MarshalJSON() ([]byte, error) {
 
 type CloseEnvelope string
 
-func (_ CloseEnvelope) Label() string { return "CLOSE" }
-func (c CloseEnvelope) String() string {
-	v, _ := json.Marshal(c)
+func (CloseEnvelope) Label() string { return "CLOSE" }
+func (ce CloseEnvelope) String() string {
+	v, err := json.Marshal(ce)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (v *CloseEnvelope) UnmarshalJSON(data []byte) error {
+func (ce *CloseEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	switch len(arr) {
 	case 2:
-		*v = CloseEnvelope(arr[1].Str)
+		*ce = CloseEnvelope(arr[1].Str)
 
 		return nil
 	default:
@@ -308,10 +319,10 @@ func (v *CloseEnvelope) UnmarshalJSON(data []byte) error {
 	}
 }
 
-func (v CloseEnvelope) MarshalJSON() ([]byte, error) {
+func (ce CloseEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["CLOSE",`)
-	w.Raw(json.Marshal(string(v)))
+	w.Raw(json.Marshal(string(ce)))
 	w.RawString(`]`)
 
 	return w.BuildBytes()
@@ -322,19 +333,22 @@ type ClosedEnvelope struct {
 	Reason         string
 }
 
-func (_ ClosedEnvelope) Label() string { return "CLOSED" }
-func (c ClosedEnvelope) String() string {
-	v, _ := json.Marshal(c)
+func (ClosedEnvelope) Label() string { return "CLOSED" }
+func (ce ClosedEnvelope) String() string {
+	v, err := json.Marshal(ce)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (v *ClosedEnvelope) UnmarshalJSON(data []byte) error {
+func (ce *ClosedEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	switch len(arr) {
 	case 3:
-		*v = ClosedEnvelope{arr[1].Str, arr[2].Str}
+		*ce = ClosedEnvelope{arr[1].Str, arr[2].Str}
 
 		return nil
 	default:
@@ -343,12 +357,12 @@ func (v *ClosedEnvelope) UnmarshalJSON(data []byte) error {
 	}
 }
 
-func (v ClosedEnvelope) MarshalJSON() ([]byte, error) {
+func (ce ClosedEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["CLOSED",`)
-	w.Raw(json.Marshal(string(v.SubscriptionID)))
+	w.Raw(json.Marshal(ce.SubscriptionID))
 	w.RawString(`,`)
-	w.Raw(json.Marshal(v.Reason))
+	w.Raw(json.Marshal(ce.Reason))
 	w.RawString(`]`)
 
 	return w.BuildBytes()
@@ -360,37 +374,40 @@ type OKEnvelope struct {
 	Reason  string
 }
 
-func (_ OKEnvelope) Label() string { return "OK" }
-func (o OKEnvelope) String() string {
-	v, _ := json.Marshal(o)
+func (OKEnvelope) Label() string { return "OK" }
+func (oe OKEnvelope) String() string {
+	v, err := json.Marshal(oe)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (v *OKEnvelope) UnmarshalJSON(data []byte) error {
+func (oe *OKEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 4 {
 		return fmt.Errorf("failed to decode OK envelope: missing fields")
 	}
-	v.EventID = arr[1].Str
-	v.OK = arr[2].Raw == "true"
-	v.Reason = arr[3].Str
+	oe.EventID = arr[1].Str
+	oe.OK = arr[2].Raw == "true"
+	oe.Reason = arr[3].Str
 
 	return nil
 }
 
-func (v OKEnvelope) MarshalJSON() ([]byte, error) {
+func (oe OKEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["OK",`)
-	w.RawString(`"` + v.EventID + `",`)
+	w.RawString(`"` + oe.EventID + `",`)
 	ok := "false"
-	if v.OK {
+	if oe.OK {
 		ok = "true"
 	}
 	w.RawString(ok)
 	w.RawString(`,`)
-	w.Raw(json.Marshal(v.Reason))
+	w.Raw(json.Marshal(oe.Reason))
 	w.RawString(`]`)
 
 	return w.BuildBytes()
@@ -398,38 +415,43 @@ func (v OKEnvelope) MarshalJSON() ([]byte, error) {
 
 type AuthEnvelope struct {
 	Challenge *string
-	Event     event.Event
+	Event     *event.Event
 }
 
-func (_ AuthEnvelope) Label() string { return "AUTH" }
-func (a AuthEnvelope) String() string {
-	v, _ := json.Marshal(a)
+func (AuthEnvelope) Label() string { return "AUTH" }
+
+func (ae AuthEnvelope) String() string {
+	v, err := json.Marshal(ae)
+	if err != nil {
+		return ""
+	}
 
 	return string(v)
 }
 
-func (v *AuthEnvelope) UnmarshalJSON(data []byte) error {
+func (ae *AuthEnvelope) UnmarshalJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 2 {
 		return fmt.Errorf("failed to decode Auth envelope: missing fields")
 	}
+
 	if arr[1].IsObject() {
-		return easyjson.Unmarshal([]byte(arr[1].Raw), &v.Event)
-	} else {
-		v.Challenge = &arr[1].Str
+		return easyjson.Unmarshal([]byte(arr[1].Raw), ae.Event)
 	}
+
+	ae.Challenge = &arr[1].Str
 
 	return nil
 }
 
-func (v AuthEnvelope) MarshalJSON() ([]byte, error) {
+func (ae AuthEnvelope) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["AUTH",`)
-	if v.Challenge != nil {
-		w.Raw(json.Marshal(*v.Challenge))
+	if ae.Challenge != nil {
+		w.Raw(json.Marshal(*ae.Challenge))
 	} else {
-		v.Event.MarshalEasyJSON(&w)
+		ae.Event.MarshalEasyJSON(&w)
 	}
 
 	w.RawString(`]`)
