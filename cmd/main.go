@@ -1,9 +1,9 @@
 package main
 
-import "github.com/dezh-tech/immortal/server"
+import "github.com/dezh-tech/immortal/relay"
 
 func main() {
-	s := server.NewServer()
+	s := relay.NewRelay()
 	err := s.Start()
 	if err != nil {
 		panic(err)

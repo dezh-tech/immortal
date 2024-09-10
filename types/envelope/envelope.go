@@ -13,54 +13,6 @@ import (
 	"github.com/tidwall/gjson" // TODO::: remove/replace me!
 )
 
-func ParseMessage(message []byte) Envelope {
-	firstComma := bytes.Index(message, []byte{','})
-	if firstComma == -1 {
-		return nil
-	}
-	label := message[0:firstComma]
-
-	var v Envelope
-	switch {
-	case bytes.Contains(label, []byte("EVENT")):
-		v = &EventEnvelope{}
-	case bytes.Contains(label, []byte("REQ")):
-		v = &ReqEnvelope{}
-	case bytes.Contains(label, []byte("COUNT")):
-		v = &CountEnvelope{}
-	case bytes.Contains(label, []byte("NOTICE")):
-		x := NoticeEnvelope("")
-		v = &x
-	case bytes.Contains(label, []byte("EOSE")):
-		x := EOSEEnvelope("")
-		v = &x
-	case bytes.Contains(label, []byte("OK")):
-		v = &OKEnvelope{}
-	case bytes.Contains(label, []byte("AUTH")):
-		v = &AuthEnvelope{}
-	case bytes.Contains(label, []byte("CLOSED")):
-		v = &ClosedEnvelope{}
-	case bytes.Contains(label, []byte("CLOSE")):
-		x := CloseEnvelope("")
-		v = &x
-	default:
-		return nil
-	}
-
-	if err := v.UnmarshalJSON(message); err != nil {
-		return nil
-	}
-
-	return v
-}
-
-type Envelope interface {
-	Label() string
-	UnmarshalJSON([]byte) error
-	MarshalJSON() ([]byte, error)
-	String() string
-}
-
 var (
 	_ Envelope = (*EventEnvelope)(nil)
 	_ Envelope = (*ReqEnvelope)(nil)
@@ -72,9 +24,56 @@ var (
 	_ Envelope = (*AuthEnvelope)(nil)
 )
 
+// ParseMessage parses the given message from client to an envelope interface.
+// Envelope is the interface.
+func ParseMessage(message []byte) Envelope {
+	firstComma := bytes.Index(message, []byte{','})
+	if firstComma == -1 {
+		return nil
+	}
+	label := message[0:firstComma]
+
+	var e Envelope
+	switch {
+	case bytes.Contains(label, []byte("EVENT")):
+		e = &EventEnvelope{}
+	case bytes.Contains(label, []byte("REQ")):
+		e = &ReqEnvelope{}
+	case bytes.Contains(label, []byte("COUNT")):
+		e = &CountEnvelope{}
+	case bytes.Contains(label, []byte("AUTH")):
+		e = &AuthEnvelope{}
+	case bytes.Contains(label, []byte("CLOSE")):
+		x := CloseEnvelope("")
+		e = &x
+	default:
+		return nil
+	}
+
+	if err := e.UnmarshalJSON(message); err != nil {
+		return nil
+	}
+
+	return e
+}
+
+type Envelope interface {
+	Label() string
+	UnmarshalJSON([]byte) error
+	MarshalJSON() ([]byte, error)
+	String() string
+}
+
 type EventEnvelope struct {
 	SubscriptionID string
 	Event          *event.Event
+}
+
+func MakeEventEnvelope(id string, e *event.Event) EventEnvelope {
+	return EventEnvelope{
+		SubscriptionID: id,
+		Event:          e,
+	}
 }
 
 func (EventEnvelope) Label() string { return "EVENT" }
@@ -241,14 +240,7 @@ func (ne NoticeEnvelope) String() string {
 	return string(v)
 }
 
-func (ne *NoticeEnvelope) UnmarshalJSON(data []byte) error {
-	r := gjson.ParseBytes(data)
-	arr := r.Array()
-	if len(arr) < 2 {
-		return fmt.Errorf("failed to decode NOTICE envelope")
-	}
-	*ne = NoticeEnvelope(arr[1].Str)
-
+func (ne *NoticeEnvelope) UnmarshalJSON(_ []byte) error {
 	return nil
 }
 
@@ -273,14 +265,7 @@ func (ee EOSEEnvelope) String() string {
 	return string(v)
 }
 
-func (ee *EOSEEnvelope) UnmarshalJSON(data []byte) error {
-	r := gjson.ParseBytes(data)
-	arr := r.Array()
-	if len(arr) < 2 {
-		return fmt.Errorf("failed to decode EOSE envelope")
-	}
-	*ee = EOSEEnvelope(arr[1].Str)
-
+func (ee *EOSEEnvelope) UnmarshalJSON(_ []byte) error {
 	return nil
 }
 
@@ -297,12 +282,7 @@ type CloseEnvelope string
 
 func (CloseEnvelope) Label() string { return "CLOSE" }
 func (ce CloseEnvelope) String() string {
-	v, err := json.Marshal(ce)
-	if err != nil {
-		return ""
-	}
-
-	return string(v)
+	return string(ce)
 }
 
 func (ce *CloseEnvelope) UnmarshalJSON(data []byte) error {
@@ -343,18 +323,8 @@ func (ce ClosedEnvelope) String() string {
 	return string(v)
 }
 
-func (ce *ClosedEnvelope) UnmarshalJSON(data []byte) error {
-	r := gjson.ParseBytes(data)
-	arr := r.Array()
-	switch len(arr) {
-	case 3:
-		*ce = ClosedEnvelope{arr[1].Str, arr[2].Str}
-
-		return nil
-	default:
-
-		return fmt.Errorf("failed to decode CLOSED envelope")
-	}
+func (ce *ClosedEnvelope) UnmarshalJSON(_ []byte) error {
+	return nil
 }
 
 func (ce ClosedEnvelope) MarshalJSON() ([]byte, error) {
@@ -369,9 +339,17 @@ func (ce ClosedEnvelope) MarshalJSON() ([]byte, error) {
 }
 
 type OKEnvelope struct {
-	EventID string
 	OK      bool
+	EventID string
 	Reason  string
+}
+
+func MakeOKEnvelope(ok bool, eid, reason string) OKEnvelope {
+	return OKEnvelope{
+		OK:      ok,
+		EventID: eid,
+		Reason:  reason,
+	}
 }
 
 func (OKEnvelope) Label() string { return "OK" }
@@ -384,16 +362,7 @@ func (oe OKEnvelope) String() string {
 	return string(v)
 }
 
-func (oe *OKEnvelope) UnmarshalJSON(data []byte) error {
-	r := gjson.ParseBytes(data)
-	arr := r.Array()
-	if len(arr) < 4 {
-		return fmt.Errorf("failed to decode OK envelope: missing fields")
-	}
-	oe.EventID = arr[1].Str
-	oe.OK = arr[2].Raw == "true"
-	oe.Reason = arr[3].Str
-
+func (oe *OKEnvelope) UnmarshalJSON(_ []byte) error {
 	return nil
 }
 

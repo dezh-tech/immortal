@@ -32,11 +32,6 @@ var testCases = []testCase{
 		ExpectedEnvelope: nil,
 	},
 	{
-		Name:             "CLOSED envelope",
-		Message:          []byte(`["CLOSED",":1","error: we are broken"]`),
-		ExpectedEnvelope: &envelope.ClosedEnvelope{SubscriptionID: ":1", Reason: "error: we are broken"},
-	},
-	{
 		Name:    "REQ envelope",
 		Message: []byte(`["REQ","million", {"kinds": [1]}, {"kinds": [30023 ], "#d": ["buteko",    "batuke"]}]`),
 		ExpectedEnvelope: &envelope.ReqEnvelope{
