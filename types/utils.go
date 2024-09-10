@@ -24,7 +24,7 @@ func ContainsKind(target Kind, arr []Kind) bool {
 	return false
 }
 
-// Escaping strings for JSON encoding according to RFC8259.
+// EscapeString for JSON encoding according to RFC8259.
 // Also encloses result in quotation marks "".
 func EscapeString(dst []byte, s string) []byte {
 	dst = append(dst, '"')

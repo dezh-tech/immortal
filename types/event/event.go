@@ -95,3 +95,12 @@ func (e *Event) IsValid() bool {
 	// TODO::: replace with libsecp256k1 (C++ version).
 	return sig.Verify(hash[:], pubkey)
 }
+
+func (e *Event) String() string {
+	ee, err := e.Encode()
+	if err != nil {
+		return ""
+	}
+
+	return string(ee)
+}
