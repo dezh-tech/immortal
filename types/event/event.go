@@ -26,7 +26,9 @@ func Decode(b []byte) (*Event, error) {
 	e := new(Event)
 
 	if err := easyjson.Unmarshal(b, e); err != nil {
-		return nil, err
+		return nil, types.DecodeError{
+			Reason: err.Error(),
+		}
 	}
 
 	return e, nil
@@ -36,7 +38,9 @@ func Decode(b []byte) (*Event, error) {
 func (e *Event) Encode() ([]byte, error) {
 	b, err := easyjson.Marshal(e)
 	if err != nil {
-		return nil, err
+		return nil, types.EncodeError{
+			Reason: err.Error(),
+		}
 	}
 
 	return b, nil
@@ -47,7 +51,7 @@ func (e *Event) Serialize() []byte {
 	// so the order is kept. See NIP-01
 	dst := make([]byte, 0)
 
-	// the header portion is easy to serialize
+	// the header portion is easy to serialize.
 	// [0,"pubkey",created_at,kind,[
 	dst = append(dst, []byte(
 		fmt.Sprintf( //nolint
@@ -57,7 +61,7 @@ func (e *Event) Serialize() []byte {
 			e.Kind,
 		))...)
 
-	// tags
+	// tags.
 	dst = types.MarshalTo(e.Tags, dst)
 	dst = append(dst, ',')
 
@@ -70,6 +74,11 @@ func (e *Event) Serialize() []byte {
 
 // IsValid function validats an event Signature and ID.
 func (e *Event) IsValid() bool {
+	id := sha256.Sum256(e.Serialize())
+	if hex.EncodeToString(id[:]) != e.ID {
+		return false
+	}
+
 	pk, err := hex.DecodeString(e.PublicKey)
 	if err != nil {
 		return false
@@ -90,8 +99,16 @@ func (e *Event) IsValid() bool {
 		return false
 	}
 
-	hash := sha256.Sum256(e.Serialize())
-
 	// TODO::: replace with libsecp256k1 (C++ version).
-	return sig.Verify(hash[:], pubkey)
+	return sig.Verify(id[:], pubkey)
+}
+
+// String returns and encoded string representation of event e.
+func (e *Event) String() string {
+	ee, err := e.Encode()
+	if err != nil {
+		return ""
+	}
+
+	return string(ee)
 }

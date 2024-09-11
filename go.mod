@@ -7,6 +7,7 @@ require (
 	github.com/mailru/easyjson v0.7.7
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.3
+	golang.org/x/net v0.29.0
 )
 
 require (

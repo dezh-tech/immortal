@@ -81,7 +81,9 @@ func Decode(b []byte) (*Filter, error) {
 	e := new(Filter)
 
 	if err := easyjson.Unmarshal(b, e); err != nil {
-		return nil, err
+		return nil, types.DecodeError{
+			Reason: err.Error(),
+		}
 	}
 
 	return e, nil
@@ -91,7 +93,9 @@ func Decode(b []byte) (*Filter, error) {
 func (f *Filter) Encode() ([]byte, error) {
 	ee, err := easyjson.Marshal(f)
 	if err != nil {
-		return nil, err
+		return nil, types.EncodeError{
+			Reason: err.Error(),
+		}
 	}
 
 	return ee, nil

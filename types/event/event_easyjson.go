@@ -183,10 +183,10 @@ func (e Event) MarshalEasyJSON(w *jwriter.Writer) { //nolint
 
 // UnmarshalJSON supports json.Unmarshaler interface.
 func (e *Event) UnmarshalJSON(data []byte) error { //nolint
-	r := jlexer.Lexer{Data: data}
-	easyjsonF642ad3eDecodeGithubComDezhTechImmortalTypesEvent(&r, e)
+	l := jlexer.Lexer{Data: data}
+	easyjsonF642ad3eDecodeGithubComDezhTechImmortalTypesEvent(&l, e)
 
-	return r.Error()
+	return l.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface.
