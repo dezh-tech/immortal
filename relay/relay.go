@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
@@ -15,12 +16,14 @@ import (
 // TODO::: replace with https://github.com/coder/websocket.
 
 type Relay struct {
-	conns map[*websocket.Conn]map[string]filter.Filters
+	conns     map[*websocket.Conn]map[string]filter.Filters
+	connsLock sync.RWMutex
 }
 
 func NewRelay() *Relay {
 	return &Relay{
-		conns: make(map[*websocket.Conn]map[string]filter.Filters),
+		conns:     make(map[*websocket.Conn]map[string]filter.Filters),
+		connsLock: sync.RWMutex{},
 	}
 }
 
@@ -35,8 +38,9 @@ func (r *Relay) handleWS(ws *websocket.Conn) {
 	// TODO::: replace with logger.
 	log.Printf("new connection: %s\n", ws.RemoteAddr())
 
-	// TODO::: make it concurrent safe.
+	r.connsLock.Lock()
 	r.conns[ws] = make(map[string]filter.Filters)
+	r.connsLock.Unlock()
 
 	r.readLoop(ws)
 }
@@ -53,13 +57,12 @@ func (r *Relay) readLoop(ws *websocket.Conn) {
 			// TODO::: replace with logger.
 			log.Printf("error in connection handling: %s\n", err)
 
-			// TODO::: drop connection?
 			continue
 		}
 
 		msg := message.ParseMessage(buf[:n])
 		if msg == nil {
-			_, _ = ws.Write(message.MakeNotice("error: can't parse message.")) // TODO::: should we check error?
+			_, _ = ws.Write(message.MakeNotice("error: can't parse message."))
 
 			continue
 		}
@@ -76,9 +79,6 @@ func (r *Relay) readLoop(ws *websocket.Conn) {
 
 		case "CLOSE":
 			go r.HandleClose(ws, msg)
-
-		default:
-			break
 		}
 	}
 }
@@ -86,19 +86,21 @@ func (r *Relay) readLoop(ws *websocket.Conn) {
 func (r *Relay) HandleReq(ws *websocket.Conn, m message.Message) {
 	// TODO::: loadfrom database and sent in first query based on limit.
 	// TODO::: return EOSE.
-	// TODO::: use a concurrent safe map.
 
 	msg, ok := m.(*message.Req)
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice("error: can't parse REQ message")) // TODO::: should we check error?
+		_, _ = ws.Write(message.MakeNotice("error: can't parse REQ message"))
 
 		return
 	}
 
+	r.connsLock.Lock()
+	defer r.connsLock.Unlock()
+
 	subs, ok := r.conns[ws]
 	if !ok {
 		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
-			ws.RemoteAddr()))) // TODO::: should we check error?
+			ws.RemoteAddr())))
 
 		return
 	}
@@ -111,7 +113,6 @@ func (r *Relay) HandleReq(ws *websocket.Conn, m message.Message) {
 func (r *Relay) HandleEvent(ws *websocket.Conn, m message.Message) {
 	// TODO::: send events to be stored and proccessed.
 
-	// can we ignore assertion check?
 	msg, ok := m.(*message.Event)
 	if !ok {
 		okm := message.MakeOK(false,
@@ -119,7 +120,7 @@ func (r *Relay) HandleEvent(ws *websocket.Conn, m message.Message) {
 			"error: can't parse the message.", // TODO::: make an error builder.
 		)
 
-		_, _ = ws.Write(okm) // TODO::: should we check error?
+		_, _ = ws.Write(okm)
 
 		return
 	}
@@ -130,20 +131,22 @@ func (r *Relay) HandleEvent(ws *websocket.Conn, m message.Message) {
 			"invalid: invalid id or sig.", // TODO::: make an error builder.
 		)
 
-		_, _ = ws.Write(okm) // TODO::: should we check error?
+		_, _ = ws.Write(okm)
 
 		return
 	}
 
-	_, _ = ws.Write(message.MakeOK(true, msg.SubscriptionID, "")) // TODO::: should we check error?
+	_, _ = ws.Write(message.MakeOK(true, msg.SubscriptionID, ""))
 
-	// TODO::: any better way?
 	for conn, subs := range r.conns {
 		for id, filters := range subs {
-			if !filters.Match(msg.Event) {
-				continue
-			}
-			_, _ = conn.Write(message.MakeEvent(id, msg.Event)) // TODO::: should we check error?
+			// is this concurrent safe?
+			go func(conn *websocket.Conn, id string, filters filter.Filters) {
+				if !filters.Match(msg.Event) {
+					return
+				}
+				_, _ = conn.Write(message.MakeEvent(id, msg.Event))
+			}(conn, id, filters)
 		}
 	}
 }
@@ -151,30 +154,36 @@ func (r *Relay) HandleEvent(ws *websocket.Conn, m message.Message) {
 func (r *Relay) HandleClose(ws *websocket.Conn, m message.Message) {
 	msg, ok := m.(*message.Close)
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice("error: can't parse CLOSE message")) // TODO::: should we check error?
+		_, _ = ws.Write(message.MakeNotice("error: can't parse CLOSE message"))
 
 		return
 	}
 
+	r.connsLock.Lock()
+	defer r.connsLock.Unlock()
+
 	conn, ok := r.conns[ws]
 	if !ok {
 		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
-			ws.RemoteAddr()))) // TODO::: should we check error?
+			ws.RemoteAddr())))
 
 		return
 	}
 
 	delete(conn, msg.String())
-	_, _ = ws.Write(message.MakeClosed(msg.String(), "ok: closed successfully")) // TODO::: should we check error?
+	_, _ = ws.Write(message.MakeClosed(msg.String(), "ok: closed successfully"))
 }
 
 // Stop shutdowns the relay gracefully.
 func (r *Relay) Stop() error {
+	r.connsLock.Lock()
+	defer r.connsLock.Unlock()
+
 	for wsConn, subs := range r.conns {
 		for id := range subs {
-			_, _ = wsConn.Write(message.MakeClosed(id, "relay is stopping.")) // TODO::: should we check error?
+			_, _ = wsConn.Write(message.MakeClosed(id, "relay is stopping."))
 		}
-		_ = wsConn.Close() // TODO::: should we check error?
+		_ = wsConn.Close()
 	}
 
 	return nil

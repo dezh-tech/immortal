@@ -74,6 +74,11 @@ func (e *Event) Serialize() []byte {
 
 // IsValid function validats an event Signature and ID.
 func (e *Event) IsValid() bool {
+	id := sha256.Sum256(e.Serialize())
+	if hex.EncodeToString(id[:]) != e.ID {
+		return false
+	}
+
 	pk, err := hex.DecodeString(e.PublicKey)
 	if err != nil {
 		return false
@@ -94,10 +99,8 @@ func (e *Event) IsValid() bool {
 		return false
 	}
 
-	hash := sha256.Sum256(e.Serialize())
-
 	// TODO::: replace with libsecp256k1 (C++ version).
-	return sig.Verify(hash[:], pubkey)
+	return sig.Verify(id[:], pubkey)
 }
 
 // String returns and encoded string representation of event e.
