@@ -26,7 +26,9 @@ func Decode(b []byte) (*Event, error) {
 	e := new(Event)
 
 	if err := easyjson.Unmarshal(b, e); err != nil {
-		return nil, err
+		return nil, types.ErrDecode{
+			Reason: err.Error(),
+		}
 	}
 
 	return e, nil
@@ -36,7 +38,9 @@ func Decode(b []byte) (*Event, error) {
 func (e *Event) Encode() ([]byte, error) {
 	b, err := easyjson.Marshal(e)
 	if err != nil {
-		return nil, err
+		return nil, types.ErrEncode{
+			Reason: err.Error(),
+		}
 	}
 
 	return b, nil
@@ -47,7 +51,7 @@ func (e *Event) Serialize() []byte {
 	// so the order is kept. See NIP-01
 	dst := make([]byte, 0)
 
-	// the header portion is easy to serialize
+	// the header portion is easy to serialize.
 	// [0,"pubkey",created_at,kind,[
 	dst = append(dst, []byte(
 		fmt.Sprintf( //nolint
@@ -57,7 +61,7 @@ func (e *Event) Serialize() []byte {
 			e.Kind,
 		))...)
 
-	// tags
+	// tags.
 	dst = types.MarshalTo(e.Tags, dst)
 	dst = append(dst, ',')
 
@@ -96,6 +100,7 @@ func (e *Event) IsValid() bool {
 	return sig.Verify(hash[:], pubkey)
 }
 
+// String returns and encoded string representation of event e.
 func (e *Event) String() string {
 	ee, err := e.Encode()
 	if err != nil {
