@@ -33,7 +33,9 @@ func ParseMessage(message []byte) Message {
 	var e Message
 	switch {
 	case bytes.Contains(label, []byte("EVENT")):
-		e = &Event{}
+		e = &Event{
+			Event: new(event.Event),
+		}
 	case bytes.Contains(label, []byte("REQ")):
 		e = &Req{}
 	case bytes.Contains(label, []byte("COUNT")):
