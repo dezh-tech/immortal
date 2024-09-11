@@ -93,7 +93,7 @@ func (em *Event) DecodeFromJSON(data []byte) error {
 	case len(arr) >= 2:
 		err := easyjson.Unmarshal([]byte(arr[1].Raw), em.Event)
 		if err != nil {
-			return types.ErrDecode{
+			return types.DecodeError{
 				Reason: fmt.Sprintf("EVENT message: %s", err.Error()),
 			}
 		}
@@ -101,7 +101,7 @@ func (em *Event) DecodeFromJSON(data []byte) error {
 		return nil
 	default:
 
-		return types.ErrDecode{
+		return types.DecodeError{
 			Reason: "EVENT messag: no event found.",
 		}
 	}
@@ -115,7 +115,7 @@ func (em Event) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("EVENT message: %s", err.Error()),
 		}
 	}
@@ -135,7 +135,7 @@ func (rm *Req) DecodeFromJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 3 {
-		return types.ErrDecode{
+		return types.DecodeError{
 			Reason: "REQ message: missing filters.",
 		}
 	}
@@ -144,7 +144,7 @@ func (rm *Req) DecodeFromJSON(data []byte) error {
 	f := 0
 	for i := 2; i < len(arr); i++ {
 		if err := easyjson.Unmarshal([]byte(arr[i].Raw), &rm.Filters[f]); err != nil {
-			return types.ErrDecode{
+			return types.DecodeError{
 				Reason: fmt.Sprintf("REQ message: %s", err.Error()),
 			}
 		}
@@ -179,14 +179,14 @@ func (cm *Count) DecodeFromJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 3 {
-		return types.ErrDecode{
+		return types.DecodeError{
 			Reason: "COUNT message: missing filters.",
 		}
 	}
 	cm.SubscriptionID = arr[1].Str
 
 	if len(arr) < 3 {
-		return types.ErrDecode{
+		return types.DecodeError{
 			Reason: "COUNT message: array must have at least 3 items.",
 		}
 	}
@@ -197,7 +197,7 @@ func (cm *Count) DecodeFromJSON(data []byte) error {
 		item := []byte(arr[i].Raw)
 
 		if err := easyjson.Unmarshal(item, cm.Filters[f]); err != nil {
-			return types.ErrDecode{
+			return types.DecodeError{
 				Reason: fmt.Sprintf("COUNT message: %s", err.Error()),
 			}
 		}
@@ -215,7 +215,7 @@ func (cm Count) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("COUNT message: %s", err.Error()),
 		}
 	}
@@ -257,7 +257,7 @@ func (nm Notice) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("NOTICE message: %s", err.Error()),
 		}
 	}
@@ -290,7 +290,7 @@ func (em EOSE) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("EOSE message: %s", err.Error()),
 		}
 	}
@@ -316,7 +316,7 @@ func (cm *Close) DecodeFromJSON(data []byte) error {
 		return nil
 	default:
 
-		return types.ErrDecode{
+		return types.DecodeError{
 			Reason: "CLOSE message: subscription ID missed.",
 		}
 	}
@@ -330,13 +330,12 @@ func (cm Close) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("CLOSE message: %s", err.Error()),
 		}
 	}
 
 	return res, nil
-
 }
 
 // Closed reperesents a NIP-01 CLOSED message.
@@ -384,7 +383,7 @@ func (cm Closed) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("CLOSED message: %s", err.Error()),
 		}
 	}
@@ -443,7 +442,7 @@ func (om OK) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("OK message: %s", err.Error()),
 		}
 	}
@@ -472,7 +471,7 @@ func (am *Auth) DecodeFromJSON(data []byte) error {
 	r := gjson.ParseBytes(data)
 	arr := r.Array()
 	if len(arr) < 2 {
-		return types.ErrDecode{
+		return types.DecodeError{
 			Reason: "AUTH message: missing fields.",
 		}
 	}
@@ -480,10 +479,11 @@ func (am *Auth) DecodeFromJSON(data []byte) error {
 	if arr[1].IsObject() {
 		err := easyjson.Unmarshal([]byte(arr[1].Raw), am.Event)
 		if err != nil {
-			return types.ErrDecode{
+			return types.DecodeError{
 				Reason: fmt.Sprintf("AUTH message: %s", err.Error()),
 			}
 		}
+
 		return nil
 	}
 
@@ -500,9 +500,10 @@ func (am Auth) EncodeToJSON() ([]byte, error) {
 
 	res, err := w.BuildBytes()
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: fmt.Sprintf("AUTH message: %s", err.Error()),
 		}
 	}
+
 	return res, nil
 }

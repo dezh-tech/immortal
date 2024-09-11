@@ -2,20 +2,20 @@ package types
 
 import "fmt"
 
-// ErrEncode represents an encoding error.
-type ErrEncode struct {
+// EncodeError represents an encoding error.
+type EncodeError struct {
 	Reason string
 }
 
-func (e ErrEncode) Error() string {
+func (e EncodeError) Error() string {
 	return fmt.Sprintf("encoding error: %s", e.Reason)
 }
 
-// ErrDecode represents an decoding error.
-type ErrDecode struct {
+// DecodeError represents an decoding error.
+type DecodeError struct {
 	Reason string
 }
 
-func (e ErrDecode) Error() string {
+func (e DecodeError) Error() string {
 	return fmt.Sprintf("decoding error: %s", e.Reason)
 }

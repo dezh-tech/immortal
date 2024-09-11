@@ -26,7 +26,7 @@ func Decode(b []byte) (*Event, error) {
 	e := new(Event)
 
 	if err := easyjson.Unmarshal(b, e); err != nil {
-		return nil, types.ErrDecode{
+		return nil, types.DecodeError{
 			Reason: err.Error(),
 		}
 	}
@@ -38,7 +38,7 @@ func Decode(b []byte) (*Event, error) {
 func (e *Event) Encode() ([]byte, error) {
 	b, err := easyjson.Marshal(e)
 	if err != nil {
-		return nil, types.ErrEncode{
+		return nil, types.EncodeError{
 			Reason: err.Error(),
 		}
 	}

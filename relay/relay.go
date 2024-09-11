@@ -91,12 +91,15 @@ func (r *Relay) HandleReq(ws *websocket.Conn, m message.Message) {
 	msg, ok := m.(*message.Req)
 	if !ok {
 		_, _ = ws.Write(message.MakeNotice("error: can't parse REQ message")) // TODO::: should we check error?
+
 		return
 	}
 
 	subs, ok := r.conns[ws]
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s", ws.RemoteAddr()))) // TODO::: should we check error?
+		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
+			ws.RemoteAddr()))) // TODO::: should we check error?
+
 		return
 	}
 
@@ -155,7 +158,8 @@ func (r *Relay) HandleClose(ws *websocket.Conn, m message.Message) {
 
 	conn, ok := r.conns[ws]
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s", ws.RemoteAddr()))) // TODO::: should we check error?
+		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
+			ws.RemoteAddr()))) // TODO::: should we check error?
 
 		return
 	}
