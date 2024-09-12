@@ -10,7 +10,7 @@ You can find supported NIPs details [here](./documents/NIPs.md).
 
 ## Updates
 
-Updates and changes or community discussions can be followed on the Github issue/disscisions and/or the [Dezh Technologies Nostr profile](https://njump.me/dezh.tech).
+Updates and changes or community discussions can be followed on the Github issue/discussion and/or the [Dezh Technologies Nostr profile](https://njump.me/dezh.tech).
 
 ## Contribution
 
