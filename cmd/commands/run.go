@@ -12,7 +12,7 @@ import (
 
 func HandleRun(args []string) {
 	if len(args) < 3 {
-		ExitOnError(errors.New("at least 2 arguments expected, got 1.\nuse help command for more information"))
+		ExitOnError(errors.New("at least 1 arguments expected\nuse help command for more information"))
 	}
 
 	cfg, err := config.LoadfromFile(args[2])
