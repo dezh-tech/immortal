@@ -1,13 +1,31 @@
 package main
 
-import "github.com/dezh-tech/immortal/relay"
+import (
+	"errors"
+	"fmt"
+	"os"
 
-// TODO::: create a full functioning CLI to manage rely.
+	"github.com/dezh-tech/immortal"
+	"github.com/dezh-tech/immortal/cmd/commands"
+)
 
 func main() {
-	s := relay.NewRelay()
-	err := s.Start()
-	if err != nil {
-		panic(err)
+	if len(os.Args) < 2 {
+		commands.ExitOnError(errors.New("at least 2 arguments expected, got 1.\nuse help command for more information"))
+	}
+
+	switch os.Args[1] {
+	case "run":
+		commands.HandleRun(os.Args)
+
+	case "help":
+		commands.HandleHelp(os.Args)
+
+	case "version":
+		fmt.Println(immortal.StringVersion()) //nolint
+		os.Exit(0)
+
+	default:
+		commands.HandleHelp(os.Args)
 	}
 }
