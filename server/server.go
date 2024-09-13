@@ -35,8 +35,8 @@ func NewServer(cfg Config) *Server {
 // Start strats a new server instance.
 func (s *Server) Start() error {
 	http.Handle("/", websocket.Handler(s.handleWS))
-	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind,
-		strconv.Itoa(int(s.config.Port))), nil) //nolint
+	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint
+		strconv.Itoa(int(s.config.Port))), nil)
 
 	return err
 }
