@@ -17,7 +17,7 @@ import (
 // TODO::: replace with https://github.com/coder/websocket.
 // TODO::: replace `log` with main logger.
 
-// Server represents a nostr relay which keeps track of client connections and handle them.
+// Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
 	config    Config
 	conns     map[*websocket.Conn]map[string]filter.Filters
