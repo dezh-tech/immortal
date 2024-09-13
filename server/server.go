@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/dezh-tech/immortal/types/filter"
@@ -32,8 +34,9 @@ func NewServer(cfg Config) *Server {
 
 // Start strats a new server instance.
 func (s *Server) Start() error {
-	http.Handle("/ws", websocket.Handler(s.handleWS))
-	err := http.ListenAndServe(fmt.Sprintf("%s:%s", s.config.Bind, s.config.Port), nil) //nolint
+	http.Handle("/", websocket.Handler(s.handleWS))
+	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind,
+		strconv.Itoa(int(s.config.Port))), nil) //nolint
 
 	return err
 }
