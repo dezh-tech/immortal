@@ -10,7 +10,7 @@ import (
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
 	ServerConf server.Config `yaml:"server"`
-	DatabseDSN string
+	DSN        string
 }
 
 // LoadfromFile loads config from file, databse and env.
@@ -33,7 +33,7 @@ func LoadfromFile(path string) (*Config, error) {
 		}
 	}
 
-	config.DatabseDSN = os.Getenv("IMMO_DB_DSN")
+	config.DSN = os.Getenv("IMMO_DB_DSN")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{
