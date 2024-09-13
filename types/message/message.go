@@ -28,21 +28,21 @@ func ParseMessage(message []byte) Message {
 	if firstComma == -1 {
 		return nil
 	}
-	label := message[0:firstComma]
+	msgType := message[0:firstComma]
 
 	var e Message
 	switch {
-	case bytes.Contains(label, []byte("EVENT")):
+	case bytes.Contains(msgType, []byte("EVENT")):
 		e = &Event{
 			Event: new(event.Event),
 		}
-	case bytes.Contains(label, []byte("REQ")):
+	case bytes.Contains(msgType, []byte("REQ")):
 		e = &Req{}
-	case bytes.Contains(label, []byte("COUNT")):
+	case bytes.Contains(msgType, []byte("COUNT")):
 		e = &Count{}
-	case bytes.Contains(label, []byte("AUTH")):
+	case bytes.Contains(msgType, []byte("AUTH")):
 		e = &Auth{}
-	case bytes.Contains(label, []byte("CLOSE")):
+	case bytes.Contains(msgType, []byte("CLOSE")):
 		x := Close("")
 		e = &x
 	default:

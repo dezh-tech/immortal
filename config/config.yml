@@ -1,0 +1,11 @@
+# This is default immortal config file.
+# This config file contains essential information which is needed for bootstraping.
+# The rest of configs such as limitations or NIP-11 profile must be changed on database config table,
+# which is defined and documented on documents/config.md.
+
+# server contains information about websocket server.
+server:
+  # bind is the IP address to be bind and listen on.
+  bind: 127.0.0.1
+  # port is websocket port to be listen on.
+  port: 7777

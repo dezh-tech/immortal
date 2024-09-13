@@ -24,6 +24,10 @@ fmt:
 check:
 	golangci-lint run --timeout=20m0s
 
+### Building
+build:
+	go build -o build/immortal cmd/main.go
+
 ### pre commit
 pre-commit: fmt check unit-test
 	@echo ready to commit...
