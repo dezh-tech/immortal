@@ -11,6 +11,7 @@ import (
 type Config struct {
 	ServerConf server.Config `yaml:"server"`
 	DSN        string
+	// TODO ::: db connection pool config
 }
 
 // LoadfromFile loads config from file, databse and env.
