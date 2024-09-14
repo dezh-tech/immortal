@@ -1,9 +1,7 @@
 package server
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -11,11 +9,12 @@ import (
 
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
-// TODO::: replace with https://github.com/coder/websocket.
-// TODO::: replace `log` with main logger.
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(_ *http.Request) bool { return true },
+}
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
@@ -34,7 +33,7 @@ func NewServer(cfg Config) *Server {
 
 // Start strats a new server instance.
 func (s *Server) Start() error {
-	http.Handle("/", websocket.Handler(s.handleWS))
+	http.Handle("/", s)
 	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint
 		strconv.Itoa(int(s.config.Port))), nil)
 
@@ -42,30 +41,30 @@ func (s *Server) Start() error {
 }
 
 // handleWS is WebSocket handler.
-func (s *Server) handleWS(ws *websocket.Conn) {
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+
 	s.connsLock.Lock()
-	s.conns[ws] = make(map[string]filter.Filters)
+	s.conns[conn] = make(map[string]filter.Filters)
 	s.connsLock.Unlock()
 
-	s.readLoop(ws)
+	s.readLoop(conn)
 }
 
 // readLoop reads incoming messages from a client and answer to them.
 func (s *Server) readLoop(ws *websocket.Conn) {
-	buf := make([]byte, 1024)
 	for {
-		n, err := ws.Read(buf)
+		_, buf, err := ws.ReadMessage()
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
-
-			continue
+			break
 		}
 
-		msg := message.ParseMessage(buf[:n])
+		msg := message.ParseMessage(buf)
 		if msg == nil {
-			_, _ = ws.Write(message.MakeNotice("error: can't parse message."))
+			_ = ws.WriteMessage(1, message.MakeNotice("error: can't parse message."))
 
 			continue
 		}
@@ -91,7 +90,7 @@ func (s *Server) handleReq(ws *websocket.Conn, m message.Message) {
 
 	msg, ok := m.(*message.Req)
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice("error: can't parse REQ message."))
+		_ = ws.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
 
 		return
 	}
@@ -101,7 +100,7 @@ func (s *Server) handleReq(ws *websocket.Conn, m message.Message) {
 
 	subs, ok := s.conns[ws]
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
+		_ = ws.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
 			ws.RemoteAddr())))
 
 		return
@@ -119,30 +118,30 @@ func (s *Server) handleEvent(ws *websocket.Conn, m message.Message) {
 			"error: can't parse EVENT message.",
 		)
 
-		_, _ = ws.Write(okm)
+		_ = ws.WriteMessage(1, okm)
 
 		return
 	}
 
 	if !msg.Event.IsValid() {
 		okm := message.MakeOK(false,
-			msg.SubscriptionID,
+			msg.Event.ID,
 			"invalid: id or sig is not correct.",
 		)
 
-		_, _ = ws.Write(okm)
+		_ = ws.WriteMessage(1, okm)
 
 		return
 	}
 
-	_, _ = ws.Write(message.MakeOK(true, msg.SubscriptionID, ""))
+	_ = ws.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
 	for conn, subs := range s.conns {
 		for id, filters := range subs {
 			if !filters.Match(msg.Event) {
 				return
 			}
-			_, _ = conn.Write(message.MakeEvent(id, msg.Event))
+			_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))
 		}
 	}
 }
@@ -151,7 +150,7 @@ func (s *Server) handleEvent(ws *websocket.Conn, m message.Message) {
 func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
 	msg, ok := m.(*message.Close)
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice("error: can't parse CLOSE message."))
+		_ = ws.WriteMessage(1, message.MakeNotice("error: can't parse CLOSE message."))
 
 		return
 	}
@@ -161,14 +160,14 @@ func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
 
 	conn, ok := s.conns[ws]
 	if !ok {
-		_, _ = ws.Write(message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
+		_ = ws.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
 			ws.RemoteAddr())))
 
 		return
 	}
 
 	delete(conn, msg.String())
-	_, _ = ws.Write(message.MakeClosed(msg.String(), "ok: closed successfully."))
+	_ = ws.WriteMessage(1, message.MakeClosed(msg.String(), "ok: closed successfully."))
 }
 
 // Stop shutdowns the server gracefully.
@@ -179,7 +178,7 @@ func (s *Server) Stop() error {
 	for wsConn, subs := range s.conns {
 		// close all subscriptions.
 		for id := range subs {
-			_, _ = wsConn.Write(message.MakeClosed(id, "error: shutdowning the relay."))
+			_ = wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdowning the relay."))
 		}
 
 		// close connection.

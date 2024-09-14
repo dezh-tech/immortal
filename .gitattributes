@@ -1,0 +1,4 @@
+*.md linguist-detectable
+*.yml linguist-detectable
+*.yaml linguist-detectable
+*.sql linguist-detectable
