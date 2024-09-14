@@ -4,10 +4,10 @@ go 1.22.5
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
+	github.com/gorilla/websocket v1.5.3
 	github.com/mailru/easyjson v0.7.7
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.3
-	golang.org/x/net v0.29.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
