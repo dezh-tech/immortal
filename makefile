@@ -5,6 +5,9 @@ devtools:
 	@echo "Installing devtools"
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install mvdan.cc/gofumpt@latest
+	# TODO ::: go-migrate
+	# TODO ::: sqlboiler
+	# TODO ::: psql driver
 
 ### Testing
 unit-test:
@@ -31,5 +34,16 @@ build:
 ### pre commit
 pre-commit: fmt check unit-test
 	@echo ready to commit...
+
+### docker-compose
+compose-up:
+	docker-compose up -d
+
+compose-down:
+	docker-compose down
+
+### sqlBoiler
+ models-generate:
+	sqlboiler psql
 
 .PHONY: build

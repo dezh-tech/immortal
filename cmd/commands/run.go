@@ -20,7 +20,11 @@ func HandleRun(args []string) {
 		ExitOnError(err)
 	}
 
-	r := relay.NewRelay(*cfg)
+	r, err := relay.New(*cfg)
+	if err != nil {
+		ExitOnError(err)
+	}
+
 	if err := r.Start(); err != nil {
 		ExitOnError(err)
 	}
