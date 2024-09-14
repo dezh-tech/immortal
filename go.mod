@@ -5,6 +5,7 @@ go 1.22.5
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/friendsofgo/errors v0.9.2
+	github.com/gorilla/websocket v1.5.3
 	github.com/lib/pq v1.10.9
 	github.com/mailru/easyjson v0.7.7
 	github.com/stretchr/testify v1.9.0
@@ -12,7 +13,6 @@ require (
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.16.2
 	github.com/volatiletech/strmangle v0.0.6
-	github.com/gorilla/websocket v1.5.3
 	gopkg.in/yaml.v3 v3.0.1
 )
 
