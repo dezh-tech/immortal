@@ -9,3 +9,17 @@ server:
   bind: 127.0.0.1
   # port is websocket port to be listen on.
   port: 7777
+
+# Database settings.
+database:
+  # Maximum number of open database connections.
+  max_open_conn: 20
+
+  # Maximum number of idle connections in the pool.
+  max_idle_conn: 10
+
+  # Maximum time an idle connection can stay in the pool.
+  max_idle_conn_time: 5m
+
+  # Maximum lifetime of a database connection.
+  max_conn_life_time: 1h

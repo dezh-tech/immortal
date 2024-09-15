@@ -3,15 +3,15 @@ package config
 import (
 	"os"
 
+	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/server"
 	"gopkg.in/yaml.v3"
 )
 
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
-	ServerConf server.Config `yaml:"server"`
-	DSN        string
-	// TODO ::: db connection pool config
+	ServerConf   server.Config   `yaml:"server"`
+	DatabaseConf database.Config `yaml:"database"`
 }
 
 // LoadfromFile loads config from file, databse and env.
@@ -34,7 +34,7 @@ func LoadfromFile(path string) (*Config, error) {
 		}
 	}
 
-	config.DSN = os.Getenv("IMMO_DB_DSN")
+	config.DatabaseConf.DSN = os.Getenv("IMMO_DB_DSN")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

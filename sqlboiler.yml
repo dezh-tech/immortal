@@ -15,8 +15,8 @@ drivers:
   - psql
 
 # Generation settings
-pkgname: models  # Package name to generate the ORM code into
-output: models  # Output directory where models are generated
+pkgname: database  # Package name to generate the ORM code into
+output: database/models  # Output directory where models are generated
 no-tests: true  # Disable generation of test files
 no-hooks: false  # Disable generation of hook functions
 no-auto-timestamps: false  # Disable auto timestamping on created_at/updated_at fields
