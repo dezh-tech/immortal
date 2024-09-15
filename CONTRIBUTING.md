@@ -19,18 +19,26 @@ Please follow these guidelines when contributing to the project:
 
 ### Makefile Targets
 
-<!-- TODO -->
+There is some make file targets which you can use when developing this codebase:
+
+- `devtools`: will install all devtools you need in development proccess.
+- `unit-test`, `test`, `test-race`: runs all existing tests.
+- `fmt`: formats the code using gofumpt. (run before `check` target always.)
+- `check`: runs golangci-lint linter based on its [config](./.golangci.yml).
+- `build`: build an immortal binary on `build/immortal` path.
+- `pre-commit`: executes formatter, linter and tests.
+- `compose-up`: spin ups the development docker compose which runs all requiered third-party services for developement.
+- `compose-down`: stops the development docker compose stuff.
+- `models-generate`: generates the SQL tables using sqlboiler, only use it when you change the database.
 
 ### Error and Log Messages
 
-Error and log messages should not start with a capital letter (unless it's a proper noun or acronym) and
-should not end with punctuation.
+Error and log messages should not start with a capital letter (unless it's a proper noun or acronym).
 
 #### Examples
 
 - Correct ✅: "unable to connect to client"
 - Incorrect ❌: "Unable to connect to client"
-- Incorrect ❌: "unable to connect to client."
 
 ### Testing
 
@@ -50,7 +58,6 @@ Make sure you follow [this guide](https://100go.co/89-benchmarks) when you write
 Follow these rules for help messages for CLI commands and flags:
 
 - Help string should not start with a capital letter.
-- Help string should not end with punctuation.
 - Don't include default value in the help string.
 - Include the acceptable range for the flags that accept a range of values.
 
@@ -94,11 +101,11 @@ Multiple scopes can be used if the changes impact several areas.
 
 ### Examples
 
-  - Correct ✅: "feat(ws): close stale connections"
+  - Correct ✅: "feat(ws): close stale connections."
   - Correct ✅: "feat(ws, config): max_wss connection limit"
-  - Incorrect ❌: 'feat(config): Blacklist npubs."
+  - Incorrect ❌: 'feat(config): Blacklist npubs"
   - Incorrect ❌: 'feat(config): blacklisted npubs"
 
----
+-------------------------------------------------
 
 Thank you for your contributions to the Immortal!
