@@ -22,7 +22,7 @@ func New(cfg config.Config) (*Relay, error) {
 
 	return &Relay{
 		config:   cfg,
-		server:   server.NewServer(cfg.ServerConf),
+		server:   server.New(cfg.ServerConf),
 		database: db,
 	}, nil
 }

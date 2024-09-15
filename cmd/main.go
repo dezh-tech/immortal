@@ -20,6 +20,7 @@ func main() {
 
 	case "help":
 		commands.HandleHelp(os.Args)
+		os.Exit(0)
 
 	case "version":
 		fmt.Println(immortal.StringVersion()) //nolint
