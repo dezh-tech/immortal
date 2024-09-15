@@ -2,8 +2,7 @@ package commands
 
 import "fmt"
 
-const help = `
-Available commands:
+const help = `Available commands:
 Commands:
   run <path_to_config>      starts the application with the specified configuration file.
   help                      displays this help information.

@@ -11,7 +11,8 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		commands.ExitOnError(errors.New("at least 1 arguments expected.\nuse help command for more information"))
+		commands.HandleHelp(os.Args)
+		commands.ExitOnError(errors.New("at least 1 arguments expected."))
 	}
 
 	switch os.Args[1] {
