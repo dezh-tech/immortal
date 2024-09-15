@@ -10,8 +10,8 @@ import (
 
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
-	ServerConf server.Config `yaml:"server"`
-	DatabaseConf database.Config `yaml:"database"`	
+	ServerConf   server.Config   `yaml:"server"`
+	DatabaseConf database.Config `yaml:"database"`
 }
 
 // LoadfromFile loads config from file, databse and env.
