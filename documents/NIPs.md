@@ -1,8 +1,6 @@
-# Immportal supportes NIPs
+# Immportal supported NIPs
 
 The Immortal follows [NIPs](https://github.com/nostr-protocol/nips) and tries to implement itself as close as possible to this standards.
-
-### Immortal NIPs Support (Current Progress)
 
 - [ ] **NIP-01**: Basic Protocol Flow Description (WIP)
 - [ ] **NIP-02**: Follow List
