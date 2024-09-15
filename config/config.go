@@ -11,9 +11,7 @@ import (
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
 	ServerConf server.Config `yaml:"server"`
-	DatabaseConf database.Config `yaml:"database"`
-	DSN string
-	
+	DatabaseConf database.Config `yaml:"database"`	
 }
 
 // LoadfromFile loads config from file, databse and env.
@@ -36,7 +34,7 @@ func LoadfromFile(path string) (*Config, error) {
 		}
 	}
 
-	config.DSN = os.Getenv("IMMO_DB_DSN")
+	config.DatabaseConf.DSN = os.Getenv("IMMO_DB_DSN")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

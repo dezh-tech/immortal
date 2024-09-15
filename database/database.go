@@ -13,8 +13,8 @@ type Database struct {
 	db *sql.DB
 }
 
-func New(dsn string, cfg Config) (*Database, error) {
-	db, err := sql.Open("postgres", dsn)
+func New(cfg Config) (*Database, error) {
+	db, err := sql.Open("postgres", cfg.DSN)
 	if err != nil {
 		return nil, err
 	}
