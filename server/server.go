@@ -23,7 +23,7 @@ type Server struct {
 	connsLock sync.RWMutex
 }
 
-func NewServer(cfg Config) *Server {
+func New(cfg Config) *Server {
 	return &Server{
 		config:    cfg,
 		conns:     make(map[*websocket.Conn]map[string]filter.Filters),
@@ -77,7 +77,7 @@ func (s *Server) readLoop(ws *websocket.Conn) {
 			go s.handleEvent(ws, msg)
 
 		case "CLOSE":
-			s.handleClose(ws, msg)
+			go s.handleClose(ws, msg)
 		}
 	}
 }
