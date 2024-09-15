@@ -15,7 +15,7 @@ type Relay struct {
 
 // NewRelay creates a new relay.
 func New(cfg config.Config) (*Relay, error) {
-	db, err := database.New(cfg.DSN)
+	db, err := database.New(cfg.DSN, cfg.DatabaseConf)
 	if err != nil {
 		return nil, err
 	}

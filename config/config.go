@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/server"
 	"gopkg.in/yaml.v3"
 )
@@ -10,8 +11,9 @@ import (
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
 	ServerConf server.Config `yaml:"server"`
-	DSN        string
-	// TODO ::: db connection pool config
+	DatabaseConf database.Config `yaml:"database"`
+	DSN string
+	
 }
 
 // LoadfromFile loads config from file, databse and env.
