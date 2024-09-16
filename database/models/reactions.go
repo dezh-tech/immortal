@@ -31,7 +31,7 @@ type Reaction struct {
 	E                   types.StringArray `boil:"e" json:"e,omitempty" toml:"e" yaml:"e,omitempty"`
 	P                   types.StringArray `boil:"p" json:"p,omitempty" toml:"p" yaml:"p,omitempty"`
 	A                   types.StringArray `boil:"a" json:"a,omitempty" toml:"a" yaml:"a,omitempty"`
-	Event               types.JSON        `boil:"event" json:"event" toml:"event" yaml:"event"`
+	Event               string            `boil:"event" json:"event" toml:"event" yaml:"event"`
 	K                   types.StringArray `boil:"k" json:"k,omitempty" toml:"k" yaml:"k,omitempty"`
 	CreatedAt           time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt           time.Time         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
@@ -171,27 +171,6 @@ func (w whereHelpertypes_StringArray) IsNotNull() qm.QueryMod {
 	return qmhelper.WhereIsNotNull(w.field)
 }
 
-type whereHelpertypes_JSON struct{ field string }
-
-func (w whereHelpertypes_JSON) EQ(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.EQ, x)
-}
-func (w whereHelpertypes_JSON) NEQ(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
-}
-func (w whereHelpertypes_JSON) LT(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpertypes_JSON) LTE(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpertypes_JSON) GT(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var ReactionWhere = struct {
 	ID                  whereHelperstring
 	TextNotesid         whereHelpernull_String
@@ -199,7 +178,7 @@ var ReactionWhere = struct {
 	E                   whereHelpertypes_StringArray
 	P                   whereHelpertypes_StringArray
 	A                   whereHelpertypes_StringArray
-	Event               whereHelpertypes_JSON
+	Event               whereHelperstring
 	K                   whereHelpertypes_StringArray
 	CreatedAt           whereHelpertime_Time
 	UpdatedAt           whereHelpertime_Time
@@ -211,7 +190,7 @@ var ReactionWhere = struct {
 	E:                   whereHelpertypes_StringArray{field: "\"reactions\".\"e\""},
 	P:                   whereHelpertypes_StringArray{field: "\"reactions\".\"p\""},
 	A:                   whereHelpertypes_StringArray{field: "\"reactions\".\"a\""},
-	Event:               whereHelpertypes_JSON{field: "\"reactions\".\"event\""},
+	Event:               whereHelperstring{field: "\"reactions\".\"event\""},
 	K:                   whereHelpertypes_StringArray{field: "\"reactions\".\"k\""},
 	CreatedAt:           whereHelpertime_Time{field: "\"reactions\".\"created_at\""},
 	UpdatedAt:           whereHelpertime_Time{field: "\"reactions\".\"updated_at\""},

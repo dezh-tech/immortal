@@ -29,7 +29,7 @@ type TextNote struct {
 	E                   types.StringArray `boil:"e" json:"e,omitempty" toml:"e" yaml:"e,omitempty"`
 	P                   types.StringArray `boil:"p" json:"p,omitempty" toml:"p" yaml:"p,omitempty"`
 	Content             null.String       `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	Event               types.JSON        `boil:"event" json:"event" toml:"event" yaml:"event"`
+	Event               string            `boil:"event" json:"event" toml:"event" yaml:"event"`
 	CreatedAt           time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt           time.Time         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt           null.Time         `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
@@ -90,7 +90,7 @@ var TextNoteWhere = struct {
 	E                   whereHelpertypes_StringArray
 	P                   whereHelpertypes_StringArray
 	Content             whereHelpernull_String
-	Event               whereHelpertypes_JSON
+	Event               whereHelperstring
 	CreatedAt           whereHelpertime_Time
 	UpdatedAt           whereHelpertime_Time
 	DeletedAt           whereHelpernull_Time
@@ -100,7 +100,7 @@ var TextNoteWhere = struct {
 	E:                   whereHelpertypes_StringArray{field: "\"text_notes\".\"e\""},
 	P:                   whereHelpertypes_StringArray{field: "\"text_notes\".\"p\""},
 	Content:             whereHelpernull_String{field: "\"text_notes\".\"content\""},
-	Event:               whereHelpertypes_JSON{field: "\"text_notes\".\"event\""},
+	Event:               whereHelperstring{field: "\"text_notes\".\"event\""},
 	CreatedAt:           whereHelpertime_Time{field: "\"text_notes\".\"created_at\""},
 	UpdatedAt:           whereHelpertime_Time{field: "\"text_notes\".\"updated_at\""},
 	DeletedAt:           whereHelpernull_Time{field: "\"text_notes\".\"deleted_at\""},

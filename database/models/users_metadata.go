@@ -29,7 +29,7 @@ type UsersMetadatum struct {
 	UpdatedAt       time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt       null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 	Content         null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	FollowListEvent null.JSON   `boil:"follow_list_event" json:"follow_list_event,omitempty" toml:"follow_list_event" yaml:"follow_list_event,omitempty"`
+	FollowListEvent null.String `boil:"follow_list_event" json:"follow_list_event,omitempty" toml:"follow_list_event" yaml:"follow_list_event,omitempty"`
 
 	R *usersMetadatumR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L usersMetadatumL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -69,44 +69,20 @@ var UsersMetadatumTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_JSON struct{ field string }
-
-func (w whereHelpernull_JSON) EQ(x null.JSON) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_JSON) NEQ(x null.JSON) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_JSON) LT(x null.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_JSON) LTE(x null.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_JSON) GT(x null.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_JSON) GTE(x null.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpernull_JSON) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var UsersMetadatumWhere = struct {
 	PubKey          whereHelperstring
 	CreatedAt       whereHelpertime_Time
 	UpdatedAt       whereHelpertime_Time
 	DeletedAt       whereHelpernull_Time
 	Content         whereHelpernull_String
-	FollowListEvent whereHelpernull_JSON
+	FollowListEvent whereHelpernull_String
 }{
 	PubKey:          whereHelperstring{field: "\"users_metadata\".\"pub_key\""},
 	CreatedAt:       whereHelpertime_Time{field: "\"users_metadata\".\"created_at\""},
 	UpdatedAt:       whereHelpertime_Time{field: "\"users_metadata\".\"updated_at\""},
 	DeletedAt:       whereHelpernull_Time{field: "\"users_metadata\".\"deleted_at\""},
 	Content:         whereHelpernull_String{field: "\"users_metadata\".\"content\""},
-	FollowListEvent: whereHelpernull_JSON{field: "\"users_metadata\".\"follow_list_event\""},
+	FollowListEvent: whereHelpernull_String{field: "\"users_metadata\".\"follow_list_event\""},
 }
 
 // UsersMetadatumRels is where relationship names are stored.

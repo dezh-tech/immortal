@@ -56,7 +56,7 @@ func ParseMessage(message []byte) Message {
 	return e
 }
 
-// Event reperesents a NIP-01 EVENT message.
+// Event represents a NIP-01 EVENT message.
 type Event struct {
 	SubscriptionID string
 	Event          *event.Event
