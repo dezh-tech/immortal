@@ -18,16 +18,16 @@ var upgrader = websocket.Upgrader{
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
-	config    Config
-	conns     map[*websocket.Conn]map[string]filter.Filters
-	connsLock sync.RWMutex
+	config Config
+	conns  map[*websocket.Conn]client
+	mu     sync.RWMutex
 }
 
 func New(cfg Config) *Server {
 	return &Server{
-		config:    cfg,
-		conns:     make(map[*websocket.Conn]map[string]filter.Filters),
-		connsLock: sync.RWMutex{},
+		config: cfg,
+		conns:  make(map[*websocket.Conn]client),
+		mu:     sync.RWMutex{},
 	}
 }
 
@@ -47,70 +47,81 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.connsLock.Lock()
-	s.conns[conn] = make(map[string]filter.Filters)
-	s.connsLock.Unlock()
+	s.mu.Lock()
+	s.conns[conn] = client{
+		subs:    make(map[string]filter.Filters),
+		RWMutex: &sync.RWMutex{},
+	}
+	s.mu.Unlock()
 
 	s.readLoop(conn)
 }
 
 // readLoop reads incoming messages from a client and answer to them.
-func (s *Server) readLoop(ws *websocket.Conn) {
+func (s *Server) readLoop(conn *websocket.Conn) {
 	for {
-		_, buf, err := ws.ReadMessage()
+		_, buf, err := conn.ReadMessage()
 		if err != nil {
+			// clean up closed connection.
+			s.mu.Lock()
+			delete(s.conns, conn)
+			s.mu.Lock()
+
 			break
 		}
 
 		msg := message.ParseMessage(buf)
 		if msg == nil {
-			_ = ws.WriteMessage(1, message.MakeNotice("error: can't parse message."))
+			_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse message."))
 
 			continue
 		}
 
 		switch msg.Type() {
 		case "REQ":
-			go s.handleReq(ws, msg)
+			go s.handleReq(conn, msg)
 
 		case "EVENT":
-			go s.handleEvent(ws, msg)
+			go s.handleEvent(conn, msg)
 
 		case "CLOSE":
-			go s.handleClose(ws, msg)
+			go s.handleClose(conn, msg)
 		}
 	}
 }
 
 // handleReq handles new incoming REQ messages from client.
-func (s *Server) handleReq(ws *websocket.Conn, m message.Message) {
+func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	// TODO::: loadfrom database and sent in first query based on limit.
 	// TODO::: return EOSE.
 	// TODO::: return EVENT messages.
 
 	msg, ok := m.(*message.Req)
 	if !ok {
-		_ = ws.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
+		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
 
 		return
 	}
 
-	s.connsLock.Lock()
-	defer s.connsLock.Unlock()
+	s.mu.Lock()
 
-	subs, ok := s.conns[ws]
+	client, ok := s.conns[conn]
 	if !ok {
-		_ = ws.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
-			ws.RemoteAddr())))
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
+			conn.RemoteAddr())))
 
 		return
 	}
 
-	subs[msg.SubscriptionID] = msg.Filters
+	client.RLock()
+	client.subs[msg.SubscriptionID] = msg.Filters
+	client.RUnlock()
+
+	s.mu.Unlock()
 }
 
 // handleEvent handles new incoming EVENT messages from client.
-func (s *Server) handleEvent(ws *websocket.Conn, m message.Message) {
+func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	msg, ok := m.(*message.Event)
 	if !ok {
 		okm := message.MakeOK(false,
@@ -118,7 +129,7 @@ func (s *Server) handleEvent(ws *websocket.Conn, m message.Message) {
 			"error: can't parse EVENT message.",
 		)
 
-		_ = ws.WriteMessage(1, okm)
+		_ = conn.WriteMessage(1, okm)
 
 		return
 	}
@@ -129,20 +140,22 @@ func (s *Server) handleEvent(ws *websocket.Conn, m message.Message) {
 			"invalid: id or sig is not correct.",
 		)
 
-		_ = ws.WriteMessage(1, okm)
+		_ = conn.WriteMessage(1, okm)
 
 		return
 	}
 
-	_ = ws.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
+	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
-	for conn, subs := range s.conns {
-		for id, filters := range subs {
+	for conn, client := range s.conns {
+		client.Lock()
+		for id, filters := range client.subs {
 			if !filters.Match(msg.Event) {
 				return
 			}
 			_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))
 		}
+		client.Unlock()
 	}
 }
 
@@ -155,10 +168,9 @@ func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
 		return
 	}
 
-	s.connsLock.Lock()
-	defer s.connsLock.Unlock()
+	s.mu.Lock()
 
-	conn, ok := s.conns[ws]
+	client, ok := s.conns[ws]
 	if !ok {
 		_ = ws.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
 			ws.RemoteAddr())))
@@ -166,24 +178,42 @@ func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
 		return
 	}
 
-	delete(conn, msg.String())
-	_ = ws.WriteMessage(1, message.MakeClosed(msg.String(), "ok: closed successfully."))
+	client.Lock()
+	delete(client.subs, msg.String())
+	client.Unlock()
+
+	s.mu.Unlock()
 }
 
 // Stop shutdowns the server gracefully.
 func (s *Server) Stop() error {
-	s.connsLock.Lock()
-	defer s.connsLock.Unlock()
+	s.mu.Lock()
 
-	for wsConn, subs := range s.conns {
+	for wsConn, client := range s.conns {
+		client.Lock()
 		// close all subscriptions.
-		for id := range subs {
-			_ = wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdowning the relay."))
+		for id := range client.subs {
+			delete(client.subs, id)
+
+			err := wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdowning the relay."))
+			if err != nil {
+				return fmt.Errorf("error: closing subscription: %s, connection: %s, error: %s",
+					id, wsConn.RemoteAddr(), err.Error())
+			}
 		}
 
 		// close connection.
-		_ = wsConn.Close()
+		delete(s.conns, wsConn)
+		err := wsConn.Close()
+		if err != nil {
+			return fmt.Errorf("error: closing connection: %s, error: %s",
+				wsConn.RemoteAddr(), err.Error())
+		}
+
+		client.Unlock()
 	}
+
+	s.mu.Unlock()
 
 	return nil
 }
