@@ -77,7 +77,7 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 			// clean up closed connection.
 			s.mu.Lock()
 			delete(s.conns, conn)
-			s.mu.Lock()
+			s.mu.Unlock()
 
 			break
 		}
@@ -117,6 +117,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	}
 
 	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	client, ok := s.conns[conn]
 	if !ok {
@@ -126,11 +127,9 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	client.RLock()
+	client.Lock()
 	client.subs[msg.SubscriptionID] = msg.Filters
-	client.RUnlock()
-
-	s.mu.Unlock()
+	client.Unlock()
 }
 
 // handleEvent handles new incoming EVENT messages from client.
@@ -150,6 +149,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	eID := msg.Event.GetRawID()
 
 	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	if s.knownEvents.Test(eID[:]) {
 		okm := message.MakeOK(true, msg.Event.ID, "")
@@ -169,29 +169,25 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if !msg.Event.Kind.IsEphemeral() {
-		// send to be written in database.
-		return // TODO::: remove me.
-	}
+	// if !msg.Event.Kind.IsEphemeral() {
+	// 	// send to be written in database.
+	// 	return // TODO::: remove me.
+	// }
 
 	s.knownEvents.Add(eID[:])
 
 	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
 	for conn, client := range s.conns {
-		go func() {
-			client.Lock()
-			for id, filters := range client.subs {
-				if !filters.Match(msg.Event) {
-					return
-				}
-				_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))
+		client.Lock()
+		for id, filters := range client.subs {
+			if !filters.Match(msg.Event) {
+				return
 			}
-			client.Unlock()
-		}()
+			_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))
+		}
+		client.Unlock()
 	}
-
-	s.mu.RUnlock()
 }
 
 // handleClose handles new incoming CLOSE messages from client.
@@ -203,7 +199,8 @@ func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
 		return
 	}
 
-	s.mu.Lock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	client, ok := s.conns[ws]
 	if !ok {
@@ -216,13 +213,12 @@ func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
 	client.Lock()
 	delete(client.subs, msg.String())
 	client.Unlock()
-
-	s.mu.Unlock()
 }
 
 // Stop shutdowns the server gracefully.
 func (s *Server) Stop() error {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	for wsConn, client := range s.conns {
 		client.Lock()
@@ -258,8 +254,6 @@ func (s *Server) Stop() error {
 	if err != nil {
 		return fmt.Errorf("error: writing bloom filter to disck: %s", err.Error())
 	}
-
-	s.mu.Unlock()
 
 	return nil
 }
