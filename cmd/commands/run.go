@@ -21,7 +21,7 @@ func HandleRun(args []string) {
 		ExitOnError(err)
 	}
 
-	r, err := relay.New(*cfg)
+	r, err := relay.New(cfg)
 	if err != nil {
 		ExitOnError(err)
 	}

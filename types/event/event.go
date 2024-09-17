@@ -72,13 +72,13 @@ func (e *Event) Serialize() []byte {
 	return dst
 }
 
-// IsValid function validats an event Signature and ID.
-func (e *Event) IsValid() bool {
-	id := sha256.Sum256(e.Serialize())
-	if hex.EncodeToString(id[:]) != e.ID {
-		return false
-	}
+// GetID calculates ID of a given event.
+func (e *Event) GetRawID() [32]byte {
+	return sha256.Sum256(e.Serialize())
+}
 
+// IsValid function validats an event Signature and ID.
+func (e *Event) IsValid(id [32]byte) bool {
 	pk, err := hex.DecodeString(e.PublicKey)
 	if err != nil {
 		return false

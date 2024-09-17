@@ -140,7 +140,7 @@ func TestEvent(t *testing.T) {
 	t.Run("CheckSig", func(t *testing.T) {
 		for _, tc := range testCases {
 			if tc.IsValidData {
-				isValid := tc.EventObject.IsValid()
+				isValid := tc.EventObject.IsValid(tc.EventObject.GetRawID())
 				if tc.IsValidSig {
 					assert.True(t, isValid, tc.Note)
 

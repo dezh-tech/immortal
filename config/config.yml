@@ -6,9 +6,14 @@
 # server contains information about websocket server.
 server:
   # bind is the IP address to be bind and listen on.
+  # default if local host.
   bind: 127.0.0.1
   # port is websocket port to be listen on.
+  # default is 7777.
   port: 7777
+  # stored_bloom_size is the size of bloom filter to check and avoid trying to store existing events.
+  # default is 1M events.
+  stored_bloom_size: 1000000
 
 # Database settings.
 database:
