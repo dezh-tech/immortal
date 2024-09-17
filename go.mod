@@ -3,6 +3,7 @@ module github.com/dezh-tech/immortal
 go 1.22.5
 
 require (
+	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gorilla/websocket v1.5.3
@@ -17,6 +18,7 @@ require (
 )
 
 require (
+	github.com/bits-and-blooms/bitset v1.14.3 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/crypto/blake256 v1.0.0 // indirect

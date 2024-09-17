@@ -14,14 +14,14 @@ type Relay struct {
 }
 
 // NewRelay creates a new relay.
-func New(cfg config.Config) (*Relay, error) {
+func New(cfg *config.Config) (*Relay, error) {
 	db, err := database.New(cfg.DatabaseConf)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Relay{
-		config:   cfg,
+		config:   *cfg,
 		server:   server.New(cfg.ServerConf),
 		database: db,
 	}, nil

@@ -6,20 +6,32 @@
 # server contains information about websocket server.
 server:
   # bind is the IP address to be bind and listen on.
-  bind: 127.0.0.1
+  # default if local host.
+  bind: "127.0.0.1"
   # port is websocket port to be listen on.
+  # default is 7777.
   port: 7777
+  # known_bloom_size is the size of bloom filter to check and avoid trying to store/broadcast existing events.
+  # default is 1M events.
+  known_bloom_size: 1000000
+  # bloom_backup_path is the path to store bloom filter when relay shutdown.
+  # default is immo_bloom_backup.
+  bloom_backup_path: "immo_bloom_backup"
 
-# Database settings.
+# database contains details of database connections and limitations.
 database:
-  # Maximum number of open database connections.
+  # max_open_conn is the number of open database connections.
+  # default is 20 open database connections.
   max_open_conn: 20
 
   # Maximum number of idle connections in the pool.
+  # default is 10 idle connections in the pool.
   max_idle_conn: 10
 
-  # Maximum time an idle connection can stay in the pool.
-  max_idle_conn_time: 5m
+  # max_idle_conn_time is maximum time that an idle connection can stay in the pool.
+  # default is 5 minutes.
+  max_idle_conn_time: "5m"
 
-  # Maximum lifetime of a database connection.
-  max_conn_life_time: 1h
+  # max_conn_life_time is maximum lifetime of a database connection.
+  # default is 1 hour.
+  max_conn_life_time: "1h"
