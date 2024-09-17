@@ -21,14 +21,14 @@ var upgrader = websocket.Upgrader{
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
-	storedEvents *bloom.BloomFilter
-	config       Config
-	conns        map[*websocket.Conn]clientState
-	mu           sync.RWMutex
+	knownEvents *bloom.BloomFilter
+	config      Config
+	conns       map[*websocket.Conn]clientState
+	mu          sync.RWMutex
 }
 
 func New(cfg Config) *Server {
-	seb := bloom.NewWithEstimates(cfg.StoredBloomSize, 0.9)
+	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 	f, err := os.Open(cfg.BloomBackupPath)
 	if err == nil {
 		w := bufio.NewReader(f)
@@ -36,10 +36,10 @@ func New(cfg Config) *Server {
 	}
 
 	return &Server{
-		config:       cfg,
-		storedEvents: seb,
-		conns:        make(map[*websocket.Conn]clientState),
-		mu:           sync.RWMutex{},
+		config:      cfg,
+		knownEvents: seb,
+		conns:       make(map[*websocket.Conn]clientState),
+		mu:          sync.RWMutex{},
 	}
 }
 
@@ -151,7 +151,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	s.mu.RLock()
 
-	if s.storedEvents.Test(eID[:]) {
+	if s.knownEvents.Test(eID[:]) {
 		okm := message.MakeOK(true, msg.Event.ID, "")
 		_ = conn.WriteMessage(1, okm)
 
@@ -174,7 +174,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return // TODO::: remove me.
 	}
 
-	s.storedEvents.Add(eID[:])
+	s.knownEvents.Add(eID[:])
 
 	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
@@ -254,7 +254,7 @@ func (s *Server) Stop() error {
 	}
 
 	w := bufio.NewWriter(f)
-	_, err = s.storedEvents.WriteTo(w)
+	_, err = s.knownEvents.WriteTo(w)
 	if err != nil {
 		return fmt.Errorf("error: writing bloom filter to disck: %s", err.Error())
 	}
