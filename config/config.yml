@@ -14,6 +14,9 @@ server:
   # stored_bloom_size is the size of bloom filter to check and avoid trying to store existing events.
   # default is 1M events.
   stored_bloom_size: 1000000
+  # bloom_backup_path is the path to store bloom filter when relay shutdown.
+  # default is immo_bloom_backup.
+  bloom_backup_path: immo_bloom_backup
 
 # Database settings.
 database:
