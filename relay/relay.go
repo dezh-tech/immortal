@@ -20,7 +20,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	s, err := server.New(cfg.ServerConf)
+	s, err := server.New(cfg.ServerConf, db)
 	if err != nil {
 		return nil, err
 	}

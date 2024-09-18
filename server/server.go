@@ -10,6 +10,8 @@ import (
 	"sync"
 
 	"github.com/bits-and-blooms/bloom/v3"
+	"github.com/dezh-tech/immortal/database"
+	"github.com/dezh-tech/immortal/handlers"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
@@ -21,13 +23,14 @@ var upgrader = websocket.Upgrader{
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
-	knownEvents *bloom.BloomFilter
-	config      Config
-	conns       map[*websocket.Conn]clientState
-	mu          sync.RWMutex
+	knownEvents  *bloom.BloomFilter
+	config       Config
+	conns        map[*websocket.Conn]clientState
+	mu           sync.RWMutex
+	eventHandler *handlers.EventHandler
 }
 
-func New(cfg Config) (*Server, error) {
+func New(cfg Config, db *database.Database) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
 	f, err := os.Open(cfg.BloomBackupPath)
@@ -40,14 +43,15 @@ func New(cfg Config) (*Server, error) {
 	}
 
 	return &Server{
-		config:      cfg,
-		knownEvents: seb,
-		conns:       make(map[*websocket.Conn]clientState),
-		mu:          sync.RWMutex{},
+		config:       cfg,
+		knownEvents:  seb,
+		conns:        make(map[*websocket.Conn]clientState),
+		mu:           sync.RWMutex{},
+		eventHandler: handlers.New(db),
 	}, nil
 }
 
-// Start strats a new server instance.
+// Start starts a new server instance.
 func (s *Server) Start() error {
 	http.Handle("/", s)
 	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint
@@ -108,7 +112,7 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 // handleReq handles new incoming REQ messages from client.
 func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
-	// TODO::: loadfrom database and sent in first query based on limit.
+	// TODO::: load from database and sent in first query based on limit.
 	// TODO::: return EOSE.
 	// TODO::: return EVENT messages.
 	// TODO::: use mu properly.
@@ -173,6 +177,19 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
+	// TODO ::: check ephemeral events condition
+	err := s.eventHandler.Handle(msg.Event)
+	if err != nil {
+		okm := message.MakeOK(false,
+			msg.Event.ID,
+			err.Error(),
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		return
+	}
+
 	s.knownEvents.Add(eID[:])
 
 	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
@@ -226,7 +243,7 @@ func (s *Server) Stop() error {
 		for id := range client.subs {
 			delete(client.subs, id)
 
-			err := wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdowning the relay."))
+			err := wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdown the relay."))
 			if err != nil {
 				return fmt.Errorf("error: closing subscription: %s, connection: %s, error: %s",
 					id, wsConn.RemoteAddr(), err.Error())

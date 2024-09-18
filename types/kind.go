@@ -16,7 +16,7 @@ const (
 	KindProfileMetadata             Kind = 0
 	KindTextNote                    Kind = 1
 	KindRecommendServer             Kind = 2
-	KindContactList                 Kind = 3
+	KindFollowList                  Kind = 3
 	KindEncryptedDirectMessage      Kind = 4
 	KindDeletion                    Kind = 5
 	KindRepost                      Kind = 6
