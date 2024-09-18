@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	_ "github.com/lib/pq" // no-lint
+	_ "github.com/lib/pq" //nolint
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -37,4 +37,8 @@ func New(cfg Config) (*Database, error) {
 	return &Database{
 		db: db,
 	}, nil
+}
+
+func (db *Database) Stop() error {
+	return db.db.Close()
 }

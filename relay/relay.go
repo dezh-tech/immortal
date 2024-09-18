@@ -20,9 +20,14 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
+	s, err := server.New(cfg.ServerConf)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Relay{
 		config:   *cfg,
-		server:   server.New(cfg.ServerConf),
+		server:   s,
 		database: db,
 	}, nil
 }
@@ -34,5 +39,9 @@ func (r *Relay) Start() error {
 
 // Stop shutdowns the relay and its children gracefully.
 func (r *Relay) Stop() error {
-	return r.server.Stop()
+	if err := r.server.Stop(); err != nil {
+		return err
+	}
+
+	return r.database.Stop()
 }

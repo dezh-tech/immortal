@@ -27,12 +27,16 @@ type Server struct {
 	mu          sync.RWMutex
 }
 
-func New(cfg Config) *Server {
+func New(cfg Config) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
+
 	f, err := os.Open(cfg.BloomBackupPath)
 	if err == nil {
 		w := bufio.NewReader(f)
-		_, _ = seb.ReadFrom(w)
+		_, err = seb.ReadFrom(w)
+		if err != nil {
+			return nil, fmt.Errorf("server: loading bloom: %s", err.Error())
+		}
 	}
 
 	return &Server{
@@ -40,7 +44,7 @@ func New(cfg Config) *Server {
 		knownEvents: seb,
 		conns:       make(map[*websocket.Conn]clientState),
 		mu:          sync.RWMutex{},
-	}
+	}, nil
 }
 
 // Start strats a new server instance.
@@ -148,8 +152,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	eID := msg.Event.GetRawID()
 
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	if s.knownEvents.Test(eID[:]) {
 		okm := message.MakeOK(true, msg.Event.ID, "")
@@ -169,15 +173,11 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	// if !msg.Event.Kind.IsEphemeral() {
-	// 	// send to be written in database.
-	// 	return // TODO::: remove me.
-	// }
-
 	s.knownEvents.Add(eID[:])
 
 	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
+	// todo::: can we run goroutines per client?
 	for conn, client := range s.conns {
 		client.Lock()
 		for id, filters := range client.subs {
@@ -191,10 +191,10 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 }
 
 // handleClose handles new incoming CLOSE messages from client.
-func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
+func (s *Server) handleClose(conn *websocket.Conn, m message.Message) {
 	msg, ok := m.(*message.Close)
 	if !ok {
-		_ = ws.WriteMessage(1, message.MakeNotice("error: can't parse CLOSE message."))
+		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse CLOSE message."))
 
 		return
 	}
@@ -202,10 +202,10 @@ func (s *Server) handleClose(ws *websocket.Conn, m message.Message) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	client, ok := s.conns[ws]
+	client, ok := s.conns[conn]
 	if !ok {
-		_ = ws.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
-			ws.RemoteAddr())))
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
+			conn.RemoteAddr())))
 
 		return
 	}
