@@ -17,7 +17,7 @@ func New(db *database.Database) *EventHandler {
 }
 
 func (eh *EventHandler) Handle(e *event.Event) error {
-	switch e.Kind {
+	switch e.Kind { //nolint
 	case types.KindTextNote:
 		return eh.handleTextNote(e)
 	case types.KindReaction:
