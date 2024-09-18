@@ -42,5 +42,6 @@ func (r *Relay) Stop() error {
 	if err := r.server.Stop(); err != nil {
 		return err
 	}
+
 	return r.database.Stop()
 }

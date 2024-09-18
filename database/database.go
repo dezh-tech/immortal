@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" //nolint
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
