@@ -16,7 +16,7 @@ func HandleRun(args []string) {
 		ExitOnError(errors.New("at least 1 arguments expected\nuse help command for more information"))
 	}
 
-	cfg, err := config.LoadfromFile(args[2])
+	cfg, err := config.LoadFromFile(args[2])
 	if err != nil {
 		ExitOnError(err)
 	}

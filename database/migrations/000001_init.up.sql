@@ -1,24 +1,24 @@
 BEGIN;
 
 CREATE TABLE public.follow_list (
-    follower CHAR(32),  -- Optional, so no NOT NULL
-    following CHAR(32),  -- Optional, so no NOT NULL
+    follower CHAR(64),  -- Optional, so no NOT NULL
+    following CHAR(64),  -- Optional, so no NOT NULL
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- You may need a trigger for automatic updates
     deleted_at TIMESTAMP,
-    PRIMARY KEY (follower, following),
-    CONSTRAINT follower_following UNIQUE (follower, following)
+    PRIMARY KEY (follower, following)
 );
 
 CREATE TABLE public.reactions (
-    id UUID NOT NULL,
-    text_notesid UUID,  -- Optional, so no NOT NULL
-    users_metadatapub_key CHAR(32),  -- Optional, so no NOT NULL
-    e TEXT[],  -- Assuming e is an array of text
-    p TEXT[],  -- Assuming p is an array of text
-    a TEXT[],  -- Assuming a is an array of text
-    event JSONB NOT NULL,
-    k TEXT[],  -- Assuming k is an array of text
+    id CHAR(64) NOT NULL,
+    text_notesid CHAR(64),  -- Optional, so no NOT NULL
+    users_metadatapub_key CHAR(64),  -- Optional, so no NOT NULL
+    e_tags TEXT[],  -- Assuming e is an array of text
+    p_tags TEXT[],  -- Assuming p is an array of text
+    a_tags TEXT[],  -- Assuming a is an array of text
+    k_tags TEXT[],  -- Assuming k is an array of text
+    event TEXT NOT NULL,
+    event_created_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
@@ -26,48 +26,46 @@ CREATE TABLE public.reactions (
 );
 
 CREATE TABLE public.text_notes (
-    id UUID NOT NULL,
-    e TEXT[],  -- Assuming e is an array of text
-    p TEXT[],  -- Assuming p is an array of text
+    id CHAR(64) NOT NULL,
+    e_tags TEXT[],  -- Assuming e is an array of text
+    p_tags TEXT[],  -- Assuming p is an array of text
     content VARCHAR(65535),
-    event JSONB NOT NULL UNIQUE,
+    event TEXT NOT NULL UNIQUE,
+    event_created_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
-    users_metadatapub_key CHAR(32),  -- Optional, so no NOT NULL
+    users_metadatapub_key CHAR(64),  -- Optional, so no NOT NULL
     PRIMARY KEY (id)
 );
 
 CREATE TABLE public.users_metadata (
-    pub_key CHAR(32) NOT NULL,
+    pub_key CHAR(64) NOT NULL,
+    event_created_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
-    content VARCHAR(255),
-    follow_list_event JSONB,
+    content VARCHAR(65535),
+    follow_list_event TEXT,
     PRIMARY KEY (pub_key)
 );
 
 -- Index for better query performance
 CREATE INDEX reactions_text_notesid ON public.reactions (text_notesid);
 
--- Foreign key constraints with optional references
-ALTER TABLE public.reactions
-    ADD CONSTRAINT FKreactions_users_metadata
-    FOREIGN KEY (users_metadatapub_key) REFERENCES public.users_metadata (pub_key);
+-- Index for deleted entities in follow_list
+CREATE INDEX follow_list_deleted_at_idx ON public.follow_list (deleted_at);
 
-ALTER TABLE public.follow_list
-    ADD CONSTRAINT FKfollow_list_following
-    FOREIGN KEY (following) REFERENCES public.users_metadata (pub_key),
-    ADD CONSTRAINT FKfollow_list_follower
-    FOREIGN KEY (follower) REFERENCES public.users_metadata (pub_key);
+-- Index for deleted entities in reactions
+CREATE INDEX reactions_deleted_at_idx ON public.reactions (deleted_at);
 
-ALTER TABLE public.reactions
-    ADD CONSTRAINT FKreactions_text_notes
-    FOREIGN KEY (text_notesid) REFERENCES public.text_notes (id);
+-- Index for deleted entities in text_notes
+CREATE INDEX text_notes_deleted_at_idx ON public.text_notes (deleted_at);
 
-ALTER TABLE public.text_notes
-    ADD CONSTRAINT FKtext_notes_users_metadata
-    FOREIGN KEY (users_metadatapub_key) REFERENCES public.users_metadata (pub_key);
+-- Index for deleted entities in users_metadata
+CREATE INDEX users_metadata_deleted_at_idx ON public.users_metadata (deleted_at);
+
+-- Composite index on follow_list by follower and following
+CREATE INDEX idx_follow_list_follower_following ON public.follow_list (follower, following);
 
 COMMIT;

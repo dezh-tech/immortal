@@ -28,14 +28,17 @@ type Reaction struct {
 	ID                  string            `boil:"id" json:"id" toml:"id" yaml:"id"`
 	TextNotesid         null.String       `boil:"text_notesid" json:"text_notesid,omitempty" toml:"text_notesid" yaml:"text_notesid,omitempty"`
 	UsersMetadatapubKey null.String       `boil:"users_metadatapub_key" json:"users_metadatapub_key,omitempty" toml:"users_metadatapub_key" yaml:"users_metadatapub_key,omitempty"`
-	E                   types.StringArray `boil:"e" json:"e,omitempty" toml:"e" yaml:"e,omitempty"`
-	P                   types.StringArray `boil:"p" json:"p,omitempty" toml:"p" yaml:"p,omitempty"`
-	A                   types.StringArray `boil:"a" json:"a,omitempty" toml:"a" yaml:"a,omitempty"`
+	ETags               types.StringArray `boil:"e_tags" json:"e_tags,omitempty" toml:"e_tags" yaml:"e_tags,omitempty"`
+	PTags               types.StringArray `boil:"p_tags" json:"p_tags,omitempty" toml:"p_tags" yaml:"p_tags,omitempty"`
+	ATags               types.StringArray `boil:"a_tags" json:"a_tags,omitempty" toml:"a_tags" yaml:"a_tags,omitempty"`
+	KTags               types.StringArray `boil:"k_tags" json:"k_tags,omitempty" toml:"k_tags" yaml:"k_tags,omitempty"`
 	Event               string            `boil:"event" json:"event" toml:"event" yaml:"event"`
-	K                   types.StringArray `boil:"k" json:"k,omitempty" toml:"k" yaml:"k,omitempty"`
+	EventCreatedAt      time.Time         `boil:"event_created_at" json:"event_created_at" toml:"event_created_at" yaml:"event_created_at"`
 	CreatedAt           time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt           time.Time         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt           null.Time         `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	RTags               types.StringArray `boil:"r_tags" json:"r_tags,omitempty" toml:"r_tags" yaml:"r_tags,omitempty"`
+	Content             null.String       `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
 
 	R *reactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L reactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,52 +48,64 @@ var ReactionColumns = struct {
 	ID                  string
 	TextNotesid         string
 	UsersMetadatapubKey string
-	E                   string
-	P                   string
-	A                   string
+	ETags               string
+	PTags               string
+	ATags               string
+	KTags               string
 	Event               string
-	K                   string
+	EventCreatedAt      string
 	CreatedAt           string
 	UpdatedAt           string
 	DeletedAt           string
+	RTags               string
+	Content             string
 }{
 	ID:                  "id",
 	TextNotesid:         "text_notesid",
 	UsersMetadatapubKey: "users_metadatapub_key",
-	E:                   "e",
-	P:                   "p",
-	A:                   "a",
+	ETags:               "e_tags",
+	PTags:               "p_tags",
+	ATags:               "a_tags",
+	KTags:               "k_tags",
 	Event:               "event",
-	K:                   "k",
+	EventCreatedAt:      "event_created_at",
 	CreatedAt:           "created_at",
 	UpdatedAt:           "updated_at",
 	DeletedAt:           "deleted_at",
+	RTags:               "r_tags",
+	Content:             "content",
 }
 
 var ReactionTableColumns = struct {
 	ID                  string
 	TextNotesid         string
 	UsersMetadatapubKey string
-	E                   string
-	P                   string
-	A                   string
+	ETags               string
+	PTags               string
+	ATags               string
+	KTags               string
 	Event               string
-	K                   string
+	EventCreatedAt      string
 	CreatedAt           string
 	UpdatedAt           string
 	DeletedAt           string
+	RTags               string
+	Content             string
 }{
 	ID:                  "reactions.id",
 	TextNotesid:         "reactions.text_notesid",
 	UsersMetadatapubKey: "reactions.users_metadatapub_key",
-	E:                   "reactions.e",
-	P:                   "reactions.p",
-	A:                   "reactions.a",
+	ETags:               "reactions.e_tags",
+	PTags:               "reactions.p_tags",
+	ATags:               "reactions.a_tags",
+	KTags:               "reactions.k_tags",
 	Event:               "reactions.event",
-	K:                   "reactions.k",
+	EventCreatedAt:      "reactions.event_created_at",
 	CreatedAt:           "reactions.created_at",
 	UpdatedAt:           "reactions.updated_at",
 	DeletedAt:           "reactions.deleted_at",
+	RTags:               "reactions.r_tags",
+	Content:             "reactions.content",
 }
 
 // Generated where
@@ -175,41 +190,40 @@ var ReactionWhere = struct {
 	ID                  whereHelperstring
 	TextNotesid         whereHelpernull_String
 	UsersMetadatapubKey whereHelpernull_String
-	E                   whereHelpertypes_StringArray
-	P                   whereHelpertypes_StringArray
-	A                   whereHelpertypes_StringArray
+	ETags               whereHelpertypes_StringArray
+	PTags               whereHelpertypes_StringArray
+	ATags               whereHelpertypes_StringArray
+	KTags               whereHelpertypes_StringArray
 	Event               whereHelperstring
-	K                   whereHelpertypes_StringArray
+	EventCreatedAt      whereHelpertime_Time
 	CreatedAt           whereHelpertime_Time
 	UpdatedAt           whereHelpertime_Time
 	DeletedAt           whereHelpernull_Time
+	RTags               whereHelpertypes_StringArray
+	Content             whereHelpernull_String
 }{
 	ID:                  whereHelperstring{field: "\"reactions\".\"id\""},
 	TextNotesid:         whereHelpernull_String{field: "\"reactions\".\"text_notesid\""},
 	UsersMetadatapubKey: whereHelpernull_String{field: "\"reactions\".\"users_metadatapub_key\""},
-	E:                   whereHelpertypes_StringArray{field: "\"reactions\".\"e\""},
-	P:                   whereHelpertypes_StringArray{field: "\"reactions\".\"p\""},
-	A:                   whereHelpertypes_StringArray{field: "\"reactions\".\"a\""},
+	ETags:               whereHelpertypes_StringArray{field: "\"reactions\".\"e_tags\""},
+	PTags:               whereHelpertypes_StringArray{field: "\"reactions\".\"p_tags\""},
+	ATags:               whereHelpertypes_StringArray{field: "\"reactions\".\"a_tags\""},
+	KTags:               whereHelpertypes_StringArray{field: "\"reactions\".\"k_tags\""},
 	Event:               whereHelperstring{field: "\"reactions\".\"event\""},
-	K:                   whereHelpertypes_StringArray{field: "\"reactions\".\"k\""},
+	EventCreatedAt:      whereHelpertime_Time{field: "\"reactions\".\"event_created_at\""},
 	CreatedAt:           whereHelpertime_Time{field: "\"reactions\".\"created_at\""},
 	UpdatedAt:           whereHelpertime_Time{field: "\"reactions\".\"updated_at\""},
 	DeletedAt:           whereHelpernull_Time{field: "\"reactions\".\"deleted_at\""},
+	RTags:               whereHelpertypes_StringArray{field: "\"reactions\".\"r_tags\""},
+	Content:             whereHelpernull_String{field: "\"reactions\".\"content\""},
 }
 
 // ReactionRels is where relationship names are stored.
 var ReactionRels = struct {
-	TextNotesidTextNote               string
-	UsersMetadatapubKeyUsersMetadatum string
-}{
-	TextNotesidTextNote:               "TextNotesidTextNote",
-	UsersMetadatapubKeyUsersMetadatum: "UsersMetadatapubKeyUsersMetadatum",
-}
+}{}
 
 // reactionR is where relationships are stored.
 type reactionR struct {
-	TextNotesidTextNote               *TextNote       `boil:"TextNotesidTextNote" json:"TextNotesidTextNote" toml:"TextNotesidTextNote" yaml:"TextNotesidTextNote"`
-	UsersMetadatapubKeyUsersMetadatum *UsersMetadatum `boil:"UsersMetadatapubKeyUsersMetadatum" json:"UsersMetadatapubKeyUsersMetadatum" toml:"UsersMetadatapubKeyUsersMetadatum" yaml:"UsersMetadatapubKeyUsersMetadatum"`
 }
 
 // NewStruct creates a new relationship struct
@@ -217,27 +231,13 @@ func (*reactionR) NewStruct() *reactionR {
 	return &reactionR{}
 }
 
-func (r *reactionR) GetTextNotesidTextNote() *TextNote {
-	if r == nil {
-		return nil
-	}
-	return r.TextNotesidTextNote
-}
-
-func (r *reactionR) GetUsersMetadatapubKeyUsersMetadatum() *UsersMetadatum {
-	if r == nil {
-		return nil
-	}
-	return r.UsersMetadatapubKeyUsersMetadatum
-}
-
 // reactionL is where Load methods for each relationship are stored.
 type reactionL struct{}
 
 var (
-	reactionAllColumns            = []string{"id", "text_notesid", "users_metadatapub_key", "e", "p", "a", "event", "k", "created_at", "updated_at", "deleted_at"}
-	reactionColumnsWithoutDefault = []string{"id", "event"}
-	reactionColumnsWithDefault    = []string{"text_notesid", "users_metadatapub_key", "e", "p", "a", "k", "created_at", "updated_at", "deleted_at"}
+	reactionAllColumns            = []string{"id", "text_notesid", "users_metadatapub_key", "e_tags", "p_tags", "a_tags", "k_tags", "event", "event_created_at", "created_at", "updated_at", "deleted_at", "r_tags", "content"}
+	reactionColumnsWithoutDefault = []string{"id", "event", "event_created_at"}
+	reactionColumnsWithDefault    = []string{"text_notesid", "users_metadatapub_key", "e_tags", "p_tags", "a_tags", "k_tags", "created_at", "updated_at", "deleted_at", "r_tags", "content"}
 	reactionPrimaryKeyColumns     = []string{"id"}
 	reactionGeneratedColumns      = []string{}
 )
@@ -565,468 +565,6 @@ func (q reactionQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (b
 	}
 
 	return count > 0, nil
-}
-
-// TextNotesidTextNote pointed to by the foreign key.
-func (o *Reaction) TextNotesidTextNote(mods ...qm.QueryMod) textNoteQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.TextNotesid),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return TextNotes(queryMods...)
-}
-
-// UsersMetadatapubKeyUsersMetadatum pointed to by the foreign key.
-func (o *Reaction) UsersMetadatapubKeyUsersMetadatum(mods ...qm.QueryMod) usersMetadatumQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"pub_key\" = ?", o.UsersMetadatapubKey),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return UsersMetadata(queryMods...)
-}
-
-// LoadTextNotesidTextNote allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (reactionL) LoadTextNotesidTextNote(ctx context.Context, e boil.ContextExecutor, singular bool, maybeReaction interface{}, mods queries.Applicator) error {
-	var slice []*Reaction
-	var object *Reaction
-
-	if singular {
-		var ok bool
-		object, ok = maybeReaction.(*Reaction)
-		if !ok {
-			object = new(Reaction)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeReaction)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeReaction))
-			}
-		}
-	} else {
-		s, ok := maybeReaction.(*[]*Reaction)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeReaction)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeReaction))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &reactionR{}
-		}
-		if !queries.IsNil(object.TextNotesid) {
-			args[object.TextNotesid] = struct{}{}
-		}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &reactionR{}
-			}
-
-			if !queries.IsNil(obj.TextNotesid) {
-				args[obj.TextNotesid] = struct{}{}
-			}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`text_notes`),
-		qm.WhereIn(`text_notes.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load TextNote")
-	}
-
-	var resultSlice []*TextNote
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice TextNote")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for text_notes")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for text_notes")
-	}
-
-	if len(textNoteAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.TextNotesidTextNote = foreign
-		if foreign.R == nil {
-			foreign.R = &textNoteR{}
-		}
-		foreign.R.TextNotesidReactions = append(foreign.R.TextNotesidReactions, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if queries.Equal(local.TextNotesid, foreign.ID) {
-				local.R.TextNotesidTextNote = foreign
-				if foreign.R == nil {
-					foreign.R = &textNoteR{}
-				}
-				foreign.R.TextNotesidReactions = append(foreign.R.TextNotesidReactions, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadUsersMetadatapubKeyUsersMetadatum allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (reactionL) LoadUsersMetadatapubKeyUsersMetadatum(ctx context.Context, e boil.ContextExecutor, singular bool, maybeReaction interface{}, mods queries.Applicator) error {
-	var slice []*Reaction
-	var object *Reaction
-
-	if singular {
-		var ok bool
-		object, ok = maybeReaction.(*Reaction)
-		if !ok {
-			object = new(Reaction)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeReaction)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeReaction))
-			}
-		}
-	} else {
-		s, ok := maybeReaction.(*[]*Reaction)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeReaction)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeReaction))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &reactionR{}
-		}
-		if !queries.IsNil(object.UsersMetadatapubKey) {
-			args[object.UsersMetadatapubKey] = struct{}{}
-		}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &reactionR{}
-			}
-
-			if !queries.IsNil(obj.UsersMetadatapubKey) {
-				args[obj.UsersMetadatapubKey] = struct{}{}
-			}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`users_metadata`),
-		qm.WhereIn(`users_metadata.pub_key in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load UsersMetadatum")
-	}
-
-	var resultSlice []*UsersMetadatum
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice UsersMetadatum")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for users_metadata")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users_metadata")
-	}
-
-	if len(usersMetadatumAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.UsersMetadatapubKeyUsersMetadatum = foreign
-		if foreign.R == nil {
-			foreign.R = &usersMetadatumR{}
-		}
-		foreign.R.UsersMetadatapubKeyReactions = append(foreign.R.UsersMetadatapubKeyReactions, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if queries.Equal(local.UsersMetadatapubKey, foreign.PubKey) {
-				local.R.UsersMetadatapubKeyUsersMetadatum = foreign
-				if foreign.R == nil {
-					foreign.R = &usersMetadatumR{}
-				}
-				foreign.R.UsersMetadatapubKeyReactions = append(foreign.R.UsersMetadatapubKeyReactions, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// SetTextNotesidTextNoteG of the reaction to the related item.
-// Sets o.R.TextNotesidTextNote to related.
-// Adds o to related.R.TextNotesidReactions.
-// Uses the global database handle.
-func (o *Reaction) SetTextNotesidTextNoteG(ctx context.Context, insert bool, related *TextNote) error {
-	return o.SetTextNotesidTextNote(ctx, boil.GetContextDB(), insert, related)
-}
-
-// SetTextNotesidTextNote of the reaction to the related item.
-// Sets o.R.TextNotesidTextNote to related.
-// Adds o to related.R.TextNotesidReactions.
-func (o *Reaction) SetTextNotesidTextNote(ctx context.Context, exec boil.ContextExecutor, insert bool, related *TextNote) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"reactions\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"text_notesid"}),
-		strmangle.WhereClause("\"", "\"", 2, reactionPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	queries.Assign(&o.TextNotesid, related.ID)
-	if o.R == nil {
-		o.R = &reactionR{
-			TextNotesidTextNote: related,
-		}
-	} else {
-		o.R.TextNotesidTextNote = related
-	}
-
-	if related.R == nil {
-		related.R = &textNoteR{
-			TextNotesidReactions: ReactionSlice{o},
-		}
-	} else {
-		related.R.TextNotesidReactions = append(related.R.TextNotesidReactions, o)
-	}
-
-	return nil
-}
-
-// RemoveTextNotesidTextNoteG relationship.
-// Sets o.R.TextNotesidTextNote to nil.
-// Removes o from all passed in related items' relationships struct.
-// Uses the global database handle.
-func (o *Reaction) RemoveTextNotesidTextNoteG(ctx context.Context, related *TextNote) error {
-	return o.RemoveTextNotesidTextNote(ctx, boil.GetContextDB(), related)
-}
-
-// RemoveTextNotesidTextNote relationship.
-// Sets o.R.TextNotesidTextNote to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Reaction) RemoveTextNotesidTextNote(ctx context.Context, exec boil.ContextExecutor, related *TextNote) error {
-	var err error
-
-	queries.SetScanner(&o.TextNotesid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("text_notesid")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.TextNotesidTextNote = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.TextNotesidReactions {
-		if queries.Equal(o.TextNotesid, ri.TextNotesid) {
-			continue
-		}
-
-		ln := len(related.R.TextNotesidReactions)
-		if ln > 1 && i < ln-1 {
-			related.R.TextNotesidReactions[i] = related.R.TextNotesidReactions[ln-1]
-		}
-		related.R.TextNotesidReactions = related.R.TextNotesidReactions[:ln-1]
-		break
-	}
-	return nil
-}
-
-// SetUsersMetadatapubKeyUsersMetadatumG of the reaction to the related item.
-// Sets o.R.UsersMetadatapubKeyUsersMetadatum to related.
-// Adds o to related.R.UsersMetadatapubKeyReactions.
-// Uses the global database handle.
-func (o *Reaction) SetUsersMetadatapubKeyUsersMetadatumG(ctx context.Context, insert bool, related *UsersMetadatum) error {
-	return o.SetUsersMetadatapubKeyUsersMetadatum(ctx, boil.GetContextDB(), insert, related)
-}
-
-// SetUsersMetadatapubKeyUsersMetadatum of the reaction to the related item.
-// Sets o.R.UsersMetadatapubKeyUsersMetadatum to related.
-// Adds o to related.R.UsersMetadatapubKeyReactions.
-func (o *Reaction) SetUsersMetadatapubKeyUsersMetadatum(ctx context.Context, exec boil.ContextExecutor, insert bool, related *UsersMetadatum) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"reactions\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"users_metadatapub_key"}),
-		strmangle.WhereClause("\"", "\"", 2, reactionPrimaryKeyColumns),
-	)
-	values := []interface{}{related.PubKey, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	queries.Assign(&o.UsersMetadatapubKey, related.PubKey)
-	if o.R == nil {
-		o.R = &reactionR{
-			UsersMetadatapubKeyUsersMetadatum: related,
-		}
-	} else {
-		o.R.UsersMetadatapubKeyUsersMetadatum = related
-	}
-
-	if related.R == nil {
-		related.R = &usersMetadatumR{
-			UsersMetadatapubKeyReactions: ReactionSlice{o},
-		}
-	} else {
-		related.R.UsersMetadatapubKeyReactions = append(related.R.UsersMetadatapubKeyReactions, o)
-	}
-
-	return nil
-}
-
-// RemoveUsersMetadatapubKeyUsersMetadatumG relationship.
-// Sets o.R.UsersMetadatapubKeyUsersMetadatum to nil.
-// Removes o from all passed in related items' relationships struct.
-// Uses the global database handle.
-func (o *Reaction) RemoveUsersMetadatapubKeyUsersMetadatumG(ctx context.Context, related *UsersMetadatum) error {
-	return o.RemoveUsersMetadatapubKeyUsersMetadatum(ctx, boil.GetContextDB(), related)
-}
-
-// RemoveUsersMetadatapubKeyUsersMetadatum relationship.
-// Sets o.R.UsersMetadatapubKeyUsersMetadatum to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Reaction) RemoveUsersMetadatapubKeyUsersMetadatum(ctx context.Context, exec boil.ContextExecutor, related *UsersMetadatum) error {
-	var err error
-
-	queries.SetScanner(&o.UsersMetadatapubKey, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("users_metadatapub_key")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.UsersMetadatapubKeyUsersMetadatum = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.UsersMetadatapubKeyReactions {
-		if queries.Equal(o.UsersMetadatapubKey, ri.UsersMetadatapubKey) {
-			continue
-		}
-
-		ln := len(related.R.UsersMetadatapubKeyReactions)
-		if ln > 1 && i < ln-1 {
-			related.R.UsersMetadatapubKeyReactions[i] = related.R.UsersMetadatapubKeyReactions[ln-1]
-		}
-		related.R.UsersMetadatapubKeyReactions = related.R.UsersMetadatapubKeyReactions[:ln-1]
-		break
-	}
-	return nil
 }
 
 // Reactions retrieves all the records using an executor.

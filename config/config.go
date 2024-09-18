@@ -14,8 +14,8 @@ type Config struct {
 	DatabaseConf database.Config `yaml:"database"`
 }
 
-// LoadfromFile loads config from file, databse and env.
-func LoadfromFile(path string) (*Config, error) {
+// Load fromFile loads config from file, databse and env.
+func LoadFromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, Error{
@@ -34,7 +34,8 @@ func LoadfromFile(path string) (*Config, error) {
 		}
 	}
 
-	config.DatabaseConf.DSN = os.Getenv("IMMO_DB_DSN")
+	config.DatabaseConf.DSN = "postgresql://dev_user:dev_password@localhost:5432/dev_db?sslmode=disable&search_path=public"
+	// fmt.Println(os.Getenv("IMMO_DB_DSN"))
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

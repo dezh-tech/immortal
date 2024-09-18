@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/dezh-tech/immortal/database"
 	dbmodels "github.com/dezh-tech/immortal/database/models"
@@ -33,27 +34,82 @@ func (eh *EventHandler) Handle(e *event.Event) {
 			}
 
 			if t[0] == "e" {
-				t = t[1:]
 				eTags = append(eTags, t[1])
+				continue
 			}
 
 			if t[0] == "p" {
-				t = t[1:]
 				pTags = append(pTags, t[1])
 			}
 		}
-		
+
 		textNote := dbmodels.TextNote{
 			ID:                  e.ID,
 			Content:             null.StringFrom(e.Content),
 			UsersMetadatapubKey: null.StringFrom(e.PublicKey),
+			EventCreatedAt:      time.Unix(e.CreatedAt, 0),
 			Event:               e.String(),
-			E:                   eTags,
-			P:                   pTags,
+			ETags:                   eTags,
+			PTags:                   pTags,
 		}
 		err := textNote.InsertG(context.Background(), boil.Infer())
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
 		}
+	} else if e.Kind == types.KindReaction {
+		eTags := make([]string, 0)
+		pTags := make([]string, 0)
+		aTags := make([]string, 0)
+		kTags := make([]string, 0)
+		rTags := make([]string, 0)
+
+		for _, t := range e.Tags {
+			if len(t) < 2 {
+				continue
+			}
+
+			if t[0] == "e" {
+				eTags = append(eTags, t[1])
+				continue
+			}
+
+			if t[0] == "p" {
+				pTags = append(pTags, t[1])
+				continue
+			}
+
+			if t[0] == "a" {
+				aTags = append(aTags, t[1])
+				continue
+			}
+
+			if t[0] == "k" {
+				kTags = append(kTags, t[1])
+				continue
+			}
+
+			if t[0] == "r" {
+				rTags = append(rTags, t[1])
+			}
+		}
+
+		reaction := dbmodels.Reaction{
+			ID:                  e.ID,
+			UsersMetadatapubKey: null.StringFrom(e.PublicKey),
+			TextNotesid:         null.StringFrom(eTags[len(eTags)-1]),
+			EventCreatedAt:      time.Unix(e.CreatedAt, 0),
+			Event:               e.String(),
+			Content:             null.StringFrom(e.Content),
+			ETags:                   eTags,
+			PTags:                   pTags,
+			ATags:                   aTags,
+			KTags:                   kTags,
+			RTags:                   rTags,
+		}
+		err := reaction.InsertG(context.Background(), boil.Infer())
+		if err != nil {
+			log.Print(err)
+		}
+
 	}
 }
