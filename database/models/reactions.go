@@ -32,13 +32,13 @@ type Reaction struct {
 	PTags               types.StringArray `boil:"p_tags" json:"p_tags,omitempty" toml:"p_tags" yaml:"p_tags,omitempty"`
 	ATags               types.StringArray `boil:"a_tags" json:"a_tags,omitempty" toml:"a_tags" yaml:"a_tags,omitempty"`
 	KTags               types.StringArray `boil:"k_tags" json:"k_tags,omitempty" toml:"k_tags" yaml:"k_tags,omitempty"`
+	RTags               types.StringArray `boil:"r_tags" json:"r_tags,omitempty" toml:"r_tags" yaml:"r_tags,omitempty"`
+	Content             null.String       `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
 	Event               string            `boil:"event" json:"event" toml:"event" yaml:"event"`
 	EventCreatedAt      time.Time         `boil:"event_created_at" json:"event_created_at" toml:"event_created_at" yaml:"event_created_at"`
 	CreatedAt           time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt           time.Time         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt           null.Time         `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	RTags               types.StringArray `boil:"r_tags" json:"r_tags,omitempty" toml:"r_tags" yaml:"r_tags,omitempty"`
-	Content             null.String       `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
 
 	R *reactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L reactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -52,13 +52,13 @@ var ReactionColumns = struct {
 	PTags               string
 	ATags               string
 	KTags               string
+	RTags               string
+	Content             string
 	Event               string
 	EventCreatedAt      string
 	CreatedAt           string
 	UpdatedAt           string
 	DeletedAt           string
-	RTags               string
-	Content             string
 }{
 	ID:                  "id",
 	TextNotesid:         "text_notesid",
@@ -67,13 +67,13 @@ var ReactionColumns = struct {
 	PTags:               "p_tags",
 	ATags:               "a_tags",
 	KTags:               "k_tags",
+	RTags:               "r_tags",
+	Content:             "content",
 	Event:               "event",
 	EventCreatedAt:      "event_created_at",
 	CreatedAt:           "created_at",
 	UpdatedAt:           "updated_at",
 	DeletedAt:           "deleted_at",
-	RTags:               "r_tags",
-	Content:             "content",
 }
 
 var ReactionTableColumns = struct {
@@ -84,13 +84,13 @@ var ReactionTableColumns = struct {
 	PTags               string
 	ATags               string
 	KTags               string
+	RTags               string
+	Content             string
 	Event               string
 	EventCreatedAt      string
 	CreatedAt           string
 	UpdatedAt           string
 	DeletedAt           string
-	RTags               string
-	Content             string
 }{
 	ID:                  "reactions.id",
 	TextNotesid:         "reactions.text_notesid",
@@ -99,13 +99,13 @@ var ReactionTableColumns = struct {
 	PTags:               "reactions.p_tags",
 	ATags:               "reactions.a_tags",
 	KTags:               "reactions.k_tags",
+	RTags:               "reactions.r_tags",
+	Content:             "reactions.content",
 	Event:               "reactions.event",
 	EventCreatedAt:      "reactions.event_created_at",
 	CreatedAt:           "reactions.created_at",
 	UpdatedAt:           "reactions.updated_at",
 	DeletedAt:           "reactions.deleted_at",
-	RTags:               "reactions.r_tags",
-	Content:             "reactions.content",
 }
 
 // Generated where
@@ -194,13 +194,13 @@ var ReactionWhere = struct {
 	PTags               whereHelpertypes_StringArray
 	ATags               whereHelpertypes_StringArray
 	KTags               whereHelpertypes_StringArray
+	RTags               whereHelpertypes_StringArray
+	Content             whereHelpernull_String
 	Event               whereHelperstring
 	EventCreatedAt      whereHelpertime_Time
 	CreatedAt           whereHelpertime_Time
 	UpdatedAt           whereHelpertime_Time
 	DeletedAt           whereHelpernull_Time
-	RTags               whereHelpertypes_StringArray
-	Content             whereHelpernull_String
 }{
 	ID:                  whereHelperstring{field: "\"reactions\".\"id\""},
 	TextNotesid:         whereHelpernull_String{field: "\"reactions\".\"text_notesid\""},
@@ -209,13 +209,13 @@ var ReactionWhere = struct {
 	PTags:               whereHelpertypes_StringArray{field: "\"reactions\".\"p_tags\""},
 	ATags:               whereHelpertypes_StringArray{field: "\"reactions\".\"a_tags\""},
 	KTags:               whereHelpertypes_StringArray{field: "\"reactions\".\"k_tags\""},
+	RTags:               whereHelpertypes_StringArray{field: "\"reactions\".\"r_tags\""},
+	Content:             whereHelpernull_String{field: "\"reactions\".\"content\""},
 	Event:               whereHelperstring{field: "\"reactions\".\"event\""},
 	EventCreatedAt:      whereHelpertime_Time{field: "\"reactions\".\"event_created_at\""},
 	CreatedAt:           whereHelpertime_Time{field: "\"reactions\".\"created_at\""},
 	UpdatedAt:           whereHelpertime_Time{field: "\"reactions\".\"updated_at\""},
 	DeletedAt:           whereHelpernull_Time{field: "\"reactions\".\"deleted_at\""},
-	RTags:               whereHelpertypes_StringArray{field: "\"reactions\".\"r_tags\""},
-	Content:             whereHelpernull_String{field: "\"reactions\".\"content\""},
 }
 
 // ReactionRels is where relationship names are stored.
@@ -235,9 +235,9 @@ func (*reactionR) NewStruct() *reactionR {
 type reactionL struct{}
 
 var (
-	reactionAllColumns            = []string{"id", "text_notesid", "users_metadatapub_key", "e_tags", "p_tags", "a_tags", "k_tags", "event", "event_created_at", "created_at", "updated_at", "deleted_at", "r_tags", "content"}
+	reactionAllColumns            = []string{"id", "text_notesid", "users_metadatapub_key", "e_tags", "p_tags", "a_tags", "k_tags", "r_tags", "content", "event", "event_created_at", "created_at", "updated_at", "deleted_at"}
 	reactionColumnsWithoutDefault = []string{"id", "event", "event_created_at"}
-	reactionColumnsWithDefault    = []string{"text_notesid", "users_metadatapub_key", "e_tags", "p_tags", "a_tags", "k_tags", "created_at", "updated_at", "deleted_at", "r_tags", "content"}
+	reactionColumnsWithDefault    = []string{"text_notesid", "users_metadatapub_key", "e_tags", "p_tags", "a_tags", "k_tags", "r_tags", "content", "created_at", "updated_at", "deleted_at"}
 	reactionPrimaryKeyColumns     = []string{"id"}
 	reactionGeneratedColumns      = []string{}
 )

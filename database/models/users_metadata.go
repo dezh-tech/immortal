@@ -25,7 +25,6 @@ import (
 // UsersMetadatum is an object representing the database table.
 type UsersMetadatum struct {
 	PubKey          string      `boil:"pub_key" json:"pub_key" toml:"pub_key" yaml:"pub_key"`
-	EventCreatedAt  time.Time   `boil:"event_created_at" json:"event_created_at" toml:"event_created_at" yaml:"event_created_at"`
 	CreatedAt       time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt       time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt       null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
@@ -38,7 +37,6 @@ type UsersMetadatum struct {
 
 var UsersMetadatumColumns = struct {
 	PubKey          string
-	EventCreatedAt  string
 	CreatedAt       string
 	UpdatedAt       string
 	DeletedAt       string
@@ -46,7 +44,6 @@ var UsersMetadatumColumns = struct {
 	FollowListEvent string
 }{
 	PubKey:          "pub_key",
-	EventCreatedAt:  "event_created_at",
 	CreatedAt:       "created_at",
 	UpdatedAt:       "updated_at",
 	DeletedAt:       "deleted_at",
@@ -56,7 +53,6 @@ var UsersMetadatumColumns = struct {
 
 var UsersMetadatumTableColumns = struct {
 	PubKey          string
-	EventCreatedAt  string
 	CreatedAt       string
 	UpdatedAt       string
 	DeletedAt       string
@@ -64,7 +60,6 @@ var UsersMetadatumTableColumns = struct {
 	FollowListEvent string
 }{
 	PubKey:          "users_metadata.pub_key",
-	EventCreatedAt:  "users_metadata.event_created_at",
 	CreatedAt:       "users_metadata.created_at",
 	UpdatedAt:       "users_metadata.updated_at",
 	DeletedAt:       "users_metadata.deleted_at",
@@ -76,7 +71,6 @@ var UsersMetadatumTableColumns = struct {
 
 var UsersMetadatumWhere = struct {
 	PubKey          whereHelperstring
-	EventCreatedAt  whereHelpertime_Time
 	CreatedAt       whereHelpertime_Time
 	UpdatedAt       whereHelpertime_Time
 	DeletedAt       whereHelpernull_Time
@@ -84,7 +78,6 @@ var UsersMetadatumWhere = struct {
 	FollowListEvent whereHelpernull_String
 }{
 	PubKey:          whereHelperstring{field: "\"users_metadata\".\"pub_key\""},
-	EventCreatedAt:  whereHelpertime_Time{field: "\"users_metadata\".\"event_created_at\""},
 	CreatedAt:       whereHelpertime_Time{field: "\"users_metadata\".\"created_at\""},
 	UpdatedAt:       whereHelpertime_Time{field: "\"users_metadata\".\"updated_at\""},
 	DeletedAt:       whereHelpernull_Time{field: "\"users_metadata\".\"deleted_at\""},
@@ -109,8 +102,8 @@ func (*usersMetadatumR) NewStruct() *usersMetadatumR {
 type usersMetadatumL struct{}
 
 var (
-	usersMetadatumAllColumns            = []string{"pub_key", "event_created_at", "created_at", "updated_at", "deleted_at", "content", "follow_list_event"}
-	usersMetadatumColumnsWithoutDefault = []string{"pub_key", "event_created_at"}
+	usersMetadatumAllColumns            = []string{"pub_key", "created_at", "updated_at", "deleted_at", "content", "follow_list_event"}
+	usersMetadatumColumnsWithoutDefault = []string{"pub_key"}
 	usersMetadatumColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "content", "follow_list_event"}
 	usersMetadatumPrimaryKeyColumns     = []string{"pub_key"}
 	usersMetadatumGeneratedColumns      = []string{}

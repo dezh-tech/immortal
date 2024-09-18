@@ -23,30 +23,31 @@ var upgrader = websocket.Upgrader{
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
-	knownEvents *bloom.BloomFilter
-	config      Config
-	conns       map[*websocket.Conn]clientState
-	mu          sync.RWMutex
-	eventHandler handlers.EventHandler
+	knownEvents  *bloom.BloomFilter
+	config       Config
+	conns        map[*websocket.Conn]clientState
+	mu           sync.RWMutex
+	eventHandler *handlers.EventHandler
 }
 
-func New(cfg Config) (*Server, error) {
+func New(cfg Config, db *database.Database) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
-	f, err := os.Open(cfg.BloomBackupPath)
-	if err == nil {
-		w := bufio.NewReader(f)
-		_, err = seb.ReadFrom(w)
-		if err != nil {
-			return nil, fmt.Errorf("server: loading bloom: %s", err.Error())
-		}
-	}
+	// f, err := os.Open(cfg.BloomBackupPath)
+	// if err == nil {
+	// 	w := bufio.NewReader(f)
+	// 	_, err = seb.ReadFrom(w)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("server: loading bloom: %s", err.Error())
+	// 	}
+	// }
 
 	return &Server{
-		config:      cfg,
-		knownEvents: seb,
-		conns:       make(map[*websocket.Conn]clientState),
-		mu:          sync.RWMutex{},
+		config:       cfg,
+		knownEvents:  seb,
+		conns:        make(map[*websocket.Conn]clientState),
+		mu:           sync.RWMutex{},
+		eventHandler: handlers.New(db),
 	}, nil
 }
 
@@ -176,9 +177,18 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	// if !msg.Event.Kind.IsEphemeral() {
-		s.eventHandler.Handle(msg.Event)
-	// }
+	// TODO ::: check ephemeral events condition
+	err := s.eventHandler.Handle(msg.Event)
+	if err != nil {
+		okm := message.MakeOK(false,
+			msg.Event.ID,
+			err.Error(),
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		return
+	}
 
 	s.knownEvents.Add(eID[:])
 

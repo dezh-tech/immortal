@@ -17,6 +17,8 @@ CREATE TABLE public.reactions (
     p_tags TEXT[],  -- Assuming p is an array of text
     a_tags TEXT[],  -- Assuming a is an array of text
     k_tags TEXT[],  -- Assuming k is an array of text
+    r_tags TEXT[],  -- Assuming r is an array of text
+    content VARCHAR(8),
     event TEXT NOT NULL,
     event_created_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -29,7 +31,6 @@ CREATE TABLE public.text_notes (
     id CHAR(64) NOT NULL,
     e_tags TEXT[],  -- Assuming e is an array of text
     p_tags TEXT[],  -- Assuming p is an array of text
-    content VARCHAR(65535),
     event TEXT NOT NULL UNIQUE,
     event_created_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -41,7 +42,6 @@ CREATE TABLE public.text_notes (
 
 CREATE TABLE public.users_metadata (
     pub_key CHAR(64) NOT NULL,
-    event_created_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,

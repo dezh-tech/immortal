@@ -28,7 +28,6 @@ type TextNote struct {
 	ID                  string            `boil:"id" json:"id" toml:"id" yaml:"id"`
 	ETags               types.StringArray `boil:"e_tags" json:"e_tags,omitempty" toml:"e_tags" yaml:"e_tags,omitempty"`
 	PTags               types.StringArray `boil:"p_tags" json:"p_tags,omitempty" toml:"p_tags" yaml:"p_tags,omitempty"`
-	Content             null.String       `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
 	Event               string            `boil:"event" json:"event" toml:"event" yaml:"event"`
 	EventCreatedAt      time.Time         `boil:"event_created_at" json:"event_created_at" toml:"event_created_at" yaml:"event_created_at"`
 	CreatedAt           time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -44,7 +43,6 @@ var TextNoteColumns = struct {
 	ID                  string
 	ETags               string
 	PTags               string
-	Content             string
 	Event               string
 	EventCreatedAt      string
 	CreatedAt           string
@@ -55,7 +53,6 @@ var TextNoteColumns = struct {
 	ID:                  "id",
 	ETags:               "e_tags",
 	PTags:               "p_tags",
-	Content:             "content",
 	Event:               "event",
 	EventCreatedAt:      "event_created_at",
 	CreatedAt:           "created_at",
@@ -68,7 +65,6 @@ var TextNoteTableColumns = struct {
 	ID                  string
 	ETags               string
 	PTags               string
-	Content             string
 	Event               string
 	EventCreatedAt      string
 	CreatedAt           string
@@ -79,7 +75,6 @@ var TextNoteTableColumns = struct {
 	ID:                  "text_notes.id",
 	ETags:               "text_notes.e_tags",
 	PTags:               "text_notes.p_tags",
-	Content:             "text_notes.content",
 	Event:               "text_notes.event",
 	EventCreatedAt:      "text_notes.event_created_at",
 	CreatedAt:           "text_notes.created_at",
@@ -94,7 +89,6 @@ var TextNoteWhere = struct {
 	ID                  whereHelperstring
 	ETags               whereHelpertypes_StringArray
 	PTags               whereHelpertypes_StringArray
-	Content             whereHelpernull_String
 	Event               whereHelperstring
 	EventCreatedAt      whereHelpertime_Time
 	CreatedAt           whereHelpertime_Time
@@ -105,7 +99,6 @@ var TextNoteWhere = struct {
 	ID:                  whereHelperstring{field: "\"text_notes\".\"id\""},
 	ETags:               whereHelpertypes_StringArray{field: "\"text_notes\".\"e_tags\""},
 	PTags:               whereHelpertypes_StringArray{field: "\"text_notes\".\"p_tags\""},
-	Content:             whereHelpernull_String{field: "\"text_notes\".\"content\""},
 	Event:               whereHelperstring{field: "\"text_notes\".\"event\""},
 	EventCreatedAt:      whereHelpertime_Time{field: "\"text_notes\".\"event_created_at\""},
 	CreatedAt:           whereHelpertime_Time{field: "\"text_notes\".\"created_at\""},
@@ -131,9 +124,9 @@ func (*textNoteR) NewStruct() *textNoteR {
 type textNoteL struct{}
 
 var (
-	textNoteAllColumns            = []string{"id", "e_tags", "p_tags", "content", "event", "event_created_at", "created_at", "updated_at", "deleted_at", "users_metadatapub_key"}
+	textNoteAllColumns            = []string{"id", "e_tags", "p_tags", "event", "event_created_at", "created_at", "updated_at", "deleted_at", "users_metadatapub_key"}
 	textNoteColumnsWithoutDefault = []string{"id", "event", "event_created_at"}
-	textNoteColumnsWithDefault    = []string{"e_tags", "p_tags", "content", "created_at", "updated_at", "deleted_at", "users_metadatapub_key"}
+	textNoteColumnsWithDefault    = []string{"e_tags", "p_tags", "created_at", "updated_at", "deleted_at", "users_metadatapub_key"}
 	textNotePrimaryKeyColumns     = []string{"id"}
 	textNoteGeneratedColumns      = []string{}
 )
