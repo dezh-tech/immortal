@@ -34,8 +34,8 @@ func LoadFromFile(path string) (*Config, error) {
 		}
 	}
 
+	// TODO ::: (kehiy) fix read dsn from dsn.
 	config.DatabaseConf.DSN = "postgresql://dev_user:dev_password@localhost:5432/dev_db?sslmode=disable&search_path=public"
-	// fmt.Println(os.Getenv("IMMO_DB_DSN"))
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

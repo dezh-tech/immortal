@@ -33,14 +33,14 @@ type Server struct {
 func New(cfg Config, db *database.Database) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
-	// f, err := os.Open(cfg.BloomBackupPath)
-	// if err == nil {
-	// 	w := bufio.NewReader(f)
-	// 	_, err = seb.ReadFrom(w)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("server: loading bloom: %s", err.Error())
-	// 	}
-	// }
+	f, err := os.Open(cfg.BloomBackupPath)
+	if err == nil {
+		w := bufio.NewReader(f)
+		_, err = seb.ReadFrom(w)
+		if err != nil {
+			return nil, fmt.Errorf("server: loading bloom: %s", err.Error())
+		}
+	}
 
 	return &Server{
 		config:       cfg,

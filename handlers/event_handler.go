@@ -24,5 +24,6 @@ func (eh *EventHandler) Handle(e *event.Event) error {
 	} else if e.Kind == types.KindFollowList {
 		return eh.handleFollowList(e)
 	}
+
 	return nil
 }

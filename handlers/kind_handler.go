@@ -21,6 +21,7 @@ func (eh *EventHandler) handleTextNote(e *event.Event) error {
 
 		if t[0] == "e" {
 			eTags = append(eTags, t[1])
+
 			continue
 		}
 
@@ -41,6 +42,7 @@ func (eh *EventHandler) handleTextNote(e *event.Event) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -58,21 +60,25 @@ func (eh *EventHandler) handleReaction(e *event.Event) error {
 
 		if t[0] == "e" {
 			eTags = append(eTags, t[1])
+
 			continue
 		}
 
 		if t[0] == "p" {
 			pTags = append(pTags, t[1])
+
 			continue
 		}
 
 		if t[0] == "a" {
 			aTags = append(aTags, t[1])
+
 			continue
 		}
 
 		if t[0] == "k" {
 			kTags = append(kTags, t[1])
+
 			continue
 		}
 
@@ -98,19 +104,22 @@ func (eh *EventHandler) handleReaction(e *event.Event) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-	func (eh *EventHandler)handleFollowList (e *event.Event) error {
-		usermetadata := dbmodels.UsersMetadatum{
-			PubKey:          e.PublicKey,
-			FollowListEvent: null.StringFrom(e.String()),
-		}
-
-		// TODO ::: update the follow_list relations
-		err := usermetadata.UpsertG(context.Background(), true, []string{"pub_key"}, boil.Whitelist("follow_list_event"), boil.Infer())
-		if err != nil {
-			return err
-		}
-		return nil
+func (eh *EventHandler) handleFollowList(e *event.Event) error {
+	usermetadata := dbmodels.UsersMetadatum{
+		PubKey:          e.PublicKey,
+		FollowListEvent: null.StringFrom(e.String()),
 	}
+
+	// TODO ::: update the follow_list relations
+	err := usermetadata.UpsertG(context.Background(), true, []string{"pub_key"},
+		boil.Whitelist("follow_list_event"), boil.Infer())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
