@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	dbmodels "github.com/dezh-tech/immortal/database/models"
@@ -19,13 +20,10 @@ func (eh *EventHandler) handleTextNote(e *event.Event) error {
 			continue
 		}
 
-		if t[0] == "e" {
+		switch t[0] {
+		case "e":
 			eTags = append(eTags, t[1])
-
-			continue
-		}
-
-		if t[0] == "p" {
+		case "p":
 			pTags = append(pTags, t[1])
 		}
 	}
@@ -58,39 +56,31 @@ func (eh *EventHandler) handleReaction(e *event.Event) error {
 			continue
 		}
 
-		if t[0] == "e" {
+		switch t[0] {
+		case "e":
 			eTags = append(eTags, t[1])
-
-			continue
-		}
-
-		if t[0] == "p" {
+		case "p":
 			pTags = append(pTags, t[1])
-
-			continue
-		}
-
-		if t[0] == "a" {
+		case "a":
 			aTags = append(aTags, t[1])
-
-			continue
-		}
-
-		if t[0] == "k" {
+		case "k":
 			kTags = append(kTags, t[1])
-
-			continue
-		}
-
-		if t[0] == "r" {
+		case "r":
 			rTags = append(rTags, t[1])
 		}
+	}
+
+	var textNotesID null.String
+	if len(eTags) > 0 {
+		textNotesID = null.StringFrom(eTags[len(eTags)-1])
+	} else {
+		return errors.New("invalid: reaction")
 	}
 
 	reaction := dbmodels.Reaction{
 		ID:                  e.ID,
 		UsersMetadatapubKey: null.StringFrom(e.PublicKey),
-		TextNotesid:         null.StringFrom(eTags[len(eTags)-1]),
+		TextNotesid:         textNotesID,
 		EventCreatedAt:      time.Unix(e.CreatedAt, 0),
 		Event:               e.String(),
 		Content:             null.StringFrom(e.Content),

@@ -17,13 +17,14 @@ func New(db *database.Database) *EventHandler {
 }
 
 func (eh *EventHandler) Handle(e *event.Event) error {
-	if e.Kind == types.KindTextNote {
+	switch e.Kind {
+	case types.KindTextNote:
 		return eh.handleTextNote(e)
-	} else if e.Kind == types.KindReaction {
+	case types.KindReaction:
 		return eh.handleReaction(e)
-	} else if e.Kind == types.KindFollowList {
+	case types.KindFollowList:
 		return eh.handleFollowList(e)
+	default:
+		return nil
 	}
-
-	return nil
 }
