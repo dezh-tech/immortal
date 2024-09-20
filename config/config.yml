@@ -3,6 +3,13 @@
 # The rest of configs such as limitations or NIP-11 profile must be changed on database config table,
 # which is defined and documented on documents/config.md.
 
+# todo(@ZigBalthazar): move development notes to documents directory and define development docker files.
+# developers note: for development, set environment to `"dev"` and make a config.yml and .env beside your build.
+
+# environment determines where and how to read secrets. (dev/prod)
+# default is prod.
+environment: "prod"
+
 # server contains information about websocket server.
 server:
   # bind is the IP address to be bind and listen on.

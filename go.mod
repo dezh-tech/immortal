@@ -7,6 +7,7 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gorilla/websocket v1.5.3
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/mailru/easyjson v0.7.7
 	github.com/stretchr/testify v1.9.0
