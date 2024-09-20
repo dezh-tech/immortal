@@ -27,7 +27,7 @@ func easyjson4d398eaaDecodeGithubComDezhTechImmortalTypesFilter(in *jlexer.Lexer
 
 		return
 	}
-	out.Tags = make(map[string]types.Tag)
+	out.Tags = make(map[string][]string)
 	in.Delim('{')
 	for !in.IsDelim('}') {
 		key := in.UnsafeFieldName(false)

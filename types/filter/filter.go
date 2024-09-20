@@ -11,7 +11,7 @@ type Filter struct {
 	IDs     []string     `json:"ids"`
 	Authors []string     `json:"authors"`
 	Kinds   []types.Kind `json:"kinds"`
-	Tags    map[string]types.Tag
+	Tags    map[string][]string
 	Since   int64  `json:"since"`
 	Until   int64  `json:"until"`
 	Limit   uint16 `json:"limit"`
@@ -48,28 +48,9 @@ func (f *Filter) Match(e *event.Event) bool {
 		return false
 	}
 
-	for f, vals := range f.Tags {
-		for _, t := range e.Tags {
-			if len(t) < 2 {
-				continue
-			}
-
-			if f != "#"+t[0] { // TODO:: should we replace + with strings.Builder?
-				return false
-			}
-
-			var containsValue bool
-			for _, v := range vals {
-				if v == t[1] {
-					containsValue = true
-
-					break
-				}
-			}
-
-			if !containsValue {
-				return false
-			}
+	for tagName, vals := range f.Tags {
+		if vals != nil && !e.Tags.ContainsAny(tagName, vals) {
+			return false
 		}
 	}
 

@@ -1,6 +1,27 @@
 package types
 
-type Tag []string
+type (
+	Tag  []string
+	Tags []Tag
+)
+
+func (tags Tags) ContainsAny(tagName string, values []string) bool {
+	for _, tag := range tags {
+		if len(tag) < 2 {
+			continue
+		}
+
+		if "#"+tag[0] != tagName {
+			continue
+		}
+
+		if ContainsString(tag[1], values) {
+			return true
+		}
+	}
+
+	return false
+}
 
 // Marshal Tag. Used for Serialization so string escaping should be as in RFC8259.
 func (tag Tag) MarshalTo(dst []byte) []byte {

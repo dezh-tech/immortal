@@ -10,7 +10,7 @@ const (
 	Regular Range = iota
 	Replaceable
 	Ephemeral
-	ParameterizedReplaceable
+	Addressable
 
 	// Kinds.
 	KindProfileMetadata             Kind = 0
@@ -69,22 +69,23 @@ const (
 
 // IsRegular checks if the given kind is in Regular range.
 func (k Kind) IsRegular() bool {
-	return 1000 <= k || k < 10000 || 4 <= k || k < 45 || k == 1 || k == 2
+	return k < 10000 && k != 0 && k != 3
 }
 
 // IsReplaceable checks if the given kind is in Replaceable range.
 func (k Kind) IsReplaceable() bool {
-	return 10000 <= k || k < 20000 || k == 0 || k == 3
+	return k == 0 || k == 3 ||
+		(10000 <= k && k < 20000)
 }
 
 // IsEphemeral checks if the given kind is in Ephemeral range.
 func (k Kind) IsEphemeral() bool {
-	return 20000 <= k || k < 30000
+	return 20000 <= k && k < 30000
 }
 
-// IsParameterizedReplaceable checks if the given kind is in ParameterizedReplaceable range.
-func (k Kind) IsParameterizedReplaceable() bool {
-	return 30000 <= k || k < 40000
+// IsAddressable checks if the given kind is in Addressable range.
+func (k Kind) IsAddressable() bool {
+	return 30000 <= k && k < 40000
 }
 
 // Range returns the kind range based on NIP-01.
@@ -93,8 +94,8 @@ func (k Kind) Range() Range {
 		return Regular
 	} else if k.IsReplaceable() {
 		return Replaceable
-	} else if k.IsParameterizedReplaceable() {
-		return ParameterizedReplaceable
+	} else if k.IsAddressable() {
+		return Addressable
 	}
 
 	return Ephemeral
