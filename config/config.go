@@ -37,7 +37,7 @@ func LoadFromFile(path string) (*Config, error) {
 	}
 
 	if config.Enviroment != "prod" {
-		if err := godotenv.Load(".develop_env"); err != nil {
+		if err := godotenv.Load(); err != nil {
 			return nil, err
 		}
 	}
