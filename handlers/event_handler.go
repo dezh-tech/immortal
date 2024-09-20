@@ -10,7 +10,7 @@ type EventHandler struct {
 	DB *database.Database
 }
 
-func New(db *database.Database) *EventHandler {
+func NewEventHandler(db *database.Database) *EventHandler {
 	return &EventHandler{
 		DB: db,
 	}

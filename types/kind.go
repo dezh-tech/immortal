@@ -5,6 +5,11 @@ type (
 	Range uint8
 )
 
+var KindToTableMap = map[Kind]string{
+	1: "text_notes",
+	2: "reactions",
+}
+
 const (
 	// Ranges.
 	Regular Range = iota

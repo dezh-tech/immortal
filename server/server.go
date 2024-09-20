@@ -28,6 +28,7 @@ type Server struct {
 	conns        map[*websocket.Conn]clientState
 	mu           sync.RWMutex
 	eventHandler *handlers.EventHandler
+	reqHandler   *handlers.ReqHandler
 }
 
 func New(cfg Config, db *database.Database) (*Server, error) {
@@ -47,7 +48,8 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 		knownEvents:  seb,
 		conns:        make(map[*websocket.Conn]clientState),
 		mu:           sync.RWMutex{},
-		eventHandler: handlers.New(db),
+		eventHandler: handlers.NewEventHandler(db),
+		reqHandler:   handlers.NewReqHandler(db),
 	}, nil
 }
 
@@ -134,6 +136,8 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 
 		return
 	}
+
+	s.reqHandler.Handle(msg.Filters)
 
 	client.Lock()
 	client.subs[msg.SubscriptionID] = msg.Filters
