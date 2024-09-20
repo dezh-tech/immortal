@@ -120,6 +120,67 @@ var (
 			IsMatch: true,
 			Note:    "this filter and event are match and valid!",
 		},
+		{
+			Filter: &filter.Filter{
+				IDs: []string{
+					"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900",
+					"e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
+				},
+				Kinds: []types.Kind{types.KindTextNote, types.KindProfileMetadata},
+				Tags: map[string][]string{
+					"#e": {"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
+					"#p": {"ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34", "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34"},
+				},
+			},
+			Event: &event.Event{
+				ID:        "e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
+				PublicKey: "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34",
+				CreatedAt: 1726808325,
+				Kind:      types.KindTextNote,
+				Tags: []types.Tag{
+					{"e", "97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
+					{"e", "7c77fa4057f78ca892b4d5533dd46a3ec5d938631448a5bd65f345038bfe8f5d"},
+					{
+						"p", "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34",
+						"wss://relay.jellyfish.land",
+					},
+				},
+				Content:   "test_content",
+				Signature: "test_signature",
+			},
+			IsMatch: true,
+			Note:    "this filter and event are match and valid!",
+		},
+		{
+			Filter: &filter.Filter{
+				IDs: []string{
+					"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900",
+					"e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
+				},
+				Kinds: []types.Kind{types.KindTextNote, types.KindProfileMetadata},
+				Tags: map[string][]string{
+					"#e": {"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
+					"#p": {"ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34", "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34"},
+				},
+			},
+			Event: &event.Event{
+				ID:        "e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
+				PublicKey: "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34",
+				CreatedAt: 1726808325,
+				Kind:      types.KindTextNote,
+				Tags: []types.Tag{
+					{"e", "7c77fa4057f78ca892b4d5533dd46a3ec5d938631448a5bd65f345038bfe8f5d"},
+					{
+						"p", "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34",
+						"wss://relay.jellyfish.land",
+					},
+				},
+				Content:   "test_content",
+				Signature: "test_signature",
+			},
+			IsMatch: false,
+			Note:    "e tag: 97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900 is missing.",
+		},
 	}
 )
 
@@ -161,6 +222,7 @@ func TestFilter(t *testing.T) {
 				assert.True(t, tc.Filter.Match(tc.Event),
 					"expected event %s to be match with filter %s, note: %s",
 					tc.Event.String(), tc.Filter.String(), tc.Note)
+
 				continue
 			}
 			assert.False(t, tc.Filter.Match(tc.Event),
