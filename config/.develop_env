@@ -1,0 +1,1 @@
+IMMO_PG_DSN="postgresql://dev_user:dev_password@localhost:5432/dev_db?sslmode=disable&search_path=public"

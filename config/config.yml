@@ -3,6 +3,10 @@
 # The rest of configs such as limitations or NIP-11 profile must be changed on database config table,
 # which is defined and documented on documents/config.md.
 
+# enviroment determines where and how to read secrets. (dev/prod)
+# default is prod.
+enviroment: "prod"
+
 # server contains information about websocket server.
 server:
   # bind is the IP address to be bind and listen on.

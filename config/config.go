@@ -5,11 +5,13 @@ import (
 
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/server"
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
+	Enviroment   string          `yaml:"enviroment"`
 	ServerConf   server.Config   `yaml:"server"`
 	DatabaseConf database.Config `yaml:"database"`
 }
@@ -34,8 +36,13 @@ func LoadFromFile(path string) (*Config, error) {
 		}
 	}
 
-	// TODO ::: (kehiy) fix read dsn from dsn.
-	config.DatabaseConf.DSN = "postgresql://dev_user:dev_password@localhost:5432/dev_db?sslmode=disable&search_path=public"
+	if config.Enviroment != "prod" {
+		if err := godotenv.Load(".develop_env"); err != nil {
+			return nil, err
+		}
+	}
+
+	config.DatabaseConf.DSN = os.Getenv("IMMO_PG_DSN")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{
