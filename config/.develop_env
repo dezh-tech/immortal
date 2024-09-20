@@ -1,6 +1,6 @@
-# we read secret configs from evnviroment variables. here is the full list of them.
-# make sure you create a `.env` file beside your build directory and define your dev enviroment there.
-# you have to set the `enviroment` field of yaml config to `"dev"`, otherwise these are going to be loaded form os env.
+# we read secret configs from environment variables. here is the full list of them.
+# make sure you create a `.env` file beside your build directory and define your dev environment there.
+# you have to set the `environment` field of yaml config to `"dev"`, otherwise these are going to be loaded form os env.
 
 # your postgress sql database dsn. you can use dev docker compose to run it.
 IMMO_PG_DSN="postgresql://dev_user:dev_password@localhost:5432/dev_db?sslmode=disable&search_path=public"

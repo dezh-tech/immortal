@@ -11,7 +11,7 @@ import (
 
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
-	Enviroment   string          `yaml:"enviroment"`
+	Environment  string          `yaml:"environment"`
 	ServerConf   server.Config   `yaml:"server"`
 	DatabaseConf database.Config `yaml:"database"`
 }
@@ -36,7 +36,7 @@ func LoadFromFile(path string) (*Config, error) {
 		}
 	}
 
-	if config.Enviroment != "prod" {
+	if config.Environment != "prod" {
 		if err := godotenv.Load(); err != nil {
 			return nil, err
 		}

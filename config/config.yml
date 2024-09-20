@@ -4,11 +4,11 @@
 # which is defined and documented on documents/config.md.
 
 # todo(@ZigBalthazar): move development notes to documents directory and define development docker files.
-# developers note: for development, set enviroment to `"dev"` and make a config.yml and .env beside your build.
+# developers note: for development, set environment to `"dev"` and make a config.yml and .env beside your build.
 
-# enviroment determines where and how to read secrets. (dev/prod)
+# environment determines where and how to read secrets. (dev/prod)
 # default is prod.
-enviroment: "prod"
+environment: "prod"
 
 # server contains information about websocket server.
 server:
