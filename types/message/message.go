@@ -270,6 +270,15 @@ func (nm Notice) EncodeToJSON() ([]byte, error) {
 // EOSE reperesents a NIP-01 EOSE message.
 type EOSE string
 
+func MakeEOSE(sID string) []byte {
+	res, err := EOSE(sID).EncodeToJSON()
+	if err != nil {
+		return []byte{} // TODO::: should we return anything else here?
+	}
+
+	return res
+}
+
 func (EOSE) Type() string { return "EOSE" }
 func (em EOSE) String() string {
 	v, err := json.Marshal(em)

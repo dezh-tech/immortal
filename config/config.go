@@ -35,7 +35,7 @@ func LoadFromFile(path string) (*Config, error) {
 	}
 
 	// TODO ::: (kehiy) fix read dsn from dsn.
-	config.DatabaseConf.DSN = "postgresql://dev_user:dev_password@localhost:5432/dev_db?sslmode=disable&search_path=public"
+	config.DatabaseConf.URI = "mongodb://root:agT4RySesbyPpYq74sSetoL9@manaslu.liara.cloud:33887/my-app?authSource=admin"
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

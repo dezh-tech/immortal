@@ -2,43 +2,45 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
-	_ "github.com/lib/pq" //nolint
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/dezh-tech/immortal/types"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var KindToCollectionName = map[types.Kind]string{
+	types.KindTextNote: "text_notes",
+	types.KindReaction: "reactions",
+	types.KindProfileMetadata: "profile_metadatas",
+}
 type Database struct {
-	db *sql.DB
+	Client *mongo.Client
 }
 
 func New(cfg Config) (*Database, error) {
-	db, err := sql.Open("postgres", cfg.DSN)
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI(cfg.URI).SetServerAPIOptions(serverAPI).SetConnectTimeout(50 * time.Second).SetBSONOptions(&options.BSONOptions{
+		UseJSONStructTags: true,
+		NilSliceAsEmpty: true,
+	})
+
+	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		return nil, err
 	}
 
-	boil.SetDB(db)
-
-	db.SetMaxOpenConns(cfg.MaxOpenConn)
-	db.SetConnMaxLifetime(cfg.MaxConnLifeTime)
-	db.SetMaxIdleConns(cfg.MaxIdleConn)
-	db.SetConnMaxIdleTime(cfg.MaxIdleConnTime)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = db.PingContext(ctx)
-	if err != nil {
+	var result bson.M
+	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Decode(&result); err != nil {
 		return nil, err
 	}
 
 	return &Database{
-		db: db,
+		Client: client,
 	}, nil
 }
 
 func (db *Database) Stop() error {
-	return db.db.Close()
+	return db.Client.Disconnect(context.TODO())
 }

@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"context"
+	"errors"
+	"time"
+
 	"github.com/dezh-tech/immortal/database"
-	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 )
 
@@ -17,14 +20,17 @@ func NewEventHandler(db *database.Database) *EventHandler {
 }
 
 func (eh *EventHandler) Handle(e *event.Event) error {
-	switch e.Kind { //nolint
-	case types.KindTextNote:
-		return eh.handleTextNote(e)
-	case types.KindReaction:
-		return eh.handleReaction(e)
-	case types.KindFollowList:
-		return eh.handleFollowList(e)
-	default:
-		return nil
+	collName, ok := database.KindToCollectionName[e.Kind]
+	if !ok {
+		return errors.New("invalid kind")
 	}
+	coll := eh.DB.Client.Database("immortal_dev").Collection(collName)
+	ctx, cancel := context.WithTimeout(context.Background(), 20 * time.Second)
+	_, err := coll.InsertOne(ctx, e)
+	if err != nil {
+		cancel()
+		return err
+	}
+	cancel()
+	return nil
 }

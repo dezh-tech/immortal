@@ -114,11 +114,6 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 // handleReq handles new incoming REQ messages from client.
 func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
-	// TODO::: load from database and sent in first query based on limit.
-	// TODO::: return EOSE.
-	// TODO::: return EVENT messages.
-	// TODO::: use mu properly.
-
 	msg, ok := m.(*message.Req)
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
@@ -137,8 +132,21 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	s.reqHandler.Handle(msg.Filters)
+	fmt.Println(msg.Filters[0])
+	res, err := s.reqHandler.Handle(msg.Filters)
+	if err != nil {
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
+	}
 
+	for _, e := range res {
+		msg := message.MakeEvent(msg.SubscriptionID, &e)
+		_ = conn.WriteMessage(1, msg)
+
+	}
+
+	_ = conn.WriteMessage(1, message.MakeEOSE(msg.SubscriptionID))
+
+	
 	client.Lock()
 	client.subs[msg.SubscriptionID] = msg.Filters
 	client.Unlock()
