@@ -13,7 +13,7 @@ import (
 )
 
 type filterQuery struct {
-	Tags map[string]types.Tag
+	Tags map[string][]string
 
 	Authors []string
 	IDs     []string
