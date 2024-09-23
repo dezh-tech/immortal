@@ -5,11 +5,13 @@ import (
 
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/server"
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
+	Environment  string          `yaml:"environment"`
 	ServerConf   server.Config   `yaml:"server"`
 	DatabaseConf database.Config `yaml:"database"`
 }
@@ -34,8 +36,13 @@ func LoadFromFile(path string) (*Config, error) {
 		}
 	}
 
-	// TODO ::: (kehiy) fix read dsn from dsn.
-	config.DatabaseConf.URI = "mongodb://root:agT4RySesbyPpYq74sSetoL9@manaslu.liara.cloud:33887/my-app?authSource=admin"
+	if config.Environment != "prod" {
+		if err := godotenv.Load(); err != nil {
+			return nil, err
+		}
+	}
+
+	config.DatabaseConf.URI = os.Getenv("IMMO_MONGO_URI")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

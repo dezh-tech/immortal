@@ -1,0 +1,6 @@
+# we read secret configs from environment variables. here is the full list of them.
+# make sure you create a `.env` file beside your build directory and define your dev environment there.
+# you have to set the `environment` field of yaml config to `"dev"`, otherwise these are going to be loaded form os env.
+
+# your MongoDB URI for development. you can use dev docker compose to run it.
+IMMO_MONGO_URI="mongodb://username:password@host1:27017,host2:27017,host3:27017/mydatabase?replicaSet=myReplicaSet&authSource=admin&readPreference=primary&ssl=true&retryWrites=true&w=majority"
