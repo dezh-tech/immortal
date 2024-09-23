@@ -23,7 +23,7 @@ var testCases = []TestCase{
 			ID:        "a1d7ba3cdcc67a358186f85e5f2a02abd173877d484b76d1f1f22ee47d68293d",
 			PublicKey: "32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245",
 			CreatedAt: 1725890895,
-			Kind:      types.KindTextNote,
+			Kind:      types.KindShortTextNote,
 			Tags:      []types.Tag{},
 			Content:   "ReplyGuy never replies to me :( i feel left out",
 			Signature: "c2e6975905e41837343dc4b607dadf2895df457a0b8461b0f86d25506c4458c3fe83ed1f924715a0416412858fa5c51f3f3271361d729037f18d216b29618dda",
@@ -38,7 +38,7 @@ var testCases = []TestCase{
 			ID:        "a93df9f6746dfbd4de63196a36a0aa408dec8308fb55b3d5edcd22c953a4efb9",
 			PublicKey: "472be9f9264eea1254f2b2f7cd2da0c319dae4fe4cd649f0424e94234dcacf97",
 			CreatedAt: 1725877943,
-			Kind:      types.KindTextNote,
+			Kind:      types.KindShortTextNote,
 			Tags: []types.Tag{
 				{"e", "f6e8673a61ade88c087f45a6fa4f278e6e8b78dad2512a43b9e5a82e6df4ade4", "", "root"},
 				{
@@ -69,7 +69,7 @@ var testCases = []TestCase{
 			ID:        "594915a98c7f65b65a642e076463f5ac1319ae55d116c401528094e56023abf8",
 			PublicKey: "472be9f9264eea1254f2b2f7cd2da0c319dae4fe4cd649f0424e94234dcacf97",
 			CreatedAt: 1725832414,
-			Kind:      types.KindTextNote,
+			Kind:      types.KindShortTextNote,
 			Tags: []types.Tag{
 				{
 					"e",

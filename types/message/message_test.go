@@ -51,7 +51,7 @@ var testCases = []testCase{
 				ID:        "d86745e397de3a3b8c8f15f7a02c6aa6a60213f59b14e1a7093ea286e020423e",
 				PublicKey: "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
 				CreatedAt: 1726055814,
-				Kind:      types.KindTextNote,
+				Kind:      types.KindShortTextNote,
 				Tags:      []types.Tag{},
 				Content:   "test",
 				Signature: "ec9f5702c2698ebfa1ce037c31568c7eb420d65d9684f33ba4d3266c82b771f58cf92c44f1e2a710ba71ce3c92bba1253aa7419d124b2a5eed74e9165e868d50",
