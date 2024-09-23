@@ -21,6 +21,7 @@ const (
 	KindDeletion                    Kind = 5
 	KindRepost                      Kind = 6
 	KindReaction                    Kind = 7
+	KindBadgeAward                  Kind = 8
 	KindSimpleGroupChatMessage      Kind = 9
 	KindSimpleGroupThread           Kind = 11
 	KindSimpleGroupReply            Kind = 12

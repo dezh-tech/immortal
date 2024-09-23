@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
@@ -48,7 +47,7 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 	var finalResult []event.Event
 
 	for kind, filters := range queryKinds {
-		collection := h.DB.Client.Database(h.DB.DBName).Collection(database.KindToCollectionName[kind])
+		collection := h.DB.Client.Database(h.DB.DBName).Collection(KindToCollectionName[kind])
 		for _, f := range filters {
 			query, opts, err := FilterToQuery(&f)
 			if err != nil {
@@ -129,7 +128,12 @@ func FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
 	// Add Limit to options
 	if fq.Limit > 0 {
 		opts.SetLimit(int64(fq.Limit))
-	}
+	} // todo(@ZigBalthazar)::: read a default from database config.
+
+	opts.SetSort(bson.D{
+		{Key: "created_at", Value: -1},
+		{Key: "id", Value: 1},
+	})
 
 	return query, opts, nil
 }

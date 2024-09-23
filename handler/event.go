@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/types/event"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (h *Handler) HandleEvent(e *event.Event) error {
-	collName, ok := database.KindToCollectionName[e.Kind]
+	collName, ok := KindToCollectionName[e.Kind]
 	if !ok {
 		return fmt.Errorf("kind %d is not supported.", e.Kind)
 	}
