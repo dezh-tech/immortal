@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/dezh-tech/immortal/types/event"
 )
 
-func (h *Handlers) HandleEvent(e *event.Event) error {
+func (h *Handler) HandleEvent(e *event.Event) error {
 	collName, ok := database.KindToCollectionName[e.Kind]
 	if !ok {
 		return errors.New("invalid kind")

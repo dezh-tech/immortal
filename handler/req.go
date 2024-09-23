@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"context"
@@ -23,7 +23,7 @@ type filterQuery struct {
 	Limit uint16
 }
 
-func (h *Handlers) HandleReq(fs filter.Filters) ([]event.Event, error) {
+func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 	queryKinds := make(map[types.Kind][]filterQuery)
 
 	for _, f := range fs {

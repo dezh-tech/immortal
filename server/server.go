@@ -11,7 +11,7 @@ import (
 
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/dezh-tech/immortal/database"
-	"github.com/dezh-tech/immortal/handlers"
+	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
@@ -27,7 +27,7 @@ type Server struct {
 	config      Config
 	conns       map[*websocket.Conn]clientState
 	mu          sync.RWMutex
-	handlers    *handlers.Handlers
+	handlers    handler.Handler
 }
 
 func New(cfg Config, db *database.Database) (*Server, error) {
@@ -47,7 +47,7 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 		knownEvents: seb,
 		conns:       make(map[*websocket.Conn]clientState),
 		mu:          sync.RWMutex{},
-		handlers:    handlers.New(db),
+		handlers:    handler.New(db),
 	}, nil
 }
 
