@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -39,8 +38,6 @@ func Connect(cfg Config) (*Database, error) {
 		Decode(&result); err != nil {
 		return nil, err
 	}
-
-	log.Print(cfg.DBName)
 
 	return &Database{
 		Client:       client,
