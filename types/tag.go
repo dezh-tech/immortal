@@ -1,6 +1,9 @@
 package types
 
-type Tag []string
+type (
+	Tag  []string
+	Tags []Tag
+)
 
 // Marshal Tag. Used for Serialization so string escaping should be as in RFC8259.
 func (tag Tag) MarshalTo(dst []byte) []byte {

@@ -23,12 +23,11 @@ var upgrader = websocket.Upgrader{
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
-	knownEvents  *bloom.BloomFilter
-	config       Config
-	conns        map[*websocket.Conn]clientState
-	mu           sync.RWMutex
-	eventHandler *handlers.EventHandler
-	reqHandler   *handlers.ReqHandler
+	knownEvents *bloom.BloomFilter
+	config      Config
+	conns       map[*websocket.Conn]clientState
+	mu          sync.RWMutex
+	handlers    *handlers.Handlers
 }
 
 func New(cfg Config, db *database.Database) (*Server, error) {
@@ -44,12 +43,11 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 	}
 
 	return &Server{
-		config:       cfg,
-		knownEvents:  seb,
-		conns:        make(map[*websocket.Conn]clientState),
-		mu:           sync.RWMutex{},
-		eventHandler: handlers.NewEventHandler(db),
-		reqHandler:   handlers.NewReqHandler(db),
+		config:      cfg,
+		knownEvents: seb,
+		conns:       make(map[*websocket.Conn]clientState),
+		mu:          sync.RWMutex{},
+		handlers:    handlers.New(db),
 	}, nil
 }
 
@@ -132,8 +130,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	fmt.Println(msg.Filters[0])
-	res, err := s.reqHandler.Handle(msg.Filters)
+	res, err := s.handlers.HandleReq(msg.Filters)
 	if err != nil {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
 	}
@@ -141,12 +138,10 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	for _, e := range res {
 		msg := message.MakeEvent(msg.SubscriptionID, &e)
 		_ = conn.WriteMessage(1, msg)
-
 	}
 
 	_ = conn.WriteMessage(1, message.MakeEOSE(msg.SubscriptionID))
 
-	
 	client.Lock()
 	client.subs[msg.SubscriptionID] = msg.Filters
 	client.Unlock()
@@ -190,7 +185,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 
 	// TODO ::: check ephemeral events condition
-	err := s.eventHandler.Handle(msg.Event)
+	err := s.handlers.HandleEvent(msg.Event)
 	if err != nil {
 		okm := message.MakeOK(false,
 			msg.Event.ID,

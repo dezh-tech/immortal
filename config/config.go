@@ -14,7 +14,7 @@ type Config struct {
 	DatabaseConf database.Config `yaml:"database"`
 }
 
-// Load fromFile loads config from file, databse and env.
+// Load fromFile loads config from file, database and env.
 func LoadFromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {

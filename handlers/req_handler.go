@@ -12,11 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type ReqHandler struct {
-	DB *database.Database
-}
-
-type queryFilter struct {
+type filterQuery struct {
 	Tags map[string]types.Tag
 
 	Authors []string
@@ -27,17 +23,11 @@ type queryFilter struct {
 	Limit uint16
 }
 
-func NewReqHandler(db *database.Database) *ReqHandler {
-	return &ReqHandler{
-		DB: db,
-	}
-}
-
-func (rh *ReqHandler) Handle(fs filter.Filters) ([]event.Event, error) {
-	queryKinds := make(map[types.Kind][]queryFilter)
+func (h *Handlers) HandleReq(fs filter.Filters) ([]event.Event, error) {
+	queryKinds := make(map[types.Kind][]filterQuery)
 
 	for _, f := range fs {
-		qf := queryFilter{
+		qf := filterQuery{
 			Tags:    f.Tags,
 			Authors: f.Authors,
 			IDs:     f.IDs,
@@ -55,27 +45,32 @@ func (rh *ReqHandler) Handle(fs filter.Filters) ([]event.Event, error) {
 	var finalResult []event.Event
 
 	for kind, filters := range queryKinds {
-		collection := rh.DB.Client.Database("immortal_dev").Collection(database.KindToCollectionName[kind])
+		collection := h.DB.Client.Database(h.DB.DBName).Collection(database.KindToCollectionName[kind])
 		for _, f := range filters {
-			query, opts, err := BuildMongoDynamicQueries(f)
+			query, opts, err := FilterToQuery(&f)
 			if err != nil {
 				continue
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-			defer cancel()
+			ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
 
 			cursor, err := collection.Find(ctx, query, opts)
 			if err != nil {
+				cancel()
+
 				return nil, err
 			}
 
-			var results []event.Event
-			if err = cursor.All(context.TODO(), &results); err != nil {
+			var result []event.Event
+			if err = cursor.All(context.TODO(), &result); err != nil {
+				cancel()
+
 				return nil, err
 			}
 
-			finalResult = append(finalResult, results...)
+			finalResult = append(finalResult, result...)
+
+			cancel()
 		}
 	}
 
@@ -91,28 +86,29 @@ func removeDuplicateKind(intSlice []types.Kind) []types.Kind {
 			list = append(list, item)
 		}
 	}
+
 	return list
 }
 
-func BuildMongoDynamicQueries(filter queryFilter) (bson.D, *options.FindOptions, error) {
+func FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
 	var query bson.D
 	opts := options.Find()
 
 	// Filter by IDs
-	if len(filter.IDs) > 0 {
-		query = append(query, bson.E{Key: "id", Value: bson.M{"$in": filter.IDs}})
+	if len(fq.IDs) > 0 {
+		query = append(query, bson.E{Key: "id", Value: bson.M{"$in": fq.IDs}})
 	}
 
 	// Filter by Authors
-	if len(filter.Authors) > 0 {
-		query = append(query, bson.E{Key: "pubkey", Value: bson.M{"$in": filter.Authors}})
+	if len(fq.Authors) > 0 {
+		query = append(query, bson.E{Key: "pubkey", Value: bson.M{"$in": fq.Authors}})
 	}
 
 	// Filter by Tags
-	if len(filter.Tags) > 0 {
+	if len(fq.Tags) > 0 {
 		tagQueries := bson.A{}
-		for tagKey, tagValues := range filter.Tags {
-			filter := bson.M{
+		for tagKey, tagValues := range fq.Tags {
+			qtf := bson.M{
 				"tags": bson.M{
 					"$elemMatch": bson.M{
 						"0": tagKey,
@@ -120,24 +116,24 @@ func BuildMongoDynamicQueries(filter queryFilter) (bson.D, *options.FindOptions,
 					},
 				},
 			}
-			tagQueries = append(tagQueries, filter)
+			tagQueries = append(tagQueries, qtf)
 		}
-			query = append(query, bson.E{Key: "$and", Value: tagQueries})
+		query = append(query, bson.E{Key: "$and", Value: tagQueries})
 	}
 
 	// Filter by Since (created_at >=)
-	if filter.Since > 0 {
-		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$gte": time.Unix(filter.Since, 0)}})
+	if fq.Since > 0 {
+		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$gte": time.Unix(fq.Since, 0)}})
 	}
 
 	// Filter by Until (created_at <=)
-	if filter.Until > 0 {
-		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$lte": time.Unix(filter.Until, 0)}})
+	if fq.Until > 0 {
+		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$lte": time.Unix(fq.Until, 0)}})
 	}
 
 	// Add Limit to options
-	if filter.Limit > 0 {
-		opts.SetLimit(int64(filter.Limit))
+	if fq.Limit > 0 {
+		opts.SetLimit(int64(fq.Limit))
 	}
 
 	return query, opts, nil

@@ -12,13 +12,13 @@ import (
 
 // Event represents an event structure defined on NIP-01.
 type Event struct {
-	ID        string      `json:"id" bson:"id"`
-	PublicKey string      `json:"pubkey" bson:"pubkey"`
-	CreatedAt int64       `json:"created_at" bson:"created_at"`
-	Kind      types.Kind  `json:"kind"  bson:"kind"`
-	Tags      []types.Tag `json:"tags"  bson:"tags"`
-	Content   string      `json:"content" bson:"content"`
-	Signature string      `json:"sig" bson:"sig"`
+	ID        string     `bson:"id"         json:"id"`
+	PublicKey string     `bson:"pubkey"     json:"pubkey"`
+	CreatedAt int64      `bson:"created_at" json:"created_at"`
+	Kind      types.Kind `bson:"kind"       json:"kind"`
+	Tags      types.Tags `bson:"tags"       json:"tags"`
+	Content   string     `bson:"content"    json:"content"`
+	Signature string     `bson:"sig"        json:"sig"`
 }
 
 // Decode decodes a byte array into Event structure.

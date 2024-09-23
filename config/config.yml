@@ -1,5 +1,5 @@
 # This is default immortal config file.
-# This config file contains essential information which is needed for bootstraping.
+# This config file contains essential information which is needed for bootstrapping.
 # The rest of configs such as limitations or NIP-11 profile must be changed on database config table,
 # which is defined and documented on documents/config.md.
 
@@ -20,18 +20,5 @@ server:
 
 # database contains details of database connections and limitations.
 database:
-  # max_open_conn is the number of open database connections.
-  # default is 20 open database connections.
-  max_open_conn: 20
-
-  # Maximum number of idle connections in the pool.
-  # default is 10 idle connections in the pool.
-  max_idle_conn: 10
-
-  # max_idle_conn_time is maximum time that an idle connection can stay in the pool.
-  # default is 5 minutes.
-  max_idle_conn_time: "5m"
-
-  # max_conn_life_time is maximum lifetime of a database connection.
-  # default is 1 hour.
-  max_conn_life_time: "1h"
+  # db_name is the name of mongodb related to immortal 
+  db_name: "immortal_dev"
