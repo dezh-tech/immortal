@@ -14,7 +14,7 @@ import (
 func (h *Handler) HandleEvent(e *event.Event) error {
 	collName, ok := KindToCollectionName[e.Kind]
 	if !ok {
-		return fmt.Errorf("kind %d is not supported.", e.Kind)
+		return fmt.Errorf("kind %d is not supported", e.Kind)
 	}
 
 	coll := h.DB.Client.Database(h.DB.DBName).Collection(collName)
@@ -72,12 +72,13 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 
 			if t[0] == "d" {
 				dTag = t[1]
+
 				break
 			}
 		}
 
 		if dTag == "" {
-			return errors.New("no d tag found.")
+			return errors.New("no d tag found")
 		}
 
 		query = bson.D{
@@ -131,13 +132,13 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 		}
 	}
 
-	cur, err := coll.Find(ctx, query)
+	cursor, err := coll.Find(ctx, query)
 	if err != nil {
 		return err
 	}
 
 	var result []event.Event
-	if err = cur.All(ctx, &result); err != nil {
+	if err := cursor.All(ctx, &result); err != nil {
 		return err
 	}
 

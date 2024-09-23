@@ -60,7 +60,7 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 			}
 
 			var result []event.Event
-			if err = cursor.All(ctx, &result); err != nil {
+			if err := cursor.All(ctx, &result); err != nil {
 				return nil, err
 			}
 
