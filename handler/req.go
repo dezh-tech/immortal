@@ -24,6 +24,9 @@ type filterQuery struct {
 }
 
 func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
+	defer cancel()
+
 	queryKinds := make(map[types.Kind][]filterQuery)
 
 	for _, f := range fs {
@@ -52,25 +55,17 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 				continue
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
-
 			cursor, err := collection.Find(ctx, query, opts)
 			if err != nil {
-				cancel()
-
 				return nil, err
 			}
 
 			var result []event.Event
-			if err = cursor.All(context.TODO(), &result); err != nil {
-				cancel()
-
+			if err = cursor.All(ctx, &result); err != nil {
 				return nil, err
 			}
 
 			finalResult = append(finalResult, result...)
-
-			cancel()
 		}
 	}
 

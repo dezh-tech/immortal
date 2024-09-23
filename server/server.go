@@ -112,15 +112,15 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 // handleReq handles new incoming REQ messages from client.
 func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	msg, ok := m.(*message.Req)
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
 
 		return
 	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	client, ok := s.conns[conn]
 	if !ok {
@@ -149,6 +149,9 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 
 // handleEvent handles new incoming EVENT messages from client.
 func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	msg, ok := m.(*message.Event)
 	if !ok {
 		okm := message.MakeOK(false,
@@ -162,9 +165,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 
 	eID := msg.Event.GetRawID()
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	if s.knownEvents.Test(eID[:]) {
 		okm := message.MakeOK(true, msg.Event.ID, "")
@@ -184,29 +184,30 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	// TODO ::: check ephemeral events condition
-	err := s.handlers.HandleEvent(msg.Event)
-	if err != nil {
-		okm := message.MakeOK(false,
-			msg.Event.ID,
-			err.Error(),
-		)
+	if !msg.Event.Kind.IsEphemeral() {
+		err := s.handlers.HandleEvent(msg.Event)
+		if err != nil {
+			okm := message.MakeOK(false,
+				msg.Event.ID,
+				err.Error(),
+			)
 
-		_ = conn.WriteMessage(1, okm)
+			_ = conn.WriteMessage(1, okm)
 
-		return
+			return
+		}
+
+		_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 	}
 
 	s.knownEvents.Add(eID[:])
-
-	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
 	// todo::: can we run goroutines per client?
 	for conn, client := range s.conns {
 		client.Lock()
 		for id, filters := range client.subs {
 			if !filters.Match(msg.Event) {
-				return
+				continue
 			}
 			_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))
 		}
@@ -216,15 +217,15 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 // handleClose handles new incoming CLOSE messages from client.
 func (s *Server) handleClose(conn *websocket.Conn, m message.Message) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	msg, ok := m.(*message.Close)
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse CLOSE message."))
 
 		return
 	}
-
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 
 	client, ok := s.conns[conn]
 	if !ok {
