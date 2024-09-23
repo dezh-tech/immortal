@@ -16,7 +16,7 @@ type Config struct {
 	DatabaseConf database.Config `yaml:"database"`
 }
 
-// Load fromFile loads config from file, databse and env.
+// Load fromFile loads config from file, database and env.
 func LoadFromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -42,7 +42,7 @@ func LoadFromFile(path string) (*Config, error) {
 		}
 	}
 
-	config.DatabaseConf.DSN = os.Getenv("IMMO_PG_DSN")
+	config.DatabaseConf.URI = os.Getenv("IMMO_MONGO_URI")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

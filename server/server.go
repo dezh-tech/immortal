@@ -11,7 +11,7 @@ import (
 
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/dezh-tech/immortal/database"
-	"github.com/dezh-tech/immortal/handlers"
+	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
@@ -23,11 +23,11 @@ var upgrader = websocket.Upgrader{
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
-	knownEvents  *bloom.BloomFilter
-	config       Config
-	conns        map[*websocket.Conn]clientState
-	mu           sync.RWMutex
-	eventHandler *handlers.EventHandler
+	knownEvents *bloom.BloomFilter
+	config      Config
+	conns       map[*websocket.Conn]clientState
+	mu          sync.RWMutex
+	handlers    handler.Handler
 }
 
 func New(cfg Config, db *database.Database) (*Server, error) {
@@ -43,11 +43,11 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 	}
 
 	return &Server{
-		config:       cfg,
-		knownEvents:  seb,
-		conns:        make(map[*websocket.Conn]clientState),
-		mu:           sync.RWMutex{},
-		eventHandler: handlers.New(db),
+		config:      cfg,
+		knownEvents: seb,
+		conns:       make(map[*websocket.Conn]clientState),
+		mu:          sync.RWMutex{},
+		handlers:    handler.New(db),
 	}, nil
 }
 
@@ -112,11 +112,6 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 // handleReq handles new incoming REQ messages from client.
 func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
-	// TODO::: load from database and sent in first query based on limit.
-	// TODO::: return EOSE.
-	// TODO::: return EVENT messages.
-	// TODO::: use mu properly.
-
 	msg, ok := m.(*message.Req)
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
@@ -134,6 +129,18 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 
 		return
 	}
+
+	res, err := s.handlers.HandleReq(msg.Filters)
+	if err != nil {
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
+	}
+
+	for _, e := range res {
+		msg := message.MakeEvent(msg.SubscriptionID, &e)
+		_ = conn.WriteMessage(1, msg)
+	}
+
+	_ = conn.WriteMessage(1, message.MakeEOSE(msg.SubscriptionID))
 
 	client.Lock()
 	client.subs[msg.SubscriptionID] = msg.Filters
@@ -178,7 +185,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 
 	// TODO ::: check ephemeral events condition
-	err := s.eventHandler.Handle(msg.Event)
+	err := s.handlers.HandleEvent(msg.Event)
 	if err != nil {
 		okm := message.MakeOK(false,
 			msg.Event.ID,
