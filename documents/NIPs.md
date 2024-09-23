@@ -2,7 +2,7 @@
 
 The Immortal follows [NIPs](https://github.com/nostr-protocol/nips) and tries to implement itself as close as possible to this standards.
 
-- [X] **NIP-01**: Basic Protocol Flow Description
+- [ ] **NIP-01**: Basic Protocol Flow Description
 - [ ] **NIP-02**: Follow List
 - [ ] **NIP-03**: OpenTimestamps Attestations for Events
 - [ ] **NIP-09**: Event Deletion Request
