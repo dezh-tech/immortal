@@ -39,7 +39,7 @@ var testCases = []testCase{
 			SubscriptionID: "million",
 			Filters: filter.Filters{{Kinds: []types.Kind{1}}, {
 				Kinds: []types.Kind{30023},
-				Tags:  map[string]types.Tag{"d": []string{"buteko", "batuke"}},
+				Tags:  map[string][]string{"d": {"buteko", "batuke"}},
 			}},
 		},
 	},

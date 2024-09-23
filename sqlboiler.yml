@@ -1,3 +1,5 @@
+# todo(@ZigBalthazar): write documents for sqlboiler used in immortal.
+
 # sqlboiler.yml
 # Configuration for sqlboiler
 psql:
@@ -15,20 +17,20 @@ drivers:
   - psql
 
 # Generation settings
-pkgname: database  # Package name to generate the ORM code into
-output: database/models  # Output directory where models are generated
-no-tests: true  # Disable generation of test files
-no-hooks: false  # Disable generation of hook functions
-no-auto-timestamps: false  # Disable auto timestamping on created_at/updated_at fields
-no-back-referencing: false  # Disable back-referencing for foreign keys
+pkgname: database # Package name to generate the ORM code into
+output: database/models # Output directory where models are generated
+no-tests: true # Disable generation of test files
+no-hooks: false # Disable generation of hook functions
+no-auto-timestamps: false # Disable auto timestamping on created_at/updated_at fields
+no-back-referencing: false # Disable back-referencing for foreign keys
 
 auto-columns:
-    created: "created_at"
-    updated: "updated_at"
+  created: "created_at"
+  updated: "updated_at"
 
 # Adds struct tags to generated models
-struct-tag-casing: snake  # Control the casing of struct tags
-struct-tags: json 
+struct-tag-casing: snake # Control the casing of struct tags
+struct-tags: json
 
 # Use context-based ORM methods
 context: true
@@ -37,7 +39,7 @@ context: true
 singularize: false
 
 # Include foreign key relationships in generated models
-add-global-variants: true  # Include additional variant methods
+add-global-variants: true # Include additional variant methods
 
 # Debugging settings
-debug: true  # Enable debug mode for SQL generation
+debug: true # Enable debug mode for SQL generation
