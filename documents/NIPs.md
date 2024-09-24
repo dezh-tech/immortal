@@ -1,4 +1,4 @@
-# Immportal supported NIPs
+# Immortal supported NIPs
 
 The Immortal follows [NIPs](https://github.com/nostr-protocol/nips) and tries to implement itself as close as possible to this standards.
 
