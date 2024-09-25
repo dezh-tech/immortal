@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
@@ -24,6 +23,9 @@ type filterQuery struct {
 }
 
 func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
+	defer cancel()
+
 	queryKinds := make(map[types.Kind][]filterQuery)
 
 	for _, f := range fs {
@@ -45,32 +47,24 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 	var finalResult []event.Event
 
 	for kind, filters := range queryKinds {
-		collection := h.DB.Client.Database(h.DB.DBName).Collection(database.KindToCollectionName[kind])
+		collection := h.DB.Client.Database(h.DB.DBName).Collection(KindToCollectionName[kind])
 		for _, f := range filters {
 			query, opts, err := FilterToQuery(&f)
 			if err != nil {
 				continue
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
-
 			cursor, err := collection.Find(ctx, query, opts)
 			if err != nil {
-				cancel()
-
 				return nil, err
 			}
 
 			var result []event.Event
-			if err = cursor.All(context.TODO(), &result); err != nil {
-				cancel()
-
+			if err := cursor.All(ctx, &result); err != nil {
 				return nil, err
 			}
 
 			finalResult = append(finalResult, result...)
-
-			cancel()
 		}
 	}
 
@@ -134,7 +128,12 @@ func FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
 	// Add Limit to options
 	if fq.Limit > 0 {
 		opts.SetLimit(int64(fq.Limit))
-	}
+	} // todo(@ZigBalthazar)::: read a default from database config.
+
+	opts.SetSort(bson.D{
+		{Key: "created_at", Value: -1},
+		{Key: "id", Value: 1},
+	})
 
 	return query, opts, nil
 }

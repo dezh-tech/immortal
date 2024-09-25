@@ -44,7 +44,7 @@ var (
 		{
 			RawFilter: `{"kinds":[1],"authors":["a8171781fd9e90ede3ea44ddca5d3abf828fe8eedeb0f3abb0dd3e563562e1fc","1d80e5588de010d137a67c42b03717595f5f510e73e42cfc48f31bae91844d59","ed4ca520e9929dfe9efdadf4011b53d30afd0678a09aa026927e60e7a45d9244"],"since":1677033299}`,
 			FilterObject: &filter.Filter{
-				Kinds: []types.Kind{types.KindTextNote},
+				Kinds: []types.Kind{types.KindShortTextNote},
 				Authors: []string{
 					"a8171781fd9e90ede3ea44ddca5d3abf828fe8eedeb0f3abb0dd3e563562e1fc",
 					"1d80e5588de010d137a67c42b03717595f5f510e73e42cfc48f31bae91844d59",
@@ -96,7 +96,7 @@ var (
 					"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900",
 					"e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
 				},
-				Kinds: []types.Kind{types.KindTextNote},
+				Kinds: []types.Kind{types.KindShortTextNote},
 				Tags: map[string][]string{
 					"#e": {"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
 				},
@@ -105,7 +105,7 @@ var (
 				ID:        "e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
 				PublicKey: "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34",
 				CreatedAt: 1726804325,
-				Kind:      types.KindTextNote,
+				Kind:      types.KindShortTextNote,
 				Tags: []types.Tag{
 					{"e", "97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
 					{"e", "7c77fa4057f78ca892b4d5533dd46a3ec5d938631448a5bd65f345038bfe8f5d"},
@@ -126,7 +126,7 @@ var (
 					"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900",
 					"e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
 				},
-				Kinds: []types.Kind{types.KindTextNote, types.KindProfileMetadata},
+				Kinds: []types.Kind{types.KindShortTextNote, types.KindUserMetadata},
 				Tags: map[string][]string{
 					"#e": {"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
 					"#p": {"ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34", "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34"},
@@ -136,7 +136,7 @@ var (
 				ID:        "e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
 				PublicKey: "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34",
 				CreatedAt: 1726808325,
-				Kind:      types.KindTextNote,
+				Kind:      types.KindShortTextNote,
 				Tags: []types.Tag{
 					{"e", "97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
 					{"e", "7c77fa4057f78ca892b4d5533dd46a3ec5d938631448a5bd65f345038bfe8f5d"},
@@ -157,7 +157,7 @@ var (
 					"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900",
 					"e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
 				},
-				Kinds: []types.Kind{types.KindTextNote, types.KindProfileMetadata},
+				Kinds: []types.Kind{types.KindShortTextNote, types.KindUserMetadata},
 				Tags: map[string][]string{
 					"#e": {"97ff1da488407f9b62b139ca750b4d486132bc18105acf6b771acb36ae107900"},
 					"#p": {"ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34", "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34"},
@@ -167,7 +167,7 @@ var (
 				ID:        "e641244e30894d6c0530b628232c1ca28954d1bb1bbf1c2b94b395ec8e672acc",
 				PublicKey: "ba0901be8b694476afe9cf55d861d437eab847431f2035a57f23382cc1f1ea34",
 				CreatedAt: 1726808325,
-				Kind:      types.KindTextNote,
+				Kind:      types.KindShortTextNote,
 				Tags: []types.Tag{
 					{"e", "7c77fa4057f78ca892b4d5533dd46a3ec5d938631448a5bd65f345038bfe8f5d"},
 					{
