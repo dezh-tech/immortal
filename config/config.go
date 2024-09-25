@@ -17,7 +17,7 @@ type Config struct {
 	Parameters   Parameters
 }
 
-// LoadConfig loads config from file, database and env.
+// LoadConfig loads config from file and env.
 func LoadConfig(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
