@@ -20,6 +20,11 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
+	err = cfg.LoadParameters(db)
+	if err != nil {
+		return nil, err
+	}
+
 	s, err := server.New(cfg.ServerConf, db)
 	if err != nil {
 		return nil, err

@@ -45,7 +45,7 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 		knownEvents: seb,
 		conns:       make(map[*websocket.Conn]clientState),
 		mu:          sync.RWMutex{},
-		handlers:    handler.New(db),
+		handlers:    handler.New(db, 100),
 	}, nil
 }
 

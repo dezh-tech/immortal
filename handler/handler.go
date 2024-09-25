@@ -98,10 +98,12 @@ var KindToCollectionName = map[types.Kind]string{
 
 type Handler struct {
 	DB *database.Database
+	a  int64
 }
 
-func New(db *database.Database) Handler {
+func New(db *database.Database, a int64) Handler {
 	return Handler{
 		DB: db,
+		a:  a,
 	}
 }
