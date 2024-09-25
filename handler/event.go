@@ -14,7 +14,7 @@ import (
 func (h *Handler) HandleEvent(e *event.Event) error {
 	collName, ok := KindToCollectionName[e.Kind]
 	if !ok {
-		return fmt.Errorf("kind %d is not supported", e.Kind)
+		return fmt.Errorf("kind %d is not supported yet", e.Kind)
 	}
 
 	coll := h.DB.Client.Database(h.DB.DBName).Collection(collName)
