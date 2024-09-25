@@ -33,8 +33,11 @@ func Connect(cfg Config) (*Database, error) {
 		return nil, err
 	}
 
+	qCtx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.QueryTimeout)*time.Millisecond)
+	defer cancel()
+
 	var result bson.M
-	if err := client.Database("admin").RunCommand(ctx, bson.D{{Key: "ping", Value: 1}}).
+	if err := client.Database("admin").RunCommand(qCtx, bson.D{{Key: "ping", Value: 1}}).
 		Decode(&result); err != nil {
 		return nil, err
 	}

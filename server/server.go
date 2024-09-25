@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"net/http"
@@ -35,8 +34,7 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 
 	f, err := os.Open(cfg.BloomBackupPath)
 	if err == nil {
-		w := bufio.NewReader(f)
-		_, err = seb.ReadFrom(w)
+		_, err = seb.ReadFrom(f)
 		if err != nil {
 			return nil, fmt.Errorf("server: loading bloom: %s", err.Error())
 		}
@@ -274,8 +272,7 @@ func (s *Server) Stop() error {
 		return fmt.Errorf("error: creating new file for blooms: %s", err.Error())
 	}
 
-	w := bufio.NewWriter(f)
-	_, err = s.knownEvents.WriteTo(w)
+	_, err = s.knownEvents.WriteTo(f)
 	if err != nil {
 		return fmt.Errorf("error: writing bloom filter to disck: %s", err.Error())
 	}
