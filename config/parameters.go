@@ -11,7 +11,7 @@ import (
 )
 
 type Parameters struct {
-	Handler *handler.Config `bson:"handler" `
+	Handler *handler.Config `bson:"handler"`
 }
 
 func (c *Config) LoadParameters(db *database.Database) error {

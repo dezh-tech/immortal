@@ -99,7 +99,7 @@ const (
 	KindInterestSets                 Kind = 30015
 	KindCreateOrUpdateAStall         Kind = 30017
 	KindCreateOrUpdateAProduct       Kind = 30018
-	KindMarketplaceUiUx              Kind = 30019
+	KindMarketplaceUIUx              Kind = 30019
 	KindProductSoldAsAnAuction       Kind = 30020
 	KindLongFormContent              Kind = 30023
 	KindDraftLongFormContent         Kind = 30024
