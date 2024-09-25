@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"time"
 
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
@@ -117,12 +116,12 @@ func FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
 
 	// Filter by Since (created_at >=)
 	if fq.Since > 0 {
-		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$gte": time.Unix(fq.Since, 0)}})
+		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$gte": fq.Since}})
 	}
 
 	// Filter by Until (created_at <=)
 	if fq.Until > 0 {
-		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$lte": time.Unix(fq.Until, 0)}})
+		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$lte": fq.Since}})
 	}
 
 	// Add Limit to options

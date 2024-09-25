@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/dezh-tech/immortal/types/event"
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,21 +29,9 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 		return nil
 	}
 
-	var query bson.D
 	var filter bson.D
 
 	if e.Kind.IsReplaceable() {
-		query = bson.D{
-			bson.E{
-				Key:   "pubkey",
-				Value: e.PublicKey,
-			},
-			bson.E{
-				Key:   "kind",
-				Value: e.Kind,
-			},
-		}
-
 		filter = bson.D{
 			bson.E{
 				Key:   "pubkey",
@@ -57,7 +44,7 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 			{
 				Key: "created_at",
 				Value: bson.M{
-					"$lte": time.Unix(e.CreatedAt, 0),
+					"$lte": e.CreatedAt,
 				},
 			},
 		}
@@ -81,28 +68,6 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 			return errors.New("no d tag found")
 		}
 
-		query = bson.D{
-			bson.E{
-				Key:   "pubkey",
-				Value: e.PublicKey,
-			},
-			bson.E{
-				Key:   "kind",
-				Value: e.Kind,
-			},
-			bson.E{
-				Key: "$and",
-				Value: bson.M{
-					"tags": bson.M{
-						"$elemMatch": bson.M{
-							"0": "d",
-							"1": dTag,
-						},
-					},
-				},
-			},
-		}
-
 		filter = bson.D{
 			bson.E{
 				Key:   "pubkey",
@@ -115,7 +80,7 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 			{
 				Key: "created_at",
 				Value: bson.M{
-					"$lte": time.Unix(e.CreatedAt, 0),
+					"$lte": e.CreatedAt,
 				},
 			},
 			bson.E{
@@ -132,26 +97,8 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 		}
 	}
 
-	cursor, err := coll.Find(ctx, query)
-	if err != nil {
-		return err
-	}
-
-	var result []event.Event
-	if err := cursor.All(ctx, &result); err != nil {
-		return err
-	}
-
-	if len(result) == 0 {
-		_, err := coll.InsertOne(ctx, e)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	_, err = coll.ReplaceOne(ctx, filter, e, &options.ReplaceOptions{})
+	opts := options.Replace().SetUpsert(true)
+	_, err := coll.ReplaceOne(ctx, filter, e, opts)
 	if err != nil {
 		return err
 	}
