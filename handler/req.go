@@ -128,7 +128,7 @@ func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, 
 	if fq.Limit > 0 {
 		opts.SetLimit(int64(fq.Limit))
 	} else {
-		opts.SetLimit(h.a)
+		opts.SetLimit(h.cfg.InitialQueryDefaultLimit)
 	}
 
 	opts.SetSort(bson.D{

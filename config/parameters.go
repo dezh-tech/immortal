@@ -5,12 +5,13 @@ import (
 	"errors"
 
 	"github.com/dezh-tech/immortal/database"
+	"github.com/dezh-tech/immortal/handler"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Parameters struct {
-	InitialQueryDefaultLimit int64 `bson:"initial_query_default_limit"`
+	Handler *handler.Config `bson:"handler" `
 }
 
 func (c *Config) LoadParameters(db *database.Database) error {
@@ -26,7 +27,9 @@ func (c *Config) LoadParameters(db *database.Database) error {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		// insert default parameters
 		newDocument := Parameters{
-			InitialQueryDefaultLimit: 100,
+			Handler: &handler.Config{
+				InitialQueryDefaultLimit: 100,
+			},
 		}
 
 		insertErr := c.SetParameters(db, newDocument)

@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/bits-and-blooms/bloom/v3"
-	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
@@ -26,10 +25,10 @@ type Server struct {
 	config      Config
 	conns       map[*websocket.Conn]clientState
 	mu          sync.RWMutex
-	handlers    handler.Handler
+	handlers    *handler.Handler
 }
 
-func New(cfg Config, db *database.Database) (*Server, error) {
+func New(cfg Config, h *handler.Handler) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
 	f, err := os.Open(cfg.BloomBackupPath)
@@ -45,7 +44,7 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 		knownEvents: seb,
 		conns:       make(map[*websocket.Conn]clientState),
 		mu:          sync.RWMutex{},
-		handlers:    handler.New(db, 100),
+		handlers:    h,
 	}, nil
 }
 

@@ -47,7 +47,7 @@ var KindToCollectionName = map[types.Kind]string{
 	types.KindAIEmbeddingsVectorLists:     "ai_embeddings_vector_lists",
 	types.KindTorrent:                     "torrents",
 	types.KindTorrentComment:              "torrent_comments",
-	types.KindCoinjoinPool:                "coinjoin_pools",
+	types.KindCoinJoinPool:                "coin_join_pools",
 	types.KindCommunityPostApproval:       "community_post_approvals",
 	types.KindJobRequest:                  "job_requests",
 	types.KindJobResult:                   "job_results",
@@ -78,7 +78,7 @@ var KindToCollectionName = map[types.Kind]string{
 	types.KindWalletRequest:               "wallet_requests",
 	types.KindWalletResponse:              "wallet_responses",
 	types.KindNostrConnect:                "nostr_connects",
-	types.KindBlobsStoredOnMediaservers:   "blobs_stored_on_mediaservers",
+	types.KindBlobsStoredOnMediaServers:   "blobs_stored_on_media_servers",
 	types.KindHTTPAuth:                    "http_auths",
 	types.KindFollowSets:                  "follow_sets",
 	types.KindGenericLists:                "generic_lists",
@@ -97,13 +97,13 @@ var KindToCollectionName = map[types.Kind]string{
 }
 
 type Handler struct {
-	DB *database.Database
-	a  int64
+	DB  *database.Database
+	cfg *Config
 }
 
-func New(db *database.Database, a int64) Handler {
-	return Handler{
-		DB: db,
-		a:  a,
+func New(db *database.Database, cfg *Config) *Handler {
+	return &Handler{
+		DB:  db,
+		cfg: cfg,
 	}
 }
