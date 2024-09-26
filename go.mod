@@ -5,6 +5,7 @@ go 1.22.5
 require (
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
+	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/mailru/easyjson v0.7.7

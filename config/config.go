@@ -4,17 +4,17 @@ import (
 	"os"
 
 	"github.com/dezh-tech/immortal/database"
-	"github.com/dezh-tech/immortal/server"
+	"github.com/dezh-tech/immortal/server/websocket"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
-	Environment  string          `yaml:"environment"`
-	ServerConf   server.Config   `yaml:"server"`
-	DatabaseConf database.Config `yaml:"database"`
-	Parameters   *Parameters
+	Environment     string           `yaml:"environment"`
+	WebsocketServer websocket.Config `yaml:"wserver"`
+	Database        database.Config  `yaml:"database"`
+	Parameters      *Parameters
 }
 
 // Load loads config from file and env.
@@ -39,11 +39,13 @@ func Load(path string) (*Config, error) {
 
 	if config.Environment != "prod" {
 		if err := godotenv.Load(); err != nil {
-			return nil, err
+			return nil, Error{
+				reason: err.Error(),
+			}
 		}
 	}
 
-	config.DatabaseConf.URI = os.Getenv("IMMO_MONGO_URI")
+	config.Database.URI = os.Getenv("IMMO_MONGO_URI")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

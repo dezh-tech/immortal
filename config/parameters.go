@@ -7,7 +7,7 @@ import (
 	"github.com/dezh-tech/immortal"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
-	"github.com/dezh-tech/immortal/server"
+	"github.com/dezh-tech/immortal/server/websocket"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,32 +18,47 @@ type Retention struct {
 	Kinds interface{} `bson:"kinds,omitempty" json:"kinds,omitempty"`
 }
 
-type Fees struct {
+type Subscription struct {
 	Amount int    `bson:"amount" json:"amount"`
 	Unit   string `bson:"unit"   json:"unit"`
 	Period int    `bson:"period" json:"period"`
 }
 
-type Subscription struct {
-	Subscription []Fees `bson:"subscription" json:"subscription"`
+type Admission struct {
+	Amount int    `bson:"amount" json:"amount"`
+	Unit   string `bson:"unit"   json:"unit"`
 }
+
+type Publication struct {
+	Kinds  []int  `bson:"kinds"  json:"kinds"`
+	Amount int    `bson:"amount" json:"amount"`
+	Unit   string `bson:"unit"   json:"unit"`
+}
+
+type Fees struct {
+	Subscription []Subscription `bson:"subscription" json:"subscription"`
+	Publication  []Publication  `bson:"publication" json:"publication"`
+	Admission    []Admission    `bson:"admission" json:"admission"`
+}
+
 type Parameters struct {
-	Handler        *handler.Config `bson:"handler"         json:"handler"`
-	Server         *server.Config  `bson:"handler"         json:"server"`
-	Retention      *Retention      `bson:"retention"       json:"retention"`
-	Fees           *Subscription   `bson:"fees"            json:"fees"`
-	Name           string          `bson:"name"            json:"name"`
-	Description    string          `bson:"description"     json:"description"`
-	Pubkey         string          `bson:"pubkey"          json:"pubkey"`
-	Software       string          `bson:"software"        json:"software"`
-	SupportedNips  []int           `bson:"supported_nips"  json:"supported_nips"`
-	Version        string          `bson:"version"         json:"version"`
-	RelayCountries []string        `bson:"relay_countries" json:"relay_countries"`
-	LanguageTags   []string        `bson:"language_tags"   json:"language_tags"`
-	Tags           []string        `bson:"tags"            json:"tags"`
-	PostingPolicy  string          `bson:"posting_policy"  json:"posting_policy"`
-	PaymentsURL    string          `bson:"payments_url"    json:"payments_url"`
-	Icon           string          `bson:"icon"            json:"icon"`
+	Handler        *handler.Config   `bson:"handler"         json:"handler"`
+	Server         *websocket.Config `bson:"server"          json:"server"`
+	Retention      *Retention        `bson:"retention"       json:"retention"`
+	Fees           *Fees             `bson:"fees"            json:"fees"`
+	Name           string            `bson:"name"            json:"name"`
+	Description    string            `bson:"description"     json:"description"`
+	Pubkey         string            `bson:"pubkey"          json:"pubkey"`
+	Contact        string            `bson:"contact"         json:"contact"`
+	Software       string            `bson:"software"        json:"software"`
+	SupportedNips  []int             `bson:"supported_nips"  json:"supported_nips"`
+	Version        string            `bson:"version"         json:"version"`
+	RelayCountries []string          `bson:"relay_countries" json:"relay_countries"`
+	LanguageTags   []string          `bson:"language_tags"   json:"language_tags"`
+	Tags           []string          `bson:"tags"            json:"tags"`
+	PostingPolicy  string            `bson:"posting_policy"  json:"posting_policy"`
+	PaymentsURL    string            `bson:"payments_url"    json:"payments_url"`
+	Icon           string            `bson:"icon"            json:"icon"`
 }
 
 func (c *Config) LoadParameters(db *database.Database) error {
@@ -59,8 +74,8 @@ func (c *Config) LoadParameters(db *database.Database) error {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		// insert default parameters
 		newDocument := &Parameters{
-			Name:           "Immortal",                                                         // relay name
-			Description:    "A Nostr relay for scale",                                          // description
+			Name:           "immortal",                                                         // relay name
+			Description:    "a nostr relay designed for scale.",                                // description
 			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c", // pubkey
 			Software:       "https://github.com/dezh-tech/immortal",                            // software repository URL
 			SupportedNips:  []int{1, 11},                                                       // Supported NIPs (protocols)
@@ -71,8 +86,8 @@ func (c *Config) LoadParameters(db *database.Database) error {
 			PostingPolicy:  "",                                                                 // posting policy URL
 			PaymentsURL:    "",                                                                 // payments URL
 			Icon:           "",                                                                 // icon URL
-			Server: &server.Config{
-				Limitation: &server.Limitation{
+			Server: &websocket.Config{
+				Limitation: &websocket.Limitation{
 					MaxMessageLength: 8192,  // Maximum length of a single message (in bytes or characters)
 					MaxSubscriptions: 20,    // Maximum number of concurrent subscriptions a client can create
 					MaxFilters:       20,    // Maximum number of filters a client can apply in a subscription
@@ -93,6 +108,13 @@ func (c *Config) LoadParameters(db *database.Database) error {
 					CreatedAtUpperLimit: 0,    // Latest timestamp allowed for event creation (0 for no limit)
 				},
 			},
+			Retention: &Retention{},
+			Fees: &Fees{
+				Subscription: []Subscription{},
+				Publication:  []Publication{},
+				Admission:    []Admission{},
+			},
+			Contact: "",
 		}
 
 		insertErr := c.SetParameters(db, newDocument)
@@ -105,7 +127,9 @@ func (c *Config) LoadParameters(db *database.Database) error {
 		return err
 	}
 
+	// todo::: refactor config.
 	c.Parameters = result
+	c.WebsocketServer = *result.Server
 
 	return nil
 }

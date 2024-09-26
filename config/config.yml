@@ -27,11 +27,11 @@ server:
 
 # database contains details of database connections and limitations.
 database:
-  # db_name is the name of mongodb related to immortal 
+  # db_name is the name of mongodb related to immortal
   db_name: "immortal"
   # query_timeout_in_ms specifies the maximum duration (in milliseconds) for query execution before timing out.
   # default is 3000.
   query_timeout_in_ms: 3000
   # connection_timeout_in_ms specifies the maximum duration (in milliseconds) that is used for creating connections to the server.
   # default is 5000.
-  connection_timeout_in_ms: 5000 
+  connection_timeout_in_ms: 5000
