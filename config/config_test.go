@@ -9,7 +9,7 @@ import (
 )
 
 func TestLoadfromFile(t *testing.T) {
-	cfg, err := config.LoadConfig("./config.yml")
+	cfg, err := config.Load("./config.yml")
 	require.NoError(t, err, "error must be nil.")
 
 	assert.Equal(t, uint16(7777), cfg.ServerConf.Port)

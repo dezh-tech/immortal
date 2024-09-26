@@ -16,8 +16,8 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 		return fmt.Errorf("kind %d is not supported yet", e.Kind)
 	}
 
-	coll := h.DB.Client.Database(h.DB.DBName).Collection(collName)
-	ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
+	coll := h.db.Client.Database(h.db.DBName).Collection(collName)
+	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 
 	if e.Kind.IsRegular() {

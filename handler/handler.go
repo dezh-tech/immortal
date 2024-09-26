@@ -97,13 +97,13 @@ var KindToCollectionName = map[types.Kind]string{
 }
 
 type Handler struct {
-	DB  *database.Database
-	cfg *Config
+	db     *database.Database
+	config *Config
 }
 
 func New(db *database.Database, cfg *Config) *Handler {
 	return &Handler{
-		DB:  db,
-		cfg: cfg,
+		db:     db,
+		config: cfg,
 	}
 }

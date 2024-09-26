@@ -14,11 +14,11 @@ type Config struct {
 	Environment  string          `yaml:"environment"`
 	ServerConf   server.Config   `yaml:"server"`
 	DatabaseConf database.Config `yaml:"database"`
-	Parameters   Parameters
+	Parameters   *Parameters
 }
 
-// LoadConfig loads config from file and env.
-func LoadConfig(path string) (*Config, error) {
+// Load loads config from file and env.
+func Load(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, Error{

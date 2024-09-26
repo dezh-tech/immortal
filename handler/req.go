@@ -22,7 +22,7 @@ type filterQuery struct {
 }
 
 func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 
 	queryKinds := make(map[types.Kind][]filterQuery)
@@ -46,7 +46,7 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 	var finalResult []event.Event
 
 	for kind, filters := range queryKinds {
-		collection := h.DB.Client.Database(h.DB.DBName).Collection(KindToCollectionName[kind])
+		collection := h.db.Client.Database(h.db.DBName).Collection(KindToCollectionName[kind])
 		for _, f := range filters {
 			query, opts, err := h.FilterToQuery(&f)
 			if err != nil {
@@ -128,7 +128,7 @@ func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, 
 	if fq.Limit > 0 {
 		opts.SetLimit(int64(fq.Limit))
 	} else {
-		opts.SetLimit(h.cfg.InitialQueryDefaultLimit)
+		opts.SetLimit(h.config.InitialQueryDefaultLimit)
 	}
 
 	opts.SetSort(bson.D{
