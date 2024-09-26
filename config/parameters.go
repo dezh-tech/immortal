@@ -59,7 +59,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 		newDocument := &Parameters{
 			Name:           "Immortal",                                                         // relay name
 			Description:    "A Nostr relay for scale",                                          // description
-			Pubkey:         "0000000000000000000000000000000000000000000000000000000000000000", // pubkey
+			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c", // pubkey
 			Software:       "https://github.com/dezh-tech/immortal",                            // software repository URL
 			SupportedNips:  []int{1, 11},                                                       // Supported NIPs (protocols)
 			Version:        immortal.StringVersion(),                                           // Version of the relay software
