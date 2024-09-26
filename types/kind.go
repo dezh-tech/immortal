@@ -54,7 +54,7 @@ const (
 	KindAIEmbeddingsVectorLists      Kind = 1987
 	KindTorrent                      Kind = 2003
 	KindTorrentComment               Kind = 2004
-	KindCoinjoinPool                 Kind = 2022
+	KindCoinJoinPool                 Kind = 2022
 	KindCommunityPostApproval        Kind = 4550
 	KindJobRequest                   Kind = 5000 // to 5999. support: todo.
 	KindJobResult                    Kind = 6000 // to 6999. support: todo.
@@ -85,7 +85,7 @@ const (
 	KindWalletRequest                Kind = 23194
 	KindWalletResponse               Kind = 23195
 	KindNostrConnect                 Kind = 24133
-	KindBlobsStoredOnMediaservers    Kind = 24242
+	KindBlobsStoredOnMediaServers    Kind = 24242
 	KindHTTPAuth                     Kind = 27235
 	KindFollowSets                   Kind = 30000
 	KindGenericLists                 Kind = 30001
@@ -99,7 +99,7 @@ const (
 	KindInterestSets                 Kind = 30015
 	KindCreateOrUpdateAStall         Kind = 30017
 	KindCreateOrUpdateAProduct       Kind = 30018
-	KindMarketplaceUIUX              Kind = 30019
+	KindMarketplaceUIUx              Kind = 30019
 	KindProductSoldAsAnAuction       Kind = 30020
 	KindLongFormContent              Kind = 30023
 	KindDraftLongFormContent         Kind = 30024

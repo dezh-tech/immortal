@@ -22,7 +22,7 @@ type filterQuery struct {
 }
 
 func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), h.DB.QueryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 
 	queryKinds := make(map[types.Kind][]filterQuery)
@@ -46,9 +46,9 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 	var finalResult []event.Event
 
 	for kind, filters := range queryKinds {
-		collection := h.DB.Client.Database(h.DB.DBName).Collection(KindToCollectionName[kind])
+		collection := h.db.Client.Database(h.db.DBName).Collection(KindToCollectionName[kind])
 		for _, f := range filters {
-			query, opts, err := FilterToQuery(&f)
+			query, opts, err := h.FilterToQuery(&f)
 			if err != nil {
 				continue
 			}
@@ -83,7 +83,7 @@ func removeDuplicateKind(intSlice []types.Kind) []types.Kind {
 	return list
 }
 
-func FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
+func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
 	var query bson.D
 	opts := options.Find()
 
@@ -127,7 +127,9 @@ func FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
 	// Add Limit to options
 	if fq.Limit > 0 {
 		opts.SetLimit(int64(fq.Limit))
-	} // todo(@ZigBalthazar)::: read a default from database config.
+	} else {
+		opts.SetLimit(h.config.InitialQueryDefaultLimit)
+	}
 
 	opts.SetSort(bson.D{
 		{Key: "created_at", Value: -1},

@@ -3,6 +3,7 @@ package relay
 import (
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/database"
+	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/server"
 )
 
@@ -20,7 +21,14 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	s, err := server.New(cfg.ServerConf, db)
+	err = cfg.LoadParameters(db)
+	if err != nil {
+		return nil, err
+	}
+
+	h := handler.New(db, cfg.Parameters.Handler)
+
+	s, err := server.New(cfg.ServerConf, h)
 	if err != nil {
 		return nil, err
 	}
