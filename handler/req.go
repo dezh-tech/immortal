@@ -125,7 +125,7 @@ func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, 
 	}
 
 	// Add Limit to options
-	if fq.Limit > 0 {
+	if fq.Limit > 0 && fq.Limit < uint16(h.config.Limitation.MaxLimit) {
 		opts.SetLimit(int64(fq.Limit))
 	} else {
 		opts.SetLimit(h.config.InitialQueryDefaultLimit)

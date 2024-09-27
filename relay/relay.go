@@ -11,7 +11,7 @@ import (
 // Relay keeps all concepts such as server, database and manages them.
 type Relay struct {
 	config          config.Config
-	webscoketServer *websocket.Server
+	websocketServer *websocket.Server
 	httpServer      *http.Server
 	database        *database.Database
 }
@@ -35,35 +35,45 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	hs, err := http.New(cfg, db)
+	hs, err := http.New(cfg.HTTPServer, cfg.GetNIP11Documents(), db)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Relay{
 		config:          *cfg,
-		webscoketServer: ws,
+		websocketServer: ws,
 		database:        db,
 		httpServer:      hs,
 	}, nil
 }
 
 // Start runs the relay and its children.
-func (r *Relay) Start() error {
+func (r *Relay) Start() chan error {
+	errCh := make(chan error, 2)
+
 	go func() error {
-		if err := r.webscoketServer.Start(); err != nil {
-			return err
+		if err := r.websocketServer.Start(); err != nil {
+			errCh <- err
 		}
 
 		return nil
 	}()
 
-	return r.httpServer.Start()
+	go func() error {
+		if err := r.httpServer.Start(); err != nil {
+			errCh <- err
+		}
+
+		return nil
+	}()
+
+	return errCh
 }
 
 // Stop shutdowns the relay and its children gracefully.
 func (r *Relay) Stop() error {
-	if err := r.webscoketServer.Stop(); err != nil {
+	if err := r.websocketServer.Stop(); err != nil {
 		return err
 	}
 

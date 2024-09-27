@@ -10,8 +10,8 @@
 # default is prod.
 environment: "prod"
 
-# server contains information about websocket server.
-server:
+# ws_server contains information about websocket server.
+ws_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
   bind: "127.0.0.1"
@@ -24,6 +24,15 @@ server:
   # bloom_backup_path is the path to store bloom filter when relay shutdown.
   # default is immo_bloom_backup.
   bloom_backup_path: "immo_bloom_backup"
+
+# http_server contains information about http server.
+http_server:
+  # bind is the IP address to be bind and listen on.
+  # default if local host.
+  bind: "127.0.0.1"
+  # port is websocket port to be listen on.
+  # default is 8888.
+  port: 8888
 
 # database contains details of database connections and limitations.
 database:

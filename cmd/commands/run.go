@@ -26,15 +26,10 @@ func HandleRun(args []string) {
 		ExitOnError(err)
 	}
 
-	errCh := make(chan error)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
-	go func() {
-		if err := r.Start(); err != nil {
-			errCh <- err
-		}
-	}()
+	errCh := r.Start()
 
 	select {
 	case sig := <-sigChan:
