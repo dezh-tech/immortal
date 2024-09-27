@@ -115,6 +115,10 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		})
 	}
 
+	n11d.Fees.Admission = addmissions
+	n11d.Fees.Subscription = subscription
+	n11d.Fees.Publication = publication
+
 	return n11d
 }
 
