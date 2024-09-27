@@ -1,7 +1,7 @@
 package handler
 
 type Limitation struct {
-	MaxLimit uint16          `bson:"max_limit"              json:"max_limit"`
+	MaxLimit uint16 `bson:"max_limit"              json:"max_limit"`
 	// todo(@zig)::: move to server.
 	MaxEventTags        uint `bson:"max_event_tags"         json:"max_event_tags"`
 	MaxContentLength    uint `bson:"max_content_length"     json:"max_content_length"`
