@@ -20,17 +20,17 @@ type RelayInformationDocument struct {
 }
 
 type RelayLimitationDocument struct {
-	MaxMessageLength int  `json:"max_message_length,omitempty"`
-	MaxSubscriptions int  `json:"max_subscriptions,omitempty"`
-	MaxFilters       int  `json:"max_filters,omitempty"`
-	MaxLimit         int  `json:"max_limit,omitempty"`
-	MaxSubidLength   int  `json:"max_subid_length,omitempty"`
-	MaxEventTags     int  `json:"max_event_tags,omitempty"`
-	MaxContentLength int  `json:"max_content_length,omitempty"`
-	MinPowDifficulty int  `json:"min_pow_difficulty,omitempty"`
-	AuthRequired     bool `json:"auth_required"`
-	PaymentRequired  bool `json:"payment_required"`
-	RestrictedWrites bool `json:"restricted_writes"`
+	MaxMessageLength int    `json:"max_message_length,omitempty"`
+	MaxSubscriptions int    `json:"max_subscriptions,omitempty"`
+	MaxFilters       int    `json:"max_filters,omitempty"`
+	MaxLimit         uint16 `json:"max_limit,omitempty"`
+	MaxSubidLength   int    `json:"max_subid_length,omitempty"`
+	MaxEventTags     uint   `json:"max_event_tags,omitempty"`
+	MaxContentLength uint   `json:"max_content_length,omitempty"`
+	MinPowDifficulty int    `json:"min_pow_difficulty,omitempty"`
+	AuthRequired     bool   `json:"auth_required"`
+	PaymentRequired  bool   `json:"payment_required"`
+	RestrictedWrites bool   `json:"restricted_writes"`
 }
 
 type RelayFeesDocument struct {
@@ -40,24 +40,24 @@ type RelayFeesDocument struct {
 }
 
 type Subscription struct {
-	Amount int    `bson:"amount" json:"amount"`
-	Unit   string `bson:"unit"   json:"unit"`
-	Period int    `bson:"period" json:"period"`
+	Amount int    `json:"amount"`
+	Unit   string `json:"unit"`
+	Period int    `json:"period"`
 }
 
 type Admission struct {
-	Amount int    `bson:"amount" json:"amount"`
-	Unit   string `bson:"unit"   json:"unit"`
+	Amount int    `json:"amount"`
+	Unit   string `json:"unit"`
 }
 
 type Publication struct {
-	Kinds  []int  `bson:"kinds"  json:"kinds"`
-	Amount int    `bson:"amount" json:"amount"`
-	Unit   string `bson:"unit"   json:"unit"`
+	Kinds  []int  `json:"kinds"`
+	Amount int    `json:"amount"`
+	Unit   string `json:"unit"`
 }
 
 type Fees struct {
-	Subscription []Subscription `bson:"subscription,omitempty" json:"subscription,omitempty"`
-	Publication  []Publication  `bson:"publication,omitempty" json:"publication,omitempty"`
-	Admission    []Admission    `bson:"admission,omitempty" json:"admission,omitempty"`
+	Subscription []Subscription `json:"subscription,omitempty"`
+	Publication  []Publication  `json:"publication,omitempty"`
+	Admission    []Admission    `json:"admission,omitempty"`
 }

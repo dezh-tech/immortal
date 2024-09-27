@@ -35,7 +35,7 @@ type healthResponse struct {
 	System   system  `json:"system"`
 }
 
-func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) healthHandler(w http.ResponseWriter, _ *http.Request) {
 	ms := runtime.MemStats{}
 	runtime.ReadMemStats(&ms)
 
