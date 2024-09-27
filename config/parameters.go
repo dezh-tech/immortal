@@ -37,22 +37,22 @@ type Publication struct {
 
 type Fees struct {
 	Subscription []Subscription `bson:"subscription,omitempty" json:"subscription,omitempty"`
-	Publication  []Publication  `bson:"publication,omitempty" json:"publication,omitempty"`
-	Admission    []Admission    `bson:"admission,omitempty" json:"admission,omitempty"`
+	Publication  []Publication  `bson:"publication,omitempty"  json:"publication,omitempty"`
+	Admission    []Admission    `bson:"admission,omitempty"    json:"admission,omitempty"`
 }
 
 type Parameters struct {
-	Handler         *handler.Config   `bson:"handler"         json:"handler"`
-	WebsocketServer *websocket.Config `bson:"server"          json:"server"`
+	Handler         *handler.Config   `bson:"handler"                   json:"handler"`
+	WebsocketServer *websocket.Config `bson:"server"                    json:"server"`
 	Retention       *Retention        `bson:"retention,omitempty"       json:"retention,omitempty"`
 	Fees            *Fees             `bson:"fees,omitempty"            json:"fees,omitempty"`
-	Name            string            `bson:"name"            json:"name"`
-	Description     string            `bson:"description"     json:"description"`
-	Pubkey          string            `bson:"pubkey"          json:"pubkey"`
-	Contact         string            `bson:"contact"         json:"contact"`
-	Software        string            `bson:"software"        json:"software"`
-	SupportedNips   []int             `bson:"supported_nips"  json:"supported_nips"`
-	Version         string            `bson:"version"         json:"version"`
+	Name            string            `bson:"name"                      json:"name"`
+	Description     string            `bson:"description"               json:"description"`
+	Pubkey          string            `bson:"pubkey"                    json:"pubkey"`
+	Contact         string            `bson:"contact"                   json:"contact"`
+	Software        string            `bson:"software"                  json:"software"`
+	SupportedNips   []int             `bson:"supported_nips"            json:"supported_nips"`
+	Version         string            `bson:"version"                   json:"version"`
 	RelayCountries  []string          `bson:"relay_countries,omitempty" json:"relay_countries,omitempty"`
 	LanguageTags    []string          `bson:"language_tags,omitempty"   json:"language_tags,omitempty"`
 	Tags            []string          `bson:"tags,omitempty"            json:"tags,omitempty"`

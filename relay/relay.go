@@ -52,20 +52,16 @@ func New(cfg *config.Config) (*Relay, error) {
 func (r *Relay) Start() chan error {
 	errCh := make(chan error, 2)
 
-	go func() error {
+	go func() {
 		if err := r.websocketServer.Start(); err != nil {
 			errCh <- err
 		}
-
-		return nil
 	}()
 
-	go func() error {
+	go func() {
 		if err := r.httpServer.Start(); err != nil {
 			errCh <- err
 		}
-
-		return nil
 	}()
 
 	return errCh

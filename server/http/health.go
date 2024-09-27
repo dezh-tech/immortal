@@ -16,16 +16,11 @@ const (
 )
 
 type system struct {
-	// Version is the go version.
-	Version string `json:"version"`
-	// GoroutinesCount is the number of the current goroutines.
-	GoroutinesCount int `json:"goroutines_count"`
-	// TotalAllocBytes is the total bytes allocated.
-	TotalAllocBytes int `json:"total_alloc_bytes"`
-	// HeapObjectsCount is the number of objects in the go heap.
-	HeapObjectsCount int `json:"heap_objects_count"`
-	// TotalAllocBytes is the bytes allocated and not yet freed.
-	AllocBytes int `json:"alloc_bytes"`
+	Version          string `json:"version"`
+	GoroutinesCount  int    `json:"goroutines_count"`
+	TotalAllocBytes  uint64 `json:"total_alloc_bytes"`
+	HeapObjectsCount uint64 `json:"heap_objects_count"`
+	AllocBytes       uint64 `json:"alloc_bytes"`
 }
 
 type service struct {
@@ -49,9 +44,9 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 		System: system{
 			Version:          runtime.Version(),
 			GoroutinesCount:  runtime.NumGoroutine(),
-			TotalAllocBytes:  int(ms.Alloc),
-			HeapObjectsCount: int(ms.HeapObjects),
-			AllocBytes:       int(ms.Alloc),
+			TotalAllocBytes:  ms.Alloc,
+			HeapObjectsCount: ms.HeapObjects,
+			AllocBytes:       ms.Alloc,
 		},
 		Database: service{
 			Name: "mongo_db",
