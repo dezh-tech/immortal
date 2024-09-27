@@ -89,7 +89,7 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		Icon:           c.Parameters.Icon,
 	}
 
-	addmissions := make([]nip11.Admission, len(c.Parameters.Fees.Admission))
+	addmissions := make([]nip11.Admission, 0)
 	for _, a := range c.Parameters.Fees.Admission {
 		addmissions = append(addmissions, nip11.Admission{
 			Amount: a.Amount,
@@ -97,7 +97,7 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		})
 	}
 
-	subscription := make([]nip11.Subscription, len(c.Parameters.Fees.Subscription))
+	subscription := make([]nip11.Subscription, 0)
 	for _, s := range c.Parameters.Fees.Subscription {
 		subscription = append(subscription, nip11.Subscription{
 			Amount: s.Amount,
@@ -106,7 +106,7 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		})
 	}
 
-	publication := make([]nip11.Publication, len(c.Parameters.Fees.Publication))
+	publication := make([]nip11.Publication, 0)
 	for _, p := range c.Parameters.Fees.Publication {
 		publication = append(publication, nip11.Publication{
 			Kinds:  p.Kinds,

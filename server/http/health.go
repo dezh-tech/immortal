@@ -57,7 +57,7 @@ func (s *Server) healthHandler(w http.ResponseWriter, _ *http.Request) {
 	defer cancel()
 
 	resp.Database.Status = true
-	if err := s.db.Client.Ping(ctx, nil); err != nil {
+	if err := s.db.Client.Ping(ctx, nil); err != nil { //nolint
 		resp.Database.Status = false
 		resp.Database.Reason = err.Error()
 		resp.Status = statusPartiallyAvailable
