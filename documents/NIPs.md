@@ -6,7 +6,7 @@ The Immortal follows [NIPs](https://github.com/nostr-protocol/nips) and tries to
 - [ ] **NIP-02**: Follow List
 - [ ] **NIP-03**: OpenTimestamps Attestations for Events
 - [ ] **NIP-09**: Event Deletion Request
-- [ ] **NIP-11**: Relay Information Document (WIP)
+- [X] **NIP-11**: Relay Information Document
 - [ ] **NIP-13**: Proof of Work
 - [ ] **NIP-15**: Nostr Marketplace (for resilient marketplaces)
 - [ ] **NIP-17**: Private Direct Messages

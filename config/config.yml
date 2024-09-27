@@ -10,8 +10,8 @@
 # default is prod.
 environment: "prod"
 
-# server contains information about websocket server.
-server:
+# ws_server contains information about websocket server.
+ws_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
   bind: "127.0.0.1"
@@ -25,13 +25,22 @@ server:
   # default is immo_bloom_backup.
   bloom_backup_path: "immo_bloom_backup"
 
+# http_server contains information about http server.
+http_server:
+  # bind is the IP address to be bind and listen on.
+  # default if local host.
+  bind: "127.0.0.1"
+  # port is websocket port to be listen on.
+  # default is 8888.
+  port: 8888
+
 # database contains details of database connections and limitations.
 database:
-  # db_name is the name of mongodb related to immortal 
+  # db_name is the name of mongodb related to immortal
   db_name: "immortal"
   # query_timeout_in_ms specifies the maximum duration (in milliseconds) for query execution before timing out.
   # default is 3000.
   query_timeout_in_ms: 3000
   # connection_timeout_in_ms specifies the maximum duration (in milliseconds) that is used for creating connections to the server.
   # default is 5000.
-  connection_timeout_in_ms: 5000 
+  connection_timeout_in_ms: 5000

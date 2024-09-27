@@ -1,4 +1,4 @@
-package server
+package websocket
 
 type Limitation struct {
 	MaxMessageLength int  `bson:"max_message_length" json:"max_message_length"`
@@ -12,8 +12,8 @@ type Limitation struct {
 }
 type Config struct {
 	Bind            string `yaml:"bind"`
-	BloomBackupPath string `yaml:"bloom_backup_path"`
 	Port            uint16 `yaml:"port"`
+	BloomBackupPath string `yaml:"bloom_backup_path"`
 	KnownBloomSize  uint   `yaml:"known_bloom_size"`
 	Limitation      *Limitation
 }

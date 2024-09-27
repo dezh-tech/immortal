@@ -1,4 +1,4 @@
-package server
+package websocket
 
 import (
 	"fmt"
@@ -119,10 +119,31 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
+	if len(msg.Filters) > s.config.Limitation.MaxFilters {
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of filters is: %d",
+			s.config.Limitation.MaxFilters)))
+
+		return
+	}
+
+	if s.config.Limitation.MaxSubidLength < len(msg.SubscriptionID) {
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
+			s.config.Limitation.MaxSubidLength)))
+
+		return
+	}
+
 	client, ok := s.conns[conn]
 	if !ok {
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
 			conn.RemoteAddr())))
+
+		return
+	}
+
+	if len(client.subs) > s.config.Limitation.MaxSubscriptions {
+		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of subs is: %d",
+			s.config.Limitation.MaxSubscriptions)))
 
 		return
 	}
@@ -154,6 +175,17 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		okm := message.MakeOK(false,
 			"",
 			"error: can't parse EVENT message.",
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		return
+	}
+
+	if len(msg.Event.Content) > s.config.Limitation.MaxMessageLength {
+		okm := message.MakeOK(false,
+			"",
+			fmt.Sprintf("error: max limit of message length is %d", s.config.Limitation.MaxMessageLength),
 		)
 
 		_ = conn.WriteMessage(1, okm)

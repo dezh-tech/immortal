@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -36,9 +35,7 @@ func Connect(cfg Config) (*Database, error) {
 	qCtx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.QueryTimeout)*time.Millisecond)
 	defer cancel()
 
-	var result bson.M
-	if err := client.Database("admin").RunCommand(qCtx, bson.D{{Key: "ping", Value: 1}}).
-		Decode(&result); err != nil {
+	if err := client.Ping(qCtx, nil); err != nil {
 		return nil, err
 	}
 
