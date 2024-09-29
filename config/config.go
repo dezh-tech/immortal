@@ -87,6 +87,7 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		PostingPolicy:  c.Parameters.PostingPolicy,
 		PaymentsURL:    c.Parameters.PaymentsURL,
 		Icon:           c.Parameters.Icon,
+		Fees:           new(nip11.RelayFeesDocument),
 	}
 
 	addmissions := make([]nip11.Admission, 0)

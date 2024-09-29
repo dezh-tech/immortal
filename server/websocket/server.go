@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
+	"github.com/dezh-tech/immortal/types/nip11"
 	"github.com/gorilla/websocket"
 )
 
@@ -24,11 +26,12 @@ type Server struct {
 	knownEvents *bloom.BloomFilter
 	config      Config
 	conns       map[*websocket.Conn]clientState
+	nip11Doc    *nip11.RelayInformationDocument
 	mu          sync.RWMutex
 	handlers    *handler.Handler
 }
 
-func New(cfg Config, h *handler.Handler) (*Server, error) {
+func New(cfg Config, nip11 *nip11.RelayInformationDocument, h *handler.Handler) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
 	f, err := os.Open(cfg.BloomBackupPath)
@@ -44,6 +47,7 @@ func New(cfg Config, h *handler.Handler) (*Server, error) {
 		knownEvents: seb,
 		conns:       make(map[*websocket.Conn]clientState),
 		mu:          sync.RWMutex{},
+		nip11Doc:    nip11,
 		handlers:    h,
 	}, nil
 }
@@ -59,6 +63,14 @@ func (s *Server) Start() error {
 
 // handleWS is WebSocket handler.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Connection") != "Upgrade" || r.Header.Get("Upgrade") != "websocket" {
+		w.Header().Set("Content-Type", "application/nostr+json")
+		w.WriteHeader(http.StatusOK)
+
+		json.NewEncoder(w).Encode(s.nip11Doc)
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
