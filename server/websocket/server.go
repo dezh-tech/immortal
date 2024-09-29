@@ -67,7 +67,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/nostr+json")
 		w.WriteHeader(http.StatusOK)
 
-		_ = json.NewEncoder(w).Encode(s.nip11Doc)
+		_ = json.NewEncoder(w).Encode(s.nip11Doc) //nolint
 
 		return
 	}
@@ -195,7 +195,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Content) > int(s.config.Limitation.MaxContentLength) {
+	if len(msg.Event.Content) > s.config.Limitation.MaxContentLength {
 		okm := message.MakeOK(false,
 			"",
 			fmt.Sprintf("error: max limit of message length is %d", s.config.Limitation.MaxContentLength),

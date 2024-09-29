@@ -9,10 +9,10 @@ type Limitation struct {
 	AuthRequired        bool `bson:"auth_required"          json:"auth_required"`      // todo.
 	PaymentRequired     bool `bson:"payment_required"       json:"payment_required"`   // todo.
 	RestrictedWrites    bool `bson:"restricted_writes"      json:"restricted_writes"`  // todo.
-	MaxEventTags        uint `bson:"max_event_tags"         json:"max_event_tags"`     // todo.
-	MaxContentLength    uint `bson:"max_content_length"     json:"max_content_length"`
-	CreatedAtLowerLimit uint `bson:"created_at_lower_limit" json:"created_at_lower_limit"` // todo.
-	CreatedAtUpperLimit uint `bson:"created_at_upper_limit" json:"created_at_upper_limit"` // todo.
+	MaxEventTags        int  `bson:"max_event_tags"         json:"max_event_tags"`     // todo.
+	MaxContentLength    int  `bson:"max_content_length"     json:"max_content_length"`
+	CreatedAtLowerLimit int  `bson:"created_at_lower_limit" json:"created_at_lower_limit"` // todo.
+	CreatedAtUpperLimit int  `bson:"created_at_upper_limit" json:"created_at_upper_limit"` // todo.
 }
 
 type Config struct {
