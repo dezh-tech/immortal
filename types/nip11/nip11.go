@@ -25,8 +25,8 @@ type RelayLimitationDocument struct {
 	MaxFilters       int    `json:"max_filters,omitempty"`
 	MaxLimit         uint16 `json:"max_limit,omitempty"`
 	MaxSubidLength   int    `json:"max_subid_length,omitempty"`
-	MaxEventTags     uint   `json:"max_event_tags,omitempty"`
-	MaxContentLength uint   `json:"max_content_length,omitempty"`
+	MaxEventTags     int    `json:"max_event_tags,omitempty"`
+	MaxContentLength int    `json:"max_content_length,omitempty"`
 	MinPowDifficulty int    `json:"min_pow_difficulty,omitempty"`
 	AuthRequired     bool   `json:"auth_required"`
 	PaymentRequired  bool   `json:"payment_required"`
