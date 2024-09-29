@@ -88,24 +88,24 @@ func (c *Config) LoadParameters(db *database.Database) error {
 			Icon:           "",                                                                 // icon URL
 			WebsocketServer: &websocket.Config{
 				Limitation: &websocket.Limitation{
-					MaxMessageLength: 8192,  // Maximum length of a single message (in bytes or characters)
-					MaxSubscriptions: 20,    // Maximum number of concurrent subscriptions a client can create
-					MaxFilters:       20,    // Maximum number of filters a client can apply in a subscription
-					MaxSubidLength:   256,   // Maximum length of a subscription identifier
-					MinPowDifficulty: 0,     // Minimum proof-of-work difficulty for publishing events
-					AuthRequired:     false, // Whether authentication is required for writes
-					PaymentRequired:  false, // Whether payment is required to interact with the relay
-					RestrictedWrites: false, // Whether writes are restricted to authenticated or paying users
+					MaxMessageLength:    8192,  // Maximum length of a single message (in bytes or characters)
+					MaxSubscriptions:    20,    // Maximum number of concurrent subscriptions a client can create
+					MaxFilters:          20,    // Maximum number of filters a client can apply in a subscription
+					MaxSubidLength:      256,   // Maximum length of a subscription identifier
+					MinPowDifficulty:    0,     // Minimum proof-of-work difficulty for publishing events
+					AuthRequired:        false, // Whether authentication is required for writes
+					PaymentRequired:     false, // Whether payment is required to interact with the relay
+					RestrictedWrites:    false, // Whether writes are restricted to authenticated or paying users
+					MaxEventTags:        200,   // Maximum number of tags allowed in a single event
+					MaxContentLength:    4096,  // Maximum content length of an event (in bytes)
+					CreatedAtLowerLimit: 0,     // Earliest timestamp allowed for event creation
+					CreatedAtUpperLimit: 0,     // Latest timestamp allowed for event creation (0 for no limit)
 				},
 			},
 			Handler: &handler.Config{
 				InitialQueryDefaultLimit: 100,
 				Limitation: handler.Limitation{
-					MaxLimit:            1000, // Maximum number of events returned in a query
-					MaxEventTags:        200,  // Maximum number of tags allowed in a single event
-					MaxContentLength:    4096, // Maximum content length of an event (in bytes)
-					CreatedAtLowerLimit: 0,    // Earliest timestamp allowed for event creation
-					CreatedAtUpperLimit: 0,    // Latest timestamp allowed for event creation (0 for no limit)
+					MaxLimit: 1000, // Maximum number of events returned in a query
 				},
 			},
 			Retention: &Retention{},

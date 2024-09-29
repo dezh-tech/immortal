@@ -31,7 +31,7 @@ type Server struct {
 	handlers    *handler.Handler
 }
 
-func New(cfg Config, nip11 *nip11.RelayInformationDocument, h *handler.Handler) (*Server, error) {
+func New(cfg Config, nip11Doc *nip11.RelayInformationDocument, h *handler.Handler) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
 	f, err := os.Open(cfg.BloomBackupPath)
@@ -47,7 +47,7 @@ func New(cfg Config, nip11 *nip11.RelayInformationDocument, h *handler.Handler) 
 		knownEvents: seb,
 		conns:       make(map[*websocket.Conn]clientState),
 		mu:          sync.RWMutex{},
-		nip11Doc:    nip11,
+		nip11Doc:    nip11Doc,
 		handlers:    h,
 	}, nil
 }
@@ -67,7 +67,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/nostr+json")
 		w.WriteHeader(http.StatusOK)
 
-		json.NewEncoder(w).Encode(s.nip11Doc)
+		_ = json.NewEncoder(w).Encode(s.nip11Doc)
+
 		return
 	}
 
@@ -194,10 +195,10 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Content) > s.config.Limitation.MaxMessageLength {
+	if len(msg.Event.Content) > int(s.config.Limitation.MaxContentLength) {
 		okm := message.MakeOK(false,
 			"",
-			fmt.Sprintf("error: max limit of message length is %d", s.config.Limitation.MaxMessageLength),
+			fmt.Sprintf("error: max limit of message length is %d", s.config.Limitation.MaxContentLength),
 		)
 
 		_ = conn.WriteMessage(1, okm)
