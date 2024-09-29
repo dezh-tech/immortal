@@ -74,8 +74,8 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 			MaxFilters:       c.WebsocketServer.Limitation.MaxFilters,
 			MaxLimit:         c.Parameters.Handler.Limitation.MaxLimit,
 			MaxSubidLength:   c.WebsocketServer.Limitation.MaxSubidLength,
-			MaxEventTags:     c.Parameters.Handler.Limitation.MaxEventTags,
-			MaxContentLength: c.Parameters.Handler.Limitation.MaxContentLength,
+			MaxEventTags:     c.WebsocketServer.Limitation.MaxEventTags,
+			MaxContentLength: c.WebsocketServer.Limitation.MaxContentLength,
 			MinPowDifficulty: c.WebsocketServer.Limitation.MinPowDifficulty,
 			AuthRequired:     c.WebsocketServer.Limitation.AuthRequired,
 			PaymentRequired:  c.WebsocketServer.Limitation.PaymentRequired,
@@ -87,6 +87,7 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		PostingPolicy:  c.Parameters.PostingPolicy,
 		PaymentsURL:    c.Parameters.PaymentsURL,
 		Icon:           c.Parameters.Icon,
+		Fees:           new(nip11.RelayFeesDocument),
 	}
 
 	addmissions := make([]nip11.Admission, 0)
