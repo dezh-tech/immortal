@@ -8,6 +8,7 @@ import (
 
 	"github.com/dezh-tech/immortal/database"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Server struct {
@@ -25,6 +26,7 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 	}
 
 	r.HandleFunc("/health", s.healthHandler).Methods("GET")
+	r.Handle("/metrics", promhttp.Handler())
 
 	return s, nil
 }

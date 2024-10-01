@@ -4,6 +4,7 @@ import (
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
+	"github.com/dezh-tech/immortal/metrics"
 	"github.com/dezh-tech/immortal/server/http"
 	"github.com/dezh-tech/immortal/server/websocket"
 )
@@ -30,7 +31,9 @@ func New(cfg *config.Config) (*Relay, error) {
 
 	h := handler.New(db, cfg.Parameters.Handler)
 
-	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h)
+	m := metrics.New()
+
+	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m)
 	if err != nil {
 		return nil, err
 	}
