@@ -144,14 +144,14 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	defer s.mu.Unlock()
 	defer measureLatency(s.metrics.RequestLatency)()
 
-	status := "success"
+	status := success
 	defer s.metrics.RequestsTotal.WithLabelValues(status).Inc()
 
 	msg, ok := m.(*message.Req)
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
 
-		status = "fail"
+		status = parseFail
 
 		return
 	}
@@ -160,7 +160,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of filters is: %d",
 			s.config.Limitation.MaxFilters)))
 
-		status = "fail"
+		status = limitsFail
 
 		return
 	}
@@ -169,7 +169,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
 			s.config.Limitation.MaxSubidLength)))
 
-		status = "fail"
+		status = limitsFail
 
 		return
 	}
@@ -179,7 +179,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
 			conn.RemoteAddr())))
 
-		status = "fail"
+		status = serverFail
 
 		return
 	}
@@ -188,15 +188,14 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of subs is: %d",
 			s.config.Limitation.MaxSubscriptions)))
 
-		status = "fail"
-
+		status = limitsFail
 		return
 	}
 
 	res, err := s.handlers.HandleReq(msg.Filters)
 	if err != nil {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
-		status = "fail"
+		status = databaseFail
 
 		return
 	}
@@ -220,7 +219,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	defer s.mu.Unlock()
 	defer measureLatency(s.metrics.EventLaency)()
 
-	status := "success"
+	status := success
 	defer s.metrics.EventsTotal.WithLabelValues(status).Inc()
 
 	msg, ok := m.(*message.Event)
@@ -231,7 +230,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		)
 
 		_ = conn.WriteMessage(1, okm)
-		status = "fail"
+		status = parseFail
 
 		return
 	}
@@ -244,7 +243,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 		_ = conn.WriteMessage(1, okm)
 
-		status = "fail"
+		status = limitsFail
 
 		return
 	}
@@ -266,7 +265,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 		_ = conn.WriteMessage(1, okm)
 
-		status = "fail"
+		status = invalidFail
 
 		return
 	}
@@ -281,7 +280,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 			_ = conn.WriteMessage(1, okm)
 
-			status = "fail"
+			status = serverFail
 
 			return
 		}
