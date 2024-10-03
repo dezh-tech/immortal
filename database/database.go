@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,5 +48,7 @@ func Connect(cfg Config) (*Database, error) {
 }
 
 func (db *Database) Stop() error {
+	log.Println("closing database connection...")
+
 	return db.Client.Disconnect(context.Background())
 }

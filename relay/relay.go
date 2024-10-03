@@ -1,9 +1,12 @@
 package relay
 
 import (
+	"log"
+
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
+	"github.com/dezh-tech/immortal/metrics"
 	"github.com/dezh-tech/immortal/server/http"
 	"github.com/dezh-tech/immortal/server/websocket"
 )
@@ -30,7 +33,9 @@ func New(cfg *config.Config) (*Relay, error) {
 
 	h := handler.New(db, cfg.Parameters.Handler)
 
-	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h)
+	m := metrics.New()
+
+	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +55,7 @@ func New(cfg *config.Config) (*Relay, error) {
 
 // Start runs the relay and its children.
 func (r *Relay) Start() chan error {
+	log.Println("relay started successfully...")
 	errCh := make(chan error, 2)
 
 	go func() {
@@ -69,6 +75,8 @@ func (r *Relay) Start() chan error {
 
 // Stop shutdowns the relay and its children gracefully.
 func (r *Relay) Stop() error {
+	log.Println("stopping relay...")
+
 	if err := r.websocketServer.Stop(); err != nil {
 		return err
 	}

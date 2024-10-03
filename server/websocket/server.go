@@ -3,6 +3,7 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/dezh-tech/immortal/handler"
+	"github.com/dezh-tech/immortal/metrics"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/dezh-tech/immortal/types/nip11"
@@ -23,15 +25,19 @@ var upgrader = websocket.Upgrader{
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
-	knownEvents *bloom.BloomFilter
+	mu sync.RWMutex
+
 	config      Config
+	knownEvents *bloom.BloomFilter
 	conns       map[*websocket.Conn]clientState
-	nip11Doc    *nip11.RelayInformationDocument
-	mu          sync.RWMutex
 	handlers    *handler.Handler
+	nip11Doc    *nip11.RelayInformationDocument
+	metrics     *metrics.Metrics
 }
 
-func New(cfg Config, nip11Doc *nip11.RelayInformationDocument, h *handler.Handler) (*Server, error) {
+func New(cfg Config, nip11Doc *nip11.RelayInformationDocument,
+	h *handler.Handler, m *metrics.Metrics,
+) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
 	f, err := os.Open(cfg.BloomBackupPath)
@@ -49,11 +55,14 @@ func New(cfg Config, nip11Doc *nip11.RelayInformationDocument, h *handler.Handle
 		mu:          sync.RWMutex{},
 		nip11Doc:    nip11Doc,
 		handlers:    h,
+		metrics:     m,
 	}, nil
 }
 
 // Start starts a new server instance.
 func (s *Server) Start() error {
+	log.Println("websocket server started successfully...")
+
 	http.Handle("/", s)
 	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint
 		strconv.Itoa(int(s.config.Port))), nil)
@@ -78,10 +87,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.mu.Lock()
+
+	log.Println("new websocket connection: ", conn.RemoteAddr().String())
+	s.metrics.Connections.Inc()
+
 	s.conns[conn] = clientState{
 		subs:    make(map[string]filter.Filters),
 		RWMutex: &sync.RWMutex{},
 	}
+
 	s.mu.Unlock()
 
 	s.readLoop(conn)
@@ -94,7 +108,11 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 		if err != nil {
 			// clean up closed connection.
 			s.mu.Lock()
+
+			s.metrics.Connections.Dec()
+
 			delete(s.conns, conn)
+
 			s.mu.Unlock()
 
 			break
@@ -106,6 +124,8 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 			continue
 		}
+
+		s.metrics.MessagesTotal.Inc()
 
 		switch msg.Type() {
 		case "REQ":
@@ -124,10 +144,18 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	defer measureLatency(s.metrics.RequestLatency)()
+
+	status := success
+	defer func() {
+		s.metrics.RequestsTotal.WithLabelValues(status).Inc()
+	}()
 
 	msg, ok := m.(*message.Req)
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
+
+		status = parseFail
 
 		return
 	}
@@ -136,12 +164,16 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of filters is: %d",
 			s.config.Limitation.MaxFilters)))
 
+		status = limitsFail
+
 		return
 	}
 
 	if s.config.Limitation.MaxSubidLength < len(msg.SubscriptionID) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
 			s.config.Limitation.MaxSubidLength)))
+
+		status = limitsFail
 
 		return
 	}
@@ -151,6 +183,8 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
 			conn.RemoteAddr())))
 
+		status = serverFail
+
 		return
 	}
 
@@ -158,12 +192,17 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of subs is: %d",
 			s.config.Limitation.MaxSubscriptions)))
 
+		status = limitsFail
+
 		return
 	}
 
 	res, err := s.handlers.HandleReq(msg.Filters)
 	if err != nil {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
+		status = databaseFail
+
+		return
 	}
 
 	for _, e := range res {
@@ -174,6 +213,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	_ = conn.WriteMessage(1, message.MakeEOSE(msg.SubscriptionID))
 
 	client.Lock()
+	s.metrics.Subscriptions.Inc()
 	client.subs[msg.SubscriptionID] = msg.Filters
 	client.Unlock()
 }
@@ -182,6 +222,12 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	defer measureLatency(s.metrics.EventLaency)()
+
+	status := success
+	defer func() {
+		s.metrics.EventsTotal.WithLabelValues(status).Inc()
+	}()
 
 	msg, ok := m.(*message.Event)
 	if !ok {
@@ -191,6 +237,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		)
 
 		_ = conn.WriteMessage(1, okm)
+		status = parseFail
 
 		return
 	}
@@ -202,6 +249,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		)
 
 		_ = conn.WriteMessage(1, okm)
+
+		status = limitsFail
 
 		return
 	}
@@ -223,6 +272,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 		_ = conn.WriteMessage(1, okm)
 
+		status = invalidFail
+
 		return
 	}
 
@@ -235,6 +286,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 			)
 
 			_ = conn.WriteMessage(1, okm)
+
+			status = serverFail
 
 			return
 		}
@@ -278,6 +331,7 @@ func (s *Server) handleClose(conn *websocket.Conn, m message.Message) {
 	}
 
 	client.Lock()
+	s.metrics.Subscriptions.Dec()
 	delete(client.subs, msg.String())
 	client.Unlock()
 }
@@ -287,10 +341,13 @@ func (s *Server) Stop() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	log.Println("stopping websocket server...")
+
 	for wsConn, client := range s.conns {
 		client.Lock()
 		// close all subscriptions.
 		for id := range client.subs {
+			s.metrics.Subscriptions.Dec()
 			delete(client.subs, id)
 
 			err := wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdown the relay."))
@@ -301,6 +358,7 @@ func (s *Server) Stop() error {
 		}
 
 		// close connection.
+		s.metrics.Connections.Dec()
 		delete(s.conns, wsConn)
 		err := wsConn.Close()
 		if err != nil {

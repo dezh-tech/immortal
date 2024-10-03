@@ -2,7 +2,7 @@ package commands
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,6 +15,8 @@ func HandleRun(args []string) {
 	if len(args) < 3 {
 		ExitOnError(errors.New("at least 1 arguments expected\nuse help command for more information"))
 	}
+
+	log.Println("loading config...")
 
 	cfg, err := config.Load(args[2])
 	if err != nil {
@@ -33,13 +35,13 @@ func HandleRun(args []string) {
 
 	select {
 	case sig := <-sigChan:
-		fmt.Printf("Received signal: %s\nInitiating graceful shutdown...\n", sig.String()) //nolint
+		log.Printf("Received signal: %s\nInitiating graceful shutdown...\n", sig.String()) //nolint
 		if err := r.Stop(); err != nil {
 			ExitOnError(err)
 		}
 
 	case err := <-errCh:
-		fmt.Printf("Unexpected error: %v\nInitiating shutdown due to the error...\n", err) //nolint
+		log.Printf("Unexpected error: %v\nInitiating shutdown due to the error...\n", err) //nolint
 		if err := r.Stop(); err != nil {
 			ExitOnError(err)
 		}
