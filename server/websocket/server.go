@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/dezh-tech/immortal/handler"
@@ -84,7 +83,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	s.mu.Lock()
 
-	s.metrics.ConnectionCounter.Inc()
+	s.metrics.Connections.Inc()
 
 	s.conns[conn] = clientState{
 		subs:    make(map[string]filter.Filters),
@@ -104,7 +103,7 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 			// clean up closed connection.
 			s.mu.Lock()
 
-			s.metrics.ConnectionCounter.Dec()
+			s.metrics.Connections.Dec()
 
 			delete(s.conns, conn)
 
@@ -137,11 +136,9 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	defer MeasureLatency(s.metrics.RequestLatency)
 
-	t := time.Now()
-	defer s.metrics.RequestLatency.Observe(time.Since(t).Seconds())
-
-	s.metrics.RequestCounter.Inc()
+	s.metrics.RequestsTotal.Inc()
 
 	msg, ok := m.(*message.Req)
 	if !ok {
@@ -192,7 +189,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	_ = conn.WriteMessage(1, message.MakeEOSE(msg.SubscriptionID))
 
 	client.Lock()
-	s.metrics.SubscriptionCounter.Inc()
+	s.metrics.Subscriptions.Inc()
 	client.subs[msg.SubscriptionID] = msg.Filters
 	client.Unlock()
 }
@@ -201,11 +198,9 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	defer MeasureLatency(s.metrics.EventLaency)
 
-	t := time.Now()
-	defer s.metrics.EventLaency.Observe(time.Since(t).Seconds())
-
-	s.metrics.EventCounter.Inc()
+	s.metrics.EventsTotal.Inc()
 
 	msg, ok := m.(*message.Event)
 	if !ok {
@@ -302,7 +297,7 @@ func (s *Server) handleClose(conn *websocket.Conn, m message.Message) {
 	}
 
 	client.Lock()
-	s.metrics.SubscriptionCounter.Dec()
+	s.metrics.Subscriptions.Dec()
 	delete(client.subs, msg.String())
 	client.Unlock()
 }
@@ -316,7 +311,7 @@ func (s *Server) Stop() error {
 		client.Lock()
 		// close all subscriptions.
 		for id := range client.subs {
-			s.metrics.SubscriptionCounter.Dec()
+			s.metrics.Subscriptions.Dec()
 			delete(client.subs, id)
 
 			err := wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdown the relay."))
@@ -327,7 +322,7 @@ func (s *Server) Stop() error {
 		}
 
 		// close connection.
-		s.metrics.ConnectionCounter.Dec()
+		s.metrics.Connections.Dec()
 		delete(s.conns, wsConn)
 		err := wsConn.Close()
 		if err != nil {

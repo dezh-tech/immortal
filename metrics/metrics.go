@@ -6,33 +6,33 @@ import (
 )
 
 type Metrics struct {
-	EventCounter        prometheus.Counter
-	RequestCounter      prometheus.Counter
-	SubscriptionCounter prometheus.Gauge
-	ConnectionCounter   prometheus.Gauge
-	EventLaency         prometheus.Histogram
-	RequestLatency      prometheus.Histogram
+	EventsTotal    prometheus.Counter
+	RequestsTotal  prometheus.Counter
+	Subscriptions  prometheus.Gauge
+	Connections    prometheus.Gauge
+	EventLaency    prometheus.Histogram
+	RequestLatency prometheus.Histogram
 }
 
 func New() *Metrics {
-	eventC := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "event_counter",
+	eventsT := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "events_total",
 		Help: "number of events sent to the relay.",
 	})
 
-	connC := promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "connection_counter",
-		Help: "number of open websocket connections.",
+	reqsT := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "requests_total",
+		Help: "number of REQ messages sent to relay.",
 	})
 
-	subC := promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "subscription_counter",
+	subs := promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "subscriptions",
 		Help: "number of open subscription.",
 	})
 
-	reqC := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "request_counter",
-		Help: "number of REQ messages sent to relay.",
+	conns := promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "connections",
+		Help: "number of open websocket connections.",
 	})
 
 	eventL := promauto.NewHistogram(prometheus.HistogramOpts{
@@ -46,11 +46,11 @@ func New() *Metrics {
 	})
 
 	return &Metrics{
-		EventCounter:        eventC,
-		ConnectionCounter:   connC,
-		SubscriptionCounter: subC,
-		RequestCounter:      reqC,
-		EventLaency:         eventL,
-		RequestLatency:      reqL,
+		EventsTotal:    eventsT,
+		Connections:    conns,
+		Subscriptions:  subs,
+		RequestsTotal:  reqsT,
+		EventLaency:    eventL,
+		RequestLatency: reqL,
 	}
 }
