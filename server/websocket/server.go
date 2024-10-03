@@ -191,6 +191,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 			s.config.Limitation.MaxSubscriptions)))
 
 		status = limitsFail
+
 		return
 	}
 
