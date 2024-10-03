@@ -1,11 +1,11 @@
 package commands
 
 import (
-	"fmt"
+	"log"
 	"os"
 )
 
 func ExitOnError(err error) {
-	fmt.Printf("immortal error: %s\n", err.Error()) //nolint
+	log.Printf("immortal error: %s\n", err.Error()) //nolint
 	os.Exit(1)
 }

@@ -6,8 +6,9 @@ import (
 )
 
 type Metrics struct {
-	EventsTotal    prometheus.Counter
-	RequestsTotal  prometheus.Counter
+	EventsTotal    *prometheus.CounterVec
+	RequestsTotal  *prometheus.CounterVec
+	MessagesTotal  prometheus.Counter
 	Subscriptions  prometheus.Gauge
 	Connections    prometheus.Gauge
 	EventLaency    prometheus.Histogram
@@ -15,14 +16,19 @@ type Metrics struct {
 }
 
 func New() *Metrics {
-	eventsT := promauto.NewCounter(prometheus.CounterOpts{
+	eventsT := promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "events_total",
 		Help: "number of events sent to the relay.",
-	})
+	}, []string{"status"})
 
-	reqsT := promauto.NewCounter(prometheus.CounterOpts{
+	reqsT := promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "requests_total",
 		Help: "number of REQ messages sent to relay.",
+	}, []string{"status"})
+
+	msgT := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "messages_total",
+		Help: "number of messages received.",
 	})
 
 	subs := promauto.NewGauge(prometheus.GaugeOpts{
@@ -48,6 +54,7 @@ func New() *Metrics {
 	return &Metrics{
 		EventsTotal:    eventsT,
 		Connections:    conns,
+		MessagesTotal:  msgT,
 		Subscriptions:  subs,
 		RequestsTotal:  reqsT,
 		EventLaency:    eventL,

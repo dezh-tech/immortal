@@ -3,6 +3,7 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -58,6 +59,8 @@ func New(cfg Config, nip11Doc *nip11.RelayInformationDocument, h *handler.Handle
 
 // Start starts a new server instance.
 func (s *Server) Start() error {
+	log.Println("websocket server started successfully...")
+
 	http.Handle("/", s)
 	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint
 		strconv.Itoa(int(s.config.Port))), nil)
@@ -83,6 +86,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	s.mu.Lock()
 
+	log.Println("new websocket connection: ", conn.RemoteAddr().String())
 	s.metrics.Connections.Inc()
 
 	s.conns[conn] = clientState{
@@ -119,6 +123,8 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 			continue
 		}
 
+		s.metrics.MessagesTotal.Inc()
+
 		switch msg.Type() {
 		case "REQ":
 			go s.handleReq(conn, msg)
@@ -138,11 +144,14 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	defer s.mu.Unlock()
 	defer MeasureLatency(s.metrics.RequestLatency)()
 
-	s.metrics.RequestsTotal.Inc()
+	status := "success"
+	defer s.metrics.RequestsTotal.WithLabelValues(status).Inc()
 
 	msg, ok := m.(*message.Req)
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
+
+		status = "fail"
 
 		return
 	}
@@ -151,12 +160,16 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of filters is: %d",
 			s.config.Limitation.MaxFilters)))
 
+		status = "fail"
+
 		return
 	}
 
 	if s.config.Limitation.MaxSubidLength < len(msg.SubscriptionID) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
 			s.config.Limitation.MaxSubidLength)))
+
+		status = "fail"
 
 		return
 	}
@@ -166,6 +179,8 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
 			conn.RemoteAddr())))
 
+		status = "fail"
+
 		return
 	}
 
@@ -173,12 +188,17 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of subs is: %d",
 			s.config.Limitation.MaxSubscriptions)))
 
+		status = "fail"
+
 		return
 	}
 
 	res, err := s.handlers.HandleReq(msg.Filters)
 	if err != nil {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
+		status = "fail"
+
+		return
 	}
 
 	for _, e := range res {
@@ -200,7 +220,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	defer s.mu.Unlock()
 	defer MeasureLatency(s.metrics.EventLaency)()
 
-	s.metrics.EventsTotal.Inc()
+	status := "success"
+	defer s.metrics.EventsTotal.WithLabelValues(status).Inc()
 
 	msg, ok := m.(*message.Event)
 	if !ok {
@@ -210,6 +231,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		)
 
 		_ = conn.WriteMessage(1, okm)
+		status = "fail"
 
 		return
 	}
@@ -221,6 +243,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		)
 
 		_ = conn.WriteMessage(1, okm)
+
+		status = "fail"
 
 		return
 	}
@@ -242,6 +266,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 		_ = conn.WriteMessage(1, okm)
 
+		status = "fail"
+
 		return
 	}
 
@@ -254,6 +280,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 			)
 
 			_ = conn.WriteMessage(1, okm)
+
+			status = "fail"
 
 			return
 		}
@@ -306,6 +334,8 @@ func (s *Server) handleClose(conn *websocket.Conn, m message.Message) {
 func (s *Server) Stop() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	log.Println("stopping websocket server...")
 
 	for wsConn, client := range s.conns {
 		client.Lock()

@@ -1,6 +1,8 @@
 package relay
 
 import (
+	"log"
+
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
@@ -53,6 +55,7 @@ func New(cfg *config.Config) (*Relay, error) {
 
 // Start runs the relay and its children.
 func (r *Relay) Start() chan error {
+	log.Println("relay started successfully...")
 	errCh := make(chan error, 2)
 
 	go func() {
@@ -72,6 +75,8 @@ func (r *Relay) Start() chan error {
 
 // Stop shutdowns the relay and its children gracefully.
 func (r *Relay) Stop() error {
+	log.Println("stopping relay...")
+
 	if err := r.websocketServer.Stop(); err != nil {
 		return err
 	}
