@@ -145,7 +145,9 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	defer measureLatency(s.metrics.RequestLatency)()
 
 	status := success
-	defer s.metrics.RequestsTotal.WithLabelValues(status).Inc()
+	defer func() {
+		s.metrics.RequestsTotal.WithLabelValues(status).Inc()
+	}()
 
 	msg, ok := m.(*message.Req)
 	if !ok {
@@ -220,7 +222,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	defer measureLatency(s.metrics.EventLaency)()
 
 	status := success
-	defer s.metrics.EventsTotal.WithLabelValues(status).Inc()
+	defer func() {
+		s.metrics.EventsTotal.WithLabelValues(status).Inc()
+	}()
 
 	msg, ok := m.(*message.Event)
 	if !ok {
