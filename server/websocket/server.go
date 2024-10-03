@@ -136,7 +136,7 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	defer MeasureLatency(s.metrics.RequestLatency)
+	defer MeasureLatency(s.metrics.RequestLatency)()
 
 	s.metrics.RequestsTotal.Inc()
 
@@ -198,7 +198,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	defer MeasureLatency(s.metrics.EventLaency)
+	defer MeasureLatency(s.metrics.EventLaency)()
 
 	s.metrics.EventsTotal.Inc()
 
