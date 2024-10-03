@@ -35,7 +35,9 @@ type Server struct {
 	metrics     *metrics.Metrics
 }
 
-func New(cfg Config, nip11Doc *nip11.RelayInformationDocument, h *handler.Handler, m *metrics.Metrics) (*Server, error) {
+func New(cfg Config, nip11Doc *nip11.RelayInformationDocument,
+	h *handler.Handler, m *metrics.Metrics,
+) (*Server, error) {
 	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
 
 	f, err := os.Open(cfg.BloomBackupPath)
