@@ -6,7 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func MeasureLatency(ht prometheus.Histogram) func() {
+func measureLatency(ht prometheus.Histogram) func() {
 	start := time.Now()
 
 	return func() {
