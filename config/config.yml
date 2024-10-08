@@ -14,7 +14,7 @@ environment: "prod"
 ws_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
-  bind: "localhost"
+  bind: "127.0.0.1"
   # port is websocket port to be listen on.
   # default is 7777.
   port: 7777
@@ -29,7 +29,7 @@ ws_server:
 http_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
-  bind: "localhost"
+  bind: "127.0.0.1"
   # port is websocket port to be listen on.
   # default is 8888.
   port: 8888
@@ -38,15 +38,6 @@ http_server:
 database:
   # db_name is the name of mongodb related to immortal
   db_name: "immortal"
-  # query_timeout_in_ms specifies the maximum duration (in milliseconds) for query execution before timing out.
-  # default is 3000.
-  query_timeout_in_ms: 3000
-  # connection_timeout_in_ms specifies the maximum duration (in milliseconds) that is used for creating connections to the server.
-  # default is 5000.
-  connection_timeout_in_ms: 5000
-
-  # redis contains details of redis connections and limitations.
-redis:
   # query_timeout_in_ms specifies the maximum duration (in milliseconds) for query execution before timing out.
   # default is 3000.
   query_timeout_in_ms: 3000
