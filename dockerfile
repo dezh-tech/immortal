@@ -31,10 +31,11 @@ ENV IMMO_MONGO_URI=${IMMO_MONGO_URI}
 
 #* Copy the compiled binary from the builder stage
 COPY --from=builder /app/build/immortal .
+COPY --from=builder /app/config/config.yml .
 
 #* Expose necessary ports for the application
 EXPOSE 7777
 EXPOSE 8888
 
-# Set the entrypoint to run the application
+#* Set the entrypoint to run the application
 ENTRYPOINT ["./immortal", "run", "./config.yml"]
