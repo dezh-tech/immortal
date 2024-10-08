@@ -14,7 +14,7 @@ environment: "prod"
 ws_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
-  bind: "127.0.0.1"
+  bind: "localhost"
   # port is websocket port to be listen on.
   # default is 7777.
   port: 7777
@@ -29,7 +29,7 @@ ws_server:
 http_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
-  bind: "127.0.0.1"
+  bind: "localhost"
   # port is websocket port to be listen on.
   # default is 8888.
   port: 8888
