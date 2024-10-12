@@ -14,10 +14,10 @@ environment: "prod"
 ws_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
-  bind: "localhost"
+  bind: "0.0.0.0"
   # port is websocket port to be listen on.
   # default is 7777.
-  port: 7777
+  port: 9090
   # known_bloom_size is the size of bloom filter to check and avoid trying to store/broadcast existing events.
   # default is 1M events.
   known_bloom_size: 1000000
@@ -29,10 +29,10 @@ ws_server:
 http_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
-  bind: "localhost"
+  bind: "0.0.0.0"
   # port is websocket port to be listen on.
   # default is 8888.
-  port: 8888
+  port: 8080
 
 # database contains details of database connections and limitations.
 database:

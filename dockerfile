@@ -34,8 +34,8 @@ COPY --from=builder /app/build/immortal .
 COPY --from=builder /app/config/config.yml .
 
 #* Expose necessary ports for the application
-EXPOSE 7777
-EXPOSE 8888
+EXPOSE 9090
+EXPOSE 8080
 
 #* Set the entrypoint to run the application
 ENTRYPOINT ["./immortal", "run", "./config.yml"]
