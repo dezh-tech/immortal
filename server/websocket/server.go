@@ -72,7 +72,7 @@ func (s *Server) Start() error {
 
 // handleWS is WebSocket handler.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Connection") != "Upgrade" || r.Header.Get("Upgrade") != "websocket" {
+	if r.Header.Get("Accept") == "application/nostr+json" {
 		w.Header().Set("Content-Type", "application/nostr+json")
 		w.WriteHeader(http.StatusOK)
 
