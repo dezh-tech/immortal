@@ -7,7 +7,6 @@ devtools:
 	go install mvdan.cc/gofumpt@latest
 	go install github.com/volatiletech/sqlboiler/v4@latest
 	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
-	# TODO ::: go-migrate
 
 ### Testing
 unit-test:
@@ -41,9 +40,5 @@ compose-up:
 
 compose-down:
 	docker-compose down
-
-### sqlBoiler
- models-generate:
-	sqlboiler psql
 
 .PHONY: build

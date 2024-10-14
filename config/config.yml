@@ -1,9 +1,7 @@
 # This is default immortal config file.
 # This config file contains essential information which is needed for bootstrapping.
-# The rest of configs such as limitations or NIP-11 profile must be changed on database config table,
-# which is defined and documented on documents/config.md.
+# The rest of configs such as limitations or NIP-11 profile must be changed on database config table.
 
-# todo(@ZigBalthazar): move development notes to documents directory and define development docker files.
 # developers note: for development, set environment to `"dev"` and make a config.yml and .env beside your build.
 
 # environment determines where and how to read secrets. (dev/prod)
@@ -15,12 +13,15 @@ ws_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
   bind: "0.0.0.0"
+
   # port is websocket port to be listen on.
   # default is 7777.
-  port: 9090
+  port: 7777
+
   # known_bloom_size is the size of bloom filter to check and avoid trying to store/broadcast existing events.
   # default is 1M events.
   known_bloom_size: 1000000
+
   # bloom_backup_path is the path to store bloom filter when relay shutdown.
   # default is immo_bloom_backup.
   bloom_backup_path: "immo_bloom_backup"
@@ -30,17 +31,21 @@ http_server:
   # bind is the IP address to be bind and listen on.
   # default if local host.
   bind: "0.0.0.0"
+
   # port is websocket port to be listen on.
   # default is 8888.
-  port: 8080
+  port: 8888
 
 # database contains details of database connections and limitations.
 database:
   # db_name is the name of mongodb related to immortal
+  # default is immortal.
   db_name: "immortal"
+
   # query_timeout_in_ms specifies the maximum duration (in milliseconds) for query execution before timing out.
   # default is 3000.
   query_timeout_in_ms: 3000
+
   # connection_timeout_in_ms specifies the maximum duration (in milliseconds) that is used for creating connections to the server.
   # default is 5000.
   connection_timeout_in_ms: 5000

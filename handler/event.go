@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dezh-tech/immortal/types/event"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,12 +10,8 @@ import (
 )
 
 func (h *Handler) HandleEvent(e *event.Event) error {
-	collName, ok := KindToCollectionName[e.Kind]
-	if !ok {
-		return fmt.Errorf("kind %d is not supported yet", e.Kind)
-	}
+	coll := h.db.Client.Database(h.db.DBName).Collection(getCollectionName(e.Kind))
 
-	coll := h.db.Client.Database(h.db.DBName).Collection(collName)
 	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 

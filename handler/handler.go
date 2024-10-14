@@ -39,7 +39,7 @@ var KindToCollectionName = map[types.Kind]string{
 	types.KindPatches:                     "patches",
 	types.KindIssues:                      "issues",
 	types.KindReplies:                     "replies",
-	types.KindStatus:                      "status_updates",
+	types.KindStatus:                      "status",
 	types.KindProblemTracker:              "problem_trackers",
 	types.KindReporting:                   "reportings",
 	types.KindLabel:                       "labels",
@@ -49,10 +49,10 @@ var KindToCollectionName = map[types.Kind]string{
 	types.KindTorrentComment:              "torrent_comments",
 	types.KindCoinJoinPool:                "coin_join_pools",
 	types.KindCommunityPostApproval:       "community_post_approvals",
-	types.KindJobRequest:                  "job_requests",
-	types.KindJobResult:                   "job_results",
-	types.KindJobFeedback:                 "job_feedbacks",
-	types.KindGroupControlEvents:          "group_control_events",
+	types.KindJobRequest:                  "dvm",
+	types.KindJobResult:                   "dvm",
+	types.KindJobFeedback:                 "dvm",
+	types.KindGroups:                      "groups",
 	types.KindZapGoal:                     "zap_goals",
 	types.KindTidalLogin:                  "tidal_logins",
 	types.KindZapRequest:                  "zap_requests",
@@ -93,7 +93,32 @@ var KindToCollectionName = map[types.Kind]string{
 	types.KindShortFormPortraitVideoEvent: "short_form_portrait_video_events",
 	types.KindVideoViewEvent:              "video_view_events",
 	types.KindCommunityDefinition:         "community_definitions",
-	types.KindGroupMetadataEvents:         "group_metadata_events",
+	types.KindGroupsMetadata:              "groups_metadata",
+}
+
+func getCollectionName(k types.Kind) string {
+	collName, ok := KindToCollectionName[k]
+	if ok {
+		return collName
+	}
+
+	if k >= 9000 && k <= 9030 {
+		return "groups"
+	}
+
+	if k >= 1630 && k <= 1633 {
+		return "status"
+	}
+
+	if k >= 39000 && k <= 39009 {
+		return "groups_metadata"
+	}
+
+	if k >= 5000 && k <= 5999 || k >= 6000 && k <= 6999 || k == 7000 {
+		return "dvm"
+	}
+
+	return "unknown"
 }
 
 type Handler struct {
