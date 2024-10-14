@@ -96,7 +96,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 					AuthRequired:        false, // Whether authentication is required for writes
 					PaymentRequired:     false, // Whether payment is required to interact with the relay
 					RestrictedWrites:    false, // Whether writes are restricted to authenticated or paying users
-					MaxEventTags:        200,   // Maximum number of tags allowed in a single event
+					MaxEventTags:        1000,  // Maximum number of tags allowed in a single event
 					MaxContentLength:    4096,  // Maximum content length of an event (in bytes)
 					CreatedAtLowerLimit: 0,     // Earliest timestamp allowed for event creation
 					CreatedAtUpperLimit: 0,     // Latest timestamp allowed for event creation (0 for no limit)

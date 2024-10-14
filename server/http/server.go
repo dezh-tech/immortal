@@ -26,7 +26,7 @@ func New(cfg Config, db *database.Database) (*Server, error) {
 	}
 
 	r.HandleFunc("/health", s.healthHandler).Methods("GET")
-	r.Handle("/metrics", promhttp.Handler())
+	r.Handle("/metrics", promhttp.Handler()).Methods("GET")
 
 	return s, nil
 }

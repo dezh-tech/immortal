@@ -10,6 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var possibleKinds = []types.Kind{
+	types.KindUserMetadata,
+	types.KindShortTextNote,
+	types.KindZap,
+	types.KindRelayListMetadata,
+}
+
 type filterQuery struct {
 	Tags map[string][]string
 
@@ -37,16 +44,24 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 			Limit:   f.Limit,
 		}
 
-		uniqueKinds := removeDuplicateKind(f.Kinds)
-		for _, k := range uniqueKinds {
-			queryKinds[k] = append(queryKinds[k], qf)
+		if len(f.Kinds) != 0 {
+			uniqueKinds := removeDuplicateKind(f.Kinds)
+			for _, k := range uniqueKinds {
+				queryKinds[k] = append(queryKinds[k], qf)
+			}
+		} else {
+			//! we query most requested kinds if there is no kind provided.
+			// FIX: any better way?
+			for _, k := range possibleKinds {
+				queryKinds[k] = append(queryKinds[k], qf)
+			}
 		}
 	}
 
 	var finalResult []event.Event
 
 	for kind, filters := range queryKinds {
-		collection := h.db.Client.Database(h.db.DBName).Collection(KindToCollectionName[kind])
+		collection := h.db.Client.Database(h.db.DBName).Collection(getCollectionName(kind))
 		for _, f := range filters {
 			query, opts, err := h.FilterToQuery(&f)
 			if err != nil {
@@ -84,7 +99,7 @@ func removeDuplicateKind(intSlice []types.Kind) []types.Kind {
 }
 
 func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, error) {
-	var query bson.D
+	query := make(bson.D, 0)
 	opts := options.Find()
 
 	// Filter by IDs

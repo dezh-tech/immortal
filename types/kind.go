@@ -46,7 +46,7 @@ const (
 	KindPatches                      Kind = 1617
 	KindIssues                       Kind = 1621
 	KindReplies                      Kind = 1622
-	KindStatus                       Kind = 1630 // to 1633. support: todo.
+	KindStatus                       Kind = 1630
 	KindProblemTracker               Kind = 1971
 	KindReporting                    Kind = 1984
 	KindLabel                        Kind = 1985
@@ -56,10 +56,10 @@ const (
 	KindTorrentComment               Kind = 2004
 	KindCoinJoinPool                 Kind = 2022
 	KindCommunityPostApproval        Kind = 4550
-	KindJobRequest                   Kind = 5000 // to 5999. support: todo.
-	KindJobResult                    Kind = 6000 // to 6999. support: todo.
+	KindJobRequest                   Kind = 5000
+	KindJobResult                    Kind = 6000
 	KindJobFeedback                  Kind = 7000
-	KindGroupControlEvents           Kind = 9000 // to 9030. support: todo.
+	KindGroups                       Kind = 9000
 	KindZapGoal                      Kind = 9041
 	KindTidalLogin                   Kind = 9467
 	KindZapRequest                   Kind = 9734
@@ -127,7 +127,7 @@ const (
 	KindShortFormPortraitVideoEvent  Kind = 34236
 	KindVideoViewEvent               Kind = 34237
 	KindCommunityDefinition          Kind = 34550
-	KindGroupMetadataEvents          Kind = 39000 // to 39009. support: todo.
+	KindGroupsMetadata               Kind = 39000
 )
 
 // IsRegular checks if the given kind is in Regular range.
