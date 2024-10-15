@@ -3,8 +3,8 @@ package message
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
@@ -23,10 +23,10 @@ type Message interface {
 }
 
 // ParseMessage parses the given message from client to a message interface.
-func ParseMessage(message []byte) Message {
+func ParseMessage(message []byte) (Message, error) {
 	firstComma := bytes.Index(message, []byte{','})
 	if firstComma == -1 {
-		return nil
+		return nil, errors.New("invalid message: can't find a , in message")
 	}
 	msgType := message[0:firstComma]
 
@@ -38,22 +38,20 @@ func ParseMessage(message []byte) Message {
 		}
 	case bytes.Contains(msgType, []byte("REQ")):
 		e = &Req{}
-	case bytes.Contains(msgType, []byte("COUNT")):
-		e = &Count{}
 	case bytes.Contains(msgType, []byte("AUTH")):
 		e = &Auth{}
 	case bytes.Contains(msgType, []byte("CLOSE")):
 		x := Close("")
 		e = &x
 	default:
-		return nil
+		return nil, errors.New("invalid message type: must be one of REQ, EVENT, AUTH or CLOSE")
 	}
 
 	if err := e.DecodeFromJSON(message); err != nil {
-		return nil
+		return nil, err
 	}
 
-	return e
+	return e, nil
 }
 
 // Event represents a NIP-01 EVENT message.
@@ -158,71 +156,6 @@ func (rm *Req) DecodeFromJSON(data []byte) error {
 
 func (rm Req) EncodeToJSON() ([]byte, error) {
 	return nil, nil
-}
-
-// Count reperesents a NIP-01 COUNT message.
-type Count struct {
-	SubscriptionID string
-	Filters        []*filter.Filter
-	Count          int64
-}
-
-func (Count) Type() string { return "COUNT" }
-func (cm Count) String() string {
-	v, err := json.Marshal(cm)
-	if err != nil {
-		return ""
-	}
-
-	return string(v)
-}
-
-func (cm *Count) DecodeFromJSON(data []byte) error {
-	r := gjson.ParseBytes(data)
-	arr := r.Array()
-	if len(arr) < 3 {
-		return types.DecodeError{
-			Reason: "COUNT message: missing filters.",
-		}
-	}
-	cm.SubscriptionID = arr[1].Str
-
-	if len(arr) < 3 {
-		return types.DecodeError{
-			Reason: "COUNT message: array must have at least 3 items.",
-		}
-	}
-
-	cm.Filters = make([]*filter.Filter, len(arr)-2)
-	f := 0
-	for i := 2; i < len(arr); i++ {
-		item := []byte(arr[i].Raw)
-
-		if err := easyjson.Unmarshal(item, cm.Filters[f]); err != nil {
-			return types.DecodeError{
-				Reason: fmt.Sprintf("COUNT message: %s", err.Error()),
-			}
-		}
-
-		f++
-	}
-
-	return nil
-}
-
-func (cm Count) EncodeToJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	w.RawString(`["COUNT","` + cm.SubscriptionID +
-		`",{"count":` + strconv.FormatInt(cm.Count, 10) + `}]`)
-
-	res, err := w.BuildBytes()
-	if err != nil {
-		return nil, types.EncodeError{
-			Reason: fmt.Sprintf("COUNT message: %s", err.Error()),
-		}
-	}
-
-	return res, nil
 }
 
 // Notice reperesents a NIP-01 NOTICE message.

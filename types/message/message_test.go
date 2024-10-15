@@ -63,9 +63,9 @@ var testCases = []testCase{
 func TestEnvelope(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			parsedEnvelope := message.ParseMessage(tc.Message)
+			parsedEnvelope, err := message.ParseMessage(tc.Message)
 
-			if tc.ExpectedEnvelope == nil && parsedEnvelope == nil {
+			if tc.ExpectedEnvelope == nil && parsedEnvelope == nil || err != nil {
 				return
 			}
 

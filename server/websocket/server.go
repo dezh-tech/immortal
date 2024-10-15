@@ -123,9 +123,11 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 			break
 		}
 
-		msg := message.ParseMessage(buf)
-		if msg == nil {
-			_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse message."))
+		msg, err := message.ParseMessage(buf)
+		if err != nil {
+			_ = conn.WriteMessage(1, message.MakeNotice(
+				fmt.Sprintf("error: can't parse message: %s",
+					err.Error())))
 
 			continue
 		}
@@ -353,7 +355,6 @@ func (s *Server) Stop() error {
 		client.Lock()
 		// close all subscriptions.
 		for id := range client.subs {
-			s.metrics.Subscriptions.Dec()
 			delete(client.subs, id)
 
 			err := wsConn.WriteMessage(1, message.MakeClosed(id, "error: shutdown the relay."))
@@ -364,7 +365,6 @@ func (s *Server) Stop() error {
 		}
 
 		// close connection.
-		s.metrics.Connections.Dec()
 		delete(s.conns, wsConn)
 		err := wsConn.Close()
 		if err != nil {
