@@ -19,7 +19,6 @@ The Immortal follows [NIPs](https://github.com/nostr-protocol/nips) and tries to
 - [ ] **NIP-32**: Labeling
 - [ ] **NIP-40**: Expiration Timestamp
 - [ ] **NIP-42**: Authentication of Clients to Relays
-- [ ] **NIP-45**: Counting Results
 - [ ] **NIP-50**: Search Capability
 - [ ] **NIP-56**: Reporting
 - [ ] **NIP-59**: Gift Wrap
