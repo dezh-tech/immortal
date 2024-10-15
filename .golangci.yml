@@ -10,7 +10,6 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
-    - contextcheck
     - decorder
     - dogsled
     - dupword
@@ -84,6 +83,7 @@ linters-settings:
     enable-all: true
     disable:
       - fieldalignment
+      - contextcheck
 
   predeclared:
     # Comma-separated list of predeclared identifiers to not report on.

@@ -260,7 +260,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	exists, err := s.redis.Client.BFExists(qCtx, s.redis.BloomName, eID[:]).Result()
 	if err != nil {
-		log.Printf("Error checking Bloom filter: %v", err)
+		log.Printf("error: checking bloom filter: %s", err.Error())
 	}
 
 	if exists {
@@ -302,7 +302,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomName, eID[:]).Result()
 	if err != nil {
-		log.Printf("Error checking Bloom filter: %v", err)
+		log.Printf("error: checking bloom filter: %s", err.Error())
 	}
 
 	// todo::: can we run goroutines per client?
