@@ -73,19 +73,20 @@ func (c *Config) LoadParameters(db *database.Database) error {
 	err := coll.FindOne(ctx, filter).Decode(&result)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		// insert default parameters
+		// for more info : https://github.com/nostr-protocol/nips/blob/master/11.md
 		newDocument := &Parameters{
-			Name:           "immortal",                                                                                        // relay name
-			Description:    "a nostr relay designed for scale.",                                                               // description
-			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c",                                // pubkey
-			Software:       "https://github.com/dezh-tech/immortal",                                                           // software repository URL
-			SupportedNips:  []int{1, 11},                                                                                      // Supported NIPs (protocols)
-			Version:        immortal.StringVersion(),                                                                          // Version of the relay software
-			RelayCountries: []string{"*"},                                                                                     // country support
-			LanguageTags:   []string{"*"},                                                                                     // language tags
-			Tags:           []string{},                                                                                        // tags
-			PostingPolicy:  "",                                                                                                // posting policy URL
-			PaymentsURL:    "",                                                                                                // payments URL
-			Icon:           "https://raw.githubusercontent.com/dezh-tech/immortal/refs/heads/main/assets/images/immortal.png", // icon URL
+			Name:           "immortal",
+			Description:    "a nostr relay designed for scale.",
+			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c",
+			Software:       "https://github.com/dezh-tech/immortal",
+			SupportedNips:  []int{1, 11},
+			Version:        immortal.StringVersion(),
+			RelayCountries: []string{"*"},
+			LanguageTags:   []string{"*"},
+			Tags:           []string{},
+			PostingPolicy:  "",
+			PaymentsURL:    "",
+			Icon:           "https://raw.githubusercontent.com/dezh-tech/immortal/refs/heads/main/assets/images/immortal.png",
 			WebsocketServer: &websocket.Config{
 				Limitation: &websocket.Limitation{
 					MaxMessageLength:    8192,  // Maximum length of a single message (in bytes or characters)
