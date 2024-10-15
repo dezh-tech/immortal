@@ -2,9 +2,9 @@
     <img alt="immortal" src="./images/immo.svg" width="150" height="150" />
 </p>
 
-<h3 align="center">
+<h1 align="center">
 Immortal
-</h3>
+</h1>
 
 <br/>
 
