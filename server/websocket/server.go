@@ -230,7 +230,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	defer measureLatency(s.metrics.EventLaency)()
+	defer measureLatency(s.metrics.EventLatency)()
 
 	status := success
 	defer func() {
@@ -316,12 +316,14 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		}
 		client.Unlock()
 	}
+
+	return
 }
 
 // handleClose handles new incoming CLOSE messages from client.
 func (s *Server) handleClose(conn *websocket.Conn, m message.Message) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	msg, ok := m.(*message.Close)
 	if !ok {

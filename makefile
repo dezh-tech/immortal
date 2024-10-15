@@ -5,8 +5,6 @@ devtools:
 	@echo "Installing devtools"
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install mvdan.cc/gofumpt@latest
-	go install github.com/volatiletech/sqlboiler/v4@latest
-	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
 
 ### Testing
 unit-test:

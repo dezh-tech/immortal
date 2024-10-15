@@ -1,4 +1,13 @@
-# Immortal
+<p align="center"> 
+    <img alt="immortal" src="./images/immo.svg" width="150" height="150" />
+</p>
+
+<h3 align="center">
+Immortal
+</h3>
+
+<br/>
+
 
 The Immortal is a [Nostr](https://nostr.com) relay implementation written in Golang.
 
@@ -15,7 +24,7 @@ Updates and changes or community discussions can be followed on the Github issue
 ## Contribution
 
 All kind of contributions are welcome!
-Make sure you read the [Contribution guides](./CONTRIBUTING.md) before any contribution.
+Make sure you read the [Contribution guides](./CONTRIBUTING.md) before any code contribution.
 
 ## Donation
 
@@ -27,7 +36,11 @@ Donations and financial support of the development process is possible using Bit
 bc1qxd3p6a46uzae86elteha7tygcz7f56mvvlznza
 ```
 
-**lightning**: ```TODO```
+**lightning**: 
+
+```
+oldestvelvet57@walletofsatoshi.com
+```
 
 ## License
 
