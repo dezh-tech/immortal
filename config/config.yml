@@ -18,14 +18,6 @@ ws_server:
   # default is 7777.
   port: 7777
 
-  # known_bloom_size is the size of bloom filter to check and avoid trying to store/broadcast existing events.
-  # default is 1M events.
-  known_bloom_size: 1000000
-
-  # bloom_backup_path is the path to store bloom filter when relay shutdown.
-  # default is immo_bloom_backup.
-  bloom_backup_path: "immo_bloom_backup"
-
 # http_server contains information about http server.
 http_server:
   # bind is the IP address to be bind and listen on.
@@ -49,3 +41,17 @@ database:
   # connection_timeout_in_ms specifies the maximum duration (in milliseconds) that is used for creating connections to the server.
   # default is 5000.
   connection_timeout_in_ms: 5000
+
+# redis contains details of redis connections and limitations.
+redis:
+  # query_timeout_in_ms specifies the maximum duration (in milliseconds) for query execution before timing out.
+  # default is 3000.
+  query_timeout_in_ms: 3000
+
+  # connection_timeout_in_ms specifies the maximum duration (in milliseconds) that is used for creating connections to the server.
+  # default is 5000.
+  connection_timeout_in_ms: 5000
+
+  # bloom_name specifies the name of bloom filter key
+  # default is IMMO_BLOOM.
+  bloom_name: "IMMO_BLOOM" 
