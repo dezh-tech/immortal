@@ -1,5 +1,5 @@
 <p align="center"> 
-    <img alt="immortal" src="./images/immo.svg" width="150" height="150" />
+    <img alt="immortal" src="./assets/images/immo.svg" width="150" height="150" />
 </p>
 
 <h1 align="center">
