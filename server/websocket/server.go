@@ -316,8 +316,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		}
 		client.Unlock()
 	}
-
-	return
 }
 
 // handleClose handles new incoming CLOSE messages from client.
