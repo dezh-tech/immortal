@@ -74,18 +74,18 @@ func (c *Config) LoadParameters(db *database.Database) error {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		// insert default parameters
 		newDocument := &Parameters{
-			Name:           "immortal",                                                         // relay name
-			Description:    "a nostr relay designed for scale.",                                // description
-			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c", // pubkey
-			Software:       "https://github.com/dezh-tech/immortal",                            // software repository URL
-			SupportedNips:  []int{1, 11},                                                       // Supported NIPs (protocols)
-			Version:        immortal.StringVersion(),                                           // Version of the relay software
-			RelayCountries: []string{"*"},                                                      // country support
-			LanguageTags:   []string{"*"},                                                      // language tags
-			Tags:           []string{},                                                         // tags
-			PostingPolicy:  "",                                                                 // posting policy URL
-			PaymentsURL:    "",                                                                 // payments URL
-			Icon:           "",                                                                 // icon URL
+			Name:           "immortal",                                                                                        // relay name
+			Description:    "a nostr relay designed for scale.",                                                               // description
+			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c",                                // pubkey
+			Software:       "https://github.com/dezh-tech/immortal",                                                           // software repository URL
+			SupportedNips:  []int{1, 11},                                                                                      // Supported NIPs (protocols)
+			Version:        immortal.StringVersion(),                                                                          // Version of the relay software
+			RelayCountries: []string{"*"},                                                                                     // country support
+			LanguageTags:   []string{"*"},                                                                                     // language tags
+			Tags:           []string{},                                                                                        // tags
+			PostingPolicy:  "",                                                                                                // posting policy URL
+			PaymentsURL:    "",                                                                                                // payments URL
+			Icon:           "https://raw.githubusercontent.com/dezh-tech/immortal/refs/heads/main/assets/images/immortal.png", // icon URL
 			WebsocketServer: &websocket.Config{
 				Limitation: &websocket.Limitation{
 					MaxMessageLength:    8192,  // Maximum length of a single message (in bytes or characters)
@@ -125,6 +125,14 @@ func (c *Config) LoadParameters(db *database.Database) error {
 		return nil
 	} else if err != nil {
 		return err
+	}
+
+	_, updateErr := coll.UpdateOne(ctx, filter, &Parameters{
+		Version: immortal.StringVersion(),
+	})
+
+	if updateErr != nil {
+		return updateErr
 	}
 
 	c.Parameters = result
