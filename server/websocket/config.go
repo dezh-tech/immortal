@@ -16,9 +16,7 @@ type Limitation struct {
 }
 
 type Config struct {
-	Bind            string `yaml:"bind"`
-	Port            uint16 `yaml:"port"`
-	BloomBackupPath string `yaml:"bloom_backup_path"`
-	KnownBloomSize  uint   `yaml:"known_bloom_size"`
-	Limitation      *Limitation
+	Bind       string `yaml:"bind"`
+	Port       uint16 `yaml:"port"`
+	Limitation *Limitation
 }

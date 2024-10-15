@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/dezh-tech/immortal/database"
+	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server/http"
 	"github.com/dezh-tech/immortal/server/websocket"
 	"github.com/dezh-tech/immortal/types/nip11"
@@ -17,6 +18,7 @@ type Config struct {
 	WebsocketServer websocket.Config `yaml:"ws_server"`
 	HTTPServer      http.Config      `yaml:"http_server"`
 	Database        database.Config  `yaml:"database"`
+	RedisConf       redis.Config     `yaml:"redis"`
 	Parameters      *Parameters
 }
 
@@ -49,6 +51,7 @@ func Load(path string) (*Config, error) {
 	}
 
 	config.Database.URI = os.Getenv("IMMO_MONGO_URI")
+	config.RedisConf.URI = os.Getenv("IMMO_REDIS_URI")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

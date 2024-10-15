@@ -7,6 +7,7 @@ import (
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/metrics"
+	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server/http"
 	"github.com/dezh-tech/immortal/server/websocket"
 )
@@ -17,6 +18,7 @@ type Relay struct {
 	websocketServer *websocket.Server
 	httpServer      *http.Server
 	database        *database.Database
+	redis           *redis.Redis
 }
 
 // NewRelay creates a new relay.
@@ -35,7 +37,12 @@ func New(cfg *config.Config) (*Relay, error) {
 
 	m := metrics.New()
 
-	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m)
+	r, err := redis.New(cfg.RedisConf)
+	if err != nil {
+		return nil, err
+	}
+
+	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m, r)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +57,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		websocketServer: ws,
 		database:        db,
 		httpServer:      hs,
+		redis:           r,
 	}, nil
 }
 

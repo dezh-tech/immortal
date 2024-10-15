@@ -1,18 +1,18 @@
 package websocket
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"sync"
 
-	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/metrics"
+	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/dezh-tech/immortal/types/nip11"
@@ -27,35 +27,25 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	mu sync.RWMutex
 
-	config      Config
-	knownEvents *bloom.BloomFilter
-	conns       map[*websocket.Conn]clientState
-	handlers    *handler.Handler
-	nip11Doc    *nip11.RelayInformationDocument
-	metrics     *metrics.Metrics
+	config   Config
+	conns    map[*websocket.Conn]clientState
+	handlers *handler.Handler
+	nip11Doc *nip11.RelayInformationDocument
+	metrics  *metrics.Metrics
+	redis    *redis.Redis
 }
 
 func New(cfg Config, nip11Doc *nip11.RelayInformationDocument,
-	h *handler.Handler, m *metrics.Metrics,
+	h *handler.Handler, m *metrics.Metrics, r *redis.Redis,
 ) (*Server, error) {
-	seb := bloom.NewWithEstimates(cfg.KnownBloomSize, 0.9)
-
-	f, err := os.Open(cfg.BloomBackupPath)
-	if err == nil {
-		_, err = seb.ReadFrom(f)
-		if err != nil {
-			return nil, fmt.Errorf("server: loading bloom: %s", err.Error())
-		}
-	}
-
 	return &Server{
-		config:      cfg,
-		knownEvents: seb,
-		conns:       make(map[*websocket.Conn]clientState),
-		mu:          sync.RWMutex{},
-		nip11Doc:    nip11Doc,
-		handlers:    h,
-		metrics:     m,
+		config:   cfg,
+		conns:    make(map[*websocket.Conn]clientState),
+		mu:       sync.RWMutex{},
+		nip11Doc: nip11Doc,
+		handlers: h,
+		metrics:  m,
+		redis:    r,
 	}, nil
 }
 
@@ -265,7 +255,15 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	eID := msg.Event.GetRawID()
 
-	if s.knownEvents.Test(eID[:]) {
+	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
+	defer cancel()
+
+	exists, err := s.redis.Client.BFExists(qCtx, s.redis.BloomName, eID[:]).Result()
+	if err != nil {
+		log.Printf("error: checking bloom filter: %s", err.Error())
+	}
+
+	if exists {
 		okm := message.MakeOK(true, msg.Event.ID, "")
 		_ = conn.WriteMessage(1, okm)
 
@@ -299,11 +297,13 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 			return
 		}
-
 		_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 	}
 
-	s.knownEvents.Add(eID[:])
+	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomName, eID[:]).Result()
+	if err != nil {
+		log.Printf("error: checking bloom filter: %s", err.Error())
+	}
 
 	// todo::: can we run goroutines per client?
 	for conn, client := range s.conns {
@@ -373,16 +373,6 @@ func (s *Server) Stop() error {
 		}
 
 		client.Unlock()
-	}
-
-	f, err := os.Create(s.config.BloomBackupPath)
-	if err != nil {
-		return fmt.Errorf("error: creating new file for blooms: %s", err.Error())
-	}
-
-	_, err = s.knownEvents.WriteTo(f)
-	if err != nil {
-		return fmt.Errorf("error: writing bloom filter to disck: %s", err.Error())
 	}
 
 	return nil
