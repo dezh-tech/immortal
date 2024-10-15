@@ -11,7 +11,7 @@ type Metrics struct {
 	MessagesTotal  prometheus.Counter
 	Subscriptions  prometheus.Gauge
 	Connections    prometheus.Gauge
-	EventLaency    prometheus.Histogram
+	EventLatency   prometheus.Histogram
 	RequestLatency prometheus.Histogram
 }
 
@@ -57,7 +57,7 @@ func New() *Metrics {
 		MessagesTotal:  msgT,
 		Subscriptions:  subs,
 		RequestsTotal:  reqsT,
-		EventLaency:    eventL,
+		EventLatency:   eventL,
 		RequestLatency: reqL,
 	}
 }
