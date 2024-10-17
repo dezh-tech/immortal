@@ -2,9 +2,12 @@
 <html>
 
 <head>
+
+    <title>{{.Name}}</title>
+    <link rel="icon" href="{{.Icon}}" type="image/png">
+
     <style>
         /* CSS Reset */
-
         html,
         body,
         div,
@@ -111,6 +114,7 @@
 
         body {
             line-height: 1;
+            padding-left: 0; /* No padding on the left */
         }
 
         ol,
@@ -134,10 +138,10 @@
         table {
             border-collapse: collapse;
             border-spacing: 0;
+            width: 100%; /* Full width tables */
         }
 
         /* Our stylesheet */
-
         body {
             font-family: sans-serif;
             font-size: 135%;
@@ -146,8 +150,8 @@
         .header {
             font-size: 150%;
             text-align: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            margin-top: 10px; /* Reduce margin top */
+            margin-bottom: 10px; /* Reduce margin bottom */
             font-weight: bold;
 
             display: flex;
@@ -157,13 +161,12 @@
         }
 
         .header img {
-            width: 200px;
+            width: 150px;
+            height: 150px; /* Maintain height for the image */
         }
 
-        table {
-            width: 100%;
-            margin-bottom: 50px;
-            font-size: 125%
+        .header span {
+            margin-left: 10px; /* Optional space between image and text */
         }
 
         table th {
@@ -172,15 +175,23 @@
             font-size: 110%;
         }
 
+        table tr {
+            height: 30px; /* Add height to rows for spacing */
+        }
+
+        table tr td {
+            padding: 0; /* Remove padding from all table cells */
+        }
+
         table tr td:nth-child(1) {
             width: 20%;
-            text-align: right;
-            padding-right: 20px;
+            text-align: left; /* Align field names to the left */
+            padding-right: 0; /* No right padding */
         }
 
         table tr td:nth-child(2) {
             font-weight: bold;
-            padding-left: 15px;
+            padding-left: 0; /* Remove left padding */
         }
 
         table tr:nth-child(even) {
@@ -189,17 +200,20 @@
 
         table td,
         th {
-            padding: 8px 5px 8px 5px;
+            padding: 8px 5px; /* Consistent padding for cell content */
         }
-    </style>
+
+        /* Customize spacing between rows */
+        table tr + tr {
+            margin-top: 10px; /* Space between rows */
+        }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <a href="https://github.com/dezh-tech/immortal"><img src="https://raw.githubusercontent.com/dezh-tech/immortal/refs/heads/main/assets/images/immo.svg" /></a>
-        <span>Please use a <a href="https://github.com/aljazceru/awesome-nostr#clients">Nostr client</a> to
-            connect.</span>
+        <a href="https://github.com/dezh-tech/immortal"><img src="{{.Icon}}" /></a>
+        <span>Please use a <a href="https://github.com/aljazceru/awesome-nostr#clients">Nostr client</a> to connect.</span>
     </div>
 
     <table>
@@ -219,7 +233,7 @@
 
         <tr>
             <td>Pubkey</td>
-            <td>{{.PubKey}}</td>
+            <td><a href="https://njump.me/{{.PubKey}}">{{.PubKey}}</a></td>
         </tr>
 
         <tr>
