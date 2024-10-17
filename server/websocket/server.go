@@ -83,12 +83,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		t, err := t.Parse(string(landingTempl))
 		if err != nil {
 			http.Error(w, "Error parsing template", http.StatusInternalServerError)
+
 			return
 		}
 
 		err = t.Execute(w, s.nip11Doc)
 		if err != nil {
 			http.Error(w, "Error executing template", http.StatusInternalServerError)
+
 			return
 		}
 
