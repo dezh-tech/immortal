@@ -128,9 +128,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 		return err
 	}
 
-	_, updateErr := coll.UpdateOne(ctx, filter, &Parameters{
-		Version: immortal.StringVersion(),
-	})
+	_, updateErr := coll.UpdateOne(ctx, filter, bson.D{{"$set", bson.D{{"version", immortal.StringVersion()}}}})
 
 	if updateErr != nil {
 		return updateErr

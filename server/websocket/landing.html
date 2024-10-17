@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        /* CSS Reset */
+
+        html,
+        body,
+        div,
+        span,
+        applet,
+        object,
+        iframe,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        blockquote,
+        pre,
+        a,
+        abbr,
+        acronym,
+        address,
+        big,
+        cite,
+        code,
+        del,
+        dfn,
+        em,
+        img,
+        ins,
+        kbd,
+        q,
+        s,
+        samp,
+        small,
+        strike,
+        strong,
+        sub,
+        sup,
+        tt,
+        var,
+        b,
+        u,
+        i,
+        center,
+        dl,
+        dt,
+        dd,
+        ol,
+        ul,
+        li,
+        fieldset,
+        form,
+        label,
+        legend,
+        table,
+        caption,
+        tbody,
+        tfoot,
+        thead,
+        tr,
+        th,
+        td,
+        article,
+        aside,
+        canvas,
+        details,
+        embed,
+        figure,
+        figcaption,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        output,
+        ruby,
+        section,
+        summary,
+        time,
+        mark,
+        audio,
+        video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        /* HTML5 display-role reset for older browsers */
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            display: block;
+        }
+
+        body {
+            line-height: 1;
+        }
+
+        ol,
+        ul {
+            list-style: none;
+        }
+
+        blockquote,
+        q {
+            quotes: none;
+        }
+
+        blockquote:before,
+        blockquote:after,
+        q:before,
+        q:after {
+            content: '';
+            content: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        /* Our stylesheet */
+
+        body {
+            font-family: sans-serif;
+            font-size: 135%;
+        }
+
+        .header {
+            font-size: 150%;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .header img {
+            width: 200px;
+        }
+
+        table {
+            width: 100%;
+            margin-bottom: 50px;
+            font-size: 125%
+        }
+
+        table th {
+            color: white;
+            background-color: black;
+            font-size: 110%;
+        }
+
+        table tr td:nth-child(1) {
+            width: 20%;
+            text-align: right;
+            padding-right: 20px;
+        }
+
+        table tr td:nth-child(2) {
+            font-weight: bold;
+            padding-left: 15px;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table td,
+        th {
+            padding: 8px 5px 8px 5px;
+        }
+    </style>
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="https://github.com/dezh-tech/immortal"><img src="https://raw.githubusercontent.com/dezh-tech/immortal/refs/heads/main/assets/images/immo.svg" /></a>
+        <span>Please use a <a href="https://github.com/aljazceru/awesome-nostr#clients">Nostr client</a> to
+            connect.</span>
+    </div>
+
+    <table>
+        <tr>
+            <th colspan="2">Relay</th>
+        </tr>
+
+        <tr>
+            <td>Name</td>
+            <td>{{.Name}}</td>
+        </tr>
+
+        <tr>
+            <td>Description</td>
+            <td>{{.Description}}</td>
+        </tr>
+
+        <tr>
+            <td>Pubkey</td>
+            <td>{{.PubKey}}</td>
+        </tr>
+
+        <tr>
+            <td>Contact</td>
+            <td>{{.Contact}}</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <th colspan="2">Server Software</th>
+        </tr>
+
+        <tr>
+            <td>Software</td>
+            <td><a href="https://github.com/dezh-tech/immortal">immortal</a></td>
+        </tr>
+
+        <tr>
+            <td>Version</td>
+            <td>{{.Version}}</td>
+        </tr>
+
+        <tr>
+            <td>Supported NIPs</td>
+            <td>{{.SupportedNIPs}}</td>
+        </tr>
+    </table>
+</body>
+
+</html>
