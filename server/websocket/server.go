@@ -2,8 +2,10 @@ package websocket
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -19,9 +21,14 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(_ *http.Request) bool { return true },
-}
+var (
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(_ *http.Request) bool { return true },
+	}
+
+	//go:embed landing.html
+	landingTempl []byte
+)
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
@@ -67,6 +74,25 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 
 		_ = json.NewEncoder(w).Encode(s.nip11Doc) //nolint
+
+		return
+	}
+
+	if r.Header.Get("Upgrade") == "" {
+		t := template.New("webpage")
+		t, err := t.Parse(string(landingTempl))
+		if err != nil {
+			http.Error(w, "Error parsing template", http.StatusInternalServerError)
+
+			return
+		}
+
+		err = t.Execute(w, s.nip11Doc)
+		if err != nil {
+			http.Error(w, "Error executing template", http.StatusInternalServerError)
+
+			return
+		}
 
 		return
 	}
