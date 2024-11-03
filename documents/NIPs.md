@@ -5,7 +5,7 @@ The Immortal follows [NIPs](https://github.com/nostr-protocol/nips) and tries to
 - [X] **NIP-01**: Basic Protocol Flow Description
 - [ ] **NIP-09**: Event Deletion Request
 - [X] **NIP-11**: Relay Information Document
-- [ ] **NIP-13**: Proof of Work
+- [X] **NIP-13**: Proof of Work
 - [ ] **NIP-40**: Expiration Timestamp
 - [ ] **NIP-42**: Authentication of Clients to Relays
 - [ ] **NIP-50**: Search Capability
