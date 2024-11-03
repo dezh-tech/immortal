@@ -266,19 +266,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Content) > s.config.Limitation.MaxContentLength {
-		okm := message.MakeOK(false,
-			"",
-			fmt.Sprintf("error: max limit of message length is %d", s.config.Limitation.MaxContentLength),
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = limitsFail
-
-		return
-	}
-
 	eID := msg.Event.GetRawID()
 
 	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
@@ -305,6 +292,60 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		_ = conn.WriteMessage(1, okm)
 
 		status = invalidFail
+
+		return
+	}
+
+	if len(msg.Event.Content) > s.config.Limitation.MaxContentLength {
+		okm := message.MakeOK(false,
+			"",
+			fmt.Sprintf("error: max limit of content length is %d", s.config.Limitation.MaxContentLength),
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		status = limitsFail
+
+		return
+	}
+
+	if msg.Event.Difficulty() < s.config.Limitation.MinPowDifficulty {
+		okm := message.MakeOK(false,
+			"",
+			fmt.Sprintf("error: min pow required is %d", s.config.Limitation.MinPowDifficulty),
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		status = limitsFail
+
+		return
+	}
+
+	if len(msg.Event.Tags) < s.config.Limitation.MaxEventTags {
+		okm := message.MakeOK(false,
+			"",
+			fmt.Sprintf("error: max limit of tags count is %d", s.config.Limitation.MaxEventTags),
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		status = limitsFail
+
+		return
+	}
+
+	if msg.Event.CreatedAt < s.config.Limitation.CreatedAtLowerLimit ||
+		msg.Event.CreatedAt > s.config.Limitation.CreatedAtUpperLimit {
+		okm := message.MakeOK(false,
+			"",
+			fmt.Sprintf("error: created at must be as least %d and at most %d",
+				s.config.Limitation.CreatedAtLowerLimit, s.config.Limitation.CreatedAtUpperLimit),
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		status = limitsFail
 
 		return
 	}
