@@ -5,6 +5,7 @@ import (
 	"math/bits"
 )
 
+// Difficulty returns the leading zeros of event id in base-2.
 func (e *Event) Difficulty() int {
 	var zeros int
 	var b [1]byte
