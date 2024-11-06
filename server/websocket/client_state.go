@@ -7,6 +7,9 @@ import (
 )
 
 type clientState struct {
-	subs map[string]filter.Filters
+	challenge string
+	pubkey    *string
+	isKnown   *bool
+	subs      map[string]filter.Filters
 	*sync.RWMutex
 }

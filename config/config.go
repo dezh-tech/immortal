@@ -91,6 +91,7 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		PaymentsURL:    c.Parameters.PaymentsURL,
 		Icon:           c.Parameters.Icon,
 		Fees:           new(nip11.RelayFeesDocument),
+		URL:            c.Parameters.URL,
 	}
 
 	addmissions := make([]nip11.Admission, 0)

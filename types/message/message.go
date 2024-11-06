@@ -400,6 +400,20 @@ type Auth struct {
 	Event     *event.Event
 }
 
+// MakeAuth constructs a NIP-01 OK message to be sent to the client.
+func MakeAuth(challenge string) []byte {
+	om := Auth{
+		Challenge: &challenge,
+	}
+
+	res, err := om.EncodeToJSON()
+	if err != nil {
+		return []byte{} // TODO::: should we return anything else here?
+	}
+
+	return res
+}
+
 func (Auth) Type() string { return "AUTH" }
 
 func (am Auth) String() string {

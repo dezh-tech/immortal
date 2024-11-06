@@ -59,6 +59,7 @@ type Parameters struct {
 	PostingPolicy   string            `bson:"posting_policy,omitempty"  json:"posting_policy,omitempty"`
 	PaymentsURL     string            `bson:"payments_url,omitempty"    json:"payments_url,omitempty"`
 	Icon            string            `bson:"icon,omitempty"            json:"icon,omitempty"`
+	URL             string            `bson:"url,omitempty"             json:"url,omitempty"`
 }
 
 func (c *Config) LoadParameters(db *database.Database) error {
@@ -116,6 +117,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 				Admission:    []Admission{},
 			},
 			Contact: "",
+			URL:     "",
 		}
 
 		insertErr := c.SetParameters(db, newDocument)

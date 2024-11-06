@@ -6,7 +6,7 @@ type Limitation struct {
 	MaxFilters          int   `bson:"max_filters"            json:"max_filters"`
 	MaxSubidLength      int   `bson:"max_subid_length"       json:"max_subid_length"`
 	MinPowDifficulty    int   `bson:"min_pow_difficulty"     json:"min_pow_difficulty"`
-	AuthRequired        bool  `bson:"auth_required"          json:"auth_required"`     // todo.
+	AuthRequired        bool  `bson:"auth_required"          json:"auth_required"`
 	PaymentRequired     bool  `bson:"payment_required"       json:"payment_required"`  // todo.
 	RestrictedWrites    bool  `bson:"restricted_writes"      json:"restricted_writes"` // todo.
 	MaxEventTags        int   `bson:"max_event_tags"         json:"max_event_tags"`

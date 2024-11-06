@@ -103,6 +103,21 @@ func (e *Event) IsValid(id [32]byte) bool {
 	return sig.Verify(id[:], pubkey)
 }
 
+// IsProtected checks is ["-"] is present, look nip-70 for more.
+func (e *Event) IsProtected() bool {
+	for _, t := range e.Tags {
+		if len(t) < 1 {
+			continue
+		}
+
+		if t[0] == "-" {
+			return true
+		}
+	}
+
+	return false
+}
+
 // String returns and encoded string representation of event e.
 func (e *Event) String() string {
 	ee, err := e.Encode()
