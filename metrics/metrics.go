@@ -8,11 +8,13 @@ import (
 type Metrics struct {
 	EventsTotal    *prometheus.CounterVec
 	RequestsTotal  *prometheus.CounterVec
+	AuthsTotal     *prometheus.CounterVec
 	MessagesTotal  prometheus.Counter
 	Subscriptions  prometheus.Gauge
 	Connections    prometheus.Gauge
 	EventLatency   prometheus.Histogram
 	RequestLatency prometheus.Histogram
+	AuthLatency    prometheus.Histogram
 }
 
 func New() *Metrics {
@@ -24,6 +26,11 @@ func New() *Metrics {
 	reqsT := promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "requests_total",
 		Help: "number of REQ messages sent to relay.",
+	}, []string{"status"})
+
+	authsT := promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "auths_total",
+		Help: "number of AUTH messages sent to relay.",
 	}, []string{"status"})
 
 	msgT := promauto.NewCounter(prometheus.CounterOpts{
@@ -47,17 +54,24 @@ func New() *Metrics {
 	})
 
 	reqL := promauto.NewHistogram(prometheus.HistogramOpts{
-		Name: "requset_latency",
+		Name: "request_latency",
 		Help: "time needed to request to a REQ message.",
+	})
+
+	authL := promauto.NewHistogram(prometheus.HistogramOpts{
+		Name: "auth_latency",
+		Help: "time needed to request to a AUTH message.",
 	})
 
 	return &Metrics{
 		EventsTotal:    eventsT,
+		AuthsTotal:     authsT,
 		Connections:    conns,
 		MessagesTotal:  msgT,
 		Subscriptions:  subs,
 		RequestsTotal:  reqsT,
 		EventLatency:   eventL,
 		RequestLatency: reqL,
+		AuthLatency:    authL,
 	}
 }

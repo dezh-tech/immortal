@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/dezh-tech/immortal/types/message"
+	"github.com/dezh-tech/immortal/utils"
 	"github.com/gorilla/websocket"
 )
 
@@ -46,7 +47,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 
 	if s.config.Limitation.AuthRequired && !*client.isKnown {
-		client.challenge = generateChallenge(10)
+		client.challenge = utils.GenerateChallenge(10)
 		authm := message.MakeAuth(client.challenge)
 
 		okm := message.MakeOK(false,
@@ -63,7 +64,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 
 	if msg.Event.IsProtected() && msg.Event.PublicKey != *client.pubkey {
-		client.challenge = generateChallenge(10)
+		client.challenge = utils.GenerateChallenge(10)
 		authm := message.MakeAuth(client.challenge)
 
 		okm := message.MakeOK(false,

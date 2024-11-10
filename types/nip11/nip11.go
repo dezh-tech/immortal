@@ -1,5 +1,7 @@
 package nip11
 
+import "net/url"
+
 type RelayInformationDocument struct {
 	Name          string `json:"name"`
 	Description   string `json:"description"`
@@ -17,7 +19,7 @@ type RelayInformationDocument struct {
 	PaymentsURL    string                   `json:"payments_url,omitempty"`
 	Fees           *RelayFeesDocument       `json:"fees,omitempty"`
 	Icon           string                   `json:"icon"`
-	URL            string                   `json:"-"`
+	URL            *url.URL                 `json:"-"`
 }
 
 type RelayLimitationDocument struct {

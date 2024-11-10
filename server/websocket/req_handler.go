@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dezh-tech/immortal/types/message"
+	"github.com/dezh-tech/immortal/utils"
 	"github.com/gorilla/websocket"
 )
 
@@ -38,7 +39,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 	}
 
 	if s.config.Limitation.AuthRequired && !*client.isKnown {
-		client.challenge = generateChallenge(10)
+		client.challenge = utils.GenerateChallenge(10)
 		authm := message.MakeAuth(client.challenge)
 
 		closem := message.MakeClosed(

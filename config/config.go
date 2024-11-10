@@ -8,6 +8,7 @@ import (
 	"github.com/dezh-tech/immortal/server/http"
 	"github.com/dezh-tech/immortal/server/websocket"
 	"github.com/dezh-tech/immortal/types/nip11"
+	"github.com/dezh-tech/immortal/utils"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
@@ -91,7 +92,6 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 		PaymentsURL:    c.Parameters.PaymentsURL,
 		Icon:           c.Parameters.Icon,
 		Fees:           new(nip11.RelayFeesDocument),
-		URL:            c.Parameters.URL,
 	}
 
 	addmissions := make([]nip11.Admission, 0)
@@ -123,6 +123,11 @@ func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
 	n11d.Fees.Admission = addmissions
 	n11d.Fees.Subscription = subscription
 	n11d.Fees.Publication = publication
+
+	url, err := utils.ParseURL(c.Parameters.URL)
+	if err == nil {
+		n11d.URL = url
+	}
 
 	return n11d
 }
