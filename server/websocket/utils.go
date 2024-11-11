@@ -10,6 +10,7 @@ const (
 	success      = "success"
 	databaseFail = "db_fail"
 	parseFail    = "parse_fail"
+	authFail     = "auth_fail"
 	limitsFail   = "limits_fail"
 	serverFail   = "server_fail"
 	invalidFail  = "invalid_fail"

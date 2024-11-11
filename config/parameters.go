@@ -59,6 +59,7 @@ type Parameters struct {
 	PostingPolicy   string            `bson:"posting_policy,omitempty"  json:"posting_policy,omitempty"`
 	PaymentsURL     string            `bson:"payments_url,omitempty"    json:"payments_url,omitempty"`
 	Icon            string            `bson:"icon,omitempty"            json:"icon,omitempty"`
+	URL             string            `bson:"url,omitempty"             json:"url,omitempty"`
 }
 
 func (c *Config) LoadParameters(db *database.Database) error {
@@ -79,7 +80,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 			Description:    "a nostr relay designed for scale.",
 			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c",
 			Software:       "https://github.com/dezh-tech/immortal",
-			SupportedNips:  []int{1, 11},
+			SupportedNips:  []int{1, 11, 42, 70},
 			Version:        immortal.StringVersion(),
 			RelayCountries: []string{"*"},
 			LanguageTags:   []string{"*"},
@@ -116,6 +117,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 				Admission:    []Admission{},
 			},
 			Contact: "",
+			URL:     "wss://relay.jellyfish.land",
 		}
 
 		insertErr := c.SetParameters(db, newDocument)

@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -107,7 +106,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println("new websocket connection: ", conn.RemoteAddr().String())
 	s.metrics.Connections.Inc()
 
+	known := false
+	pubkey := ""
+
 	s.conns[conn] = clientState{
+		pubkey:  &pubkey,
+		isKnown: &known,
 		subs:    make(map[string]filter.Filters),
 		RWMutex: &sync.RWMutex{},
 	}
@@ -159,256 +163,11 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 		case "CLOSE":
 			go s.handleClose(conn, msg)
+
+		case "AUTH":
+			go s.handleAuth(conn, msg)
 		}
 	}
-}
-
-// handleReq handles new incoming REQ messages from client.
-func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	defer measureLatency(s.metrics.RequestLatency)()
-
-	status := success
-	defer func() {
-		s.metrics.RequestsTotal.WithLabelValues(status).Inc()
-	}()
-
-	msg, ok := m.(*message.Req)
-	if !ok {
-		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse REQ message."))
-
-		status = parseFail
-
-		return
-	}
-
-	if len(msg.Filters) >= s.config.Limitation.MaxFilters {
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of filters is: %d",
-			s.config.Limitation.MaxFilters)))
-
-		status = limitsFail
-
-		return
-	}
-
-	if s.config.Limitation.MaxSubidLength <= len(msg.SubscriptionID) {
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
-			s.config.Limitation.MaxSubidLength)))
-
-		status = limitsFail
-
-		return
-	}
-
-	client, ok := s.conns[conn]
-	if !ok {
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s",
-			conn.RemoteAddr())))
-
-		status = serverFail
-
-		return
-	}
-
-	if len(client.subs) >= s.config.Limitation.MaxSubscriptions {
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of subs is: %d",
-			s.config.Limitation.MaxSubscriptions)))
-
-		status = limitsFail
-
-		return
-	}
-
-	res, err := s.handlers.HandleReq(msg.Filters)
-	if err != nil {
-		log.Println(err.Error())
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
-		status = databaseFail
-
-		return
-	}
-
-	for _, e := range res {
-		msg := message.MakeEvent(msg.SubscriptionID, &e)
-		_ = conn.WriteMessage(1, msg)
-	}
-
-	_ = conn.WriteMessage(1, message.MakeEOSE(msg.SubscriptionID))
-
-	client.Lock()
-	s.metrics.Subscriptions.Inc()
-	client.subs[msg.SubscriptionID] = msg.Filters
-	client.Unlock()
-}
-
-// handleEvent handles new incoming EVENT messages from client.
-func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	defer measureLatency(s.metrics.EventLatency)()
-
-	status := success
-	defer func() {
-		s.metrics.EventsTotal.WithLabelValues(status).Inc()
-	}()
-
-	msg, ok := m.(*message.Event)
-	if !ok {
-		okm := message.MakeOK(false,
-			"",
-			"error: can't parse EVENT message.",
-		)
-
-		_ = conn.WriteMessage(1, okm)
-		status = parseFail
-
-		return
-	}
-
-	eID := msg.Event.GetRawID()
-
-	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
-	defer cancel()
-
-	exists, err := s.redis.Client.BFExists(qCtx, s.redis.BloomName, eID[:]).Result()
-	if err != nil {
-		log.Printf("error: checking bloom filter: %s", err.Error())
-	}
-
-	if exists {
-		okm := message.MakeOK(true, msg.Event.ID, "")
-		_ = conn.WriteMessage(1, okm)
-
-		return
-	}
-
-	if !msg.Event.IsValid(eID) {
-		okm := message.MakeOK(false,
-			msg.Event.ID,
-			"invalid: id or sig is not correct.",
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = invalidFail
-
-		return
-	}
-
-	if len(msg.Event.Content) > s.config.Limitation.MaxContentLength {
-		okm := message.MakeOK(false,
-			"",
-			fmt.Sprintf("error: max limit of content length is %d", s.config.Limitation.MaxContentLength),
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = limitsFail
-
-		return
-	}
-
-	if msg.Event.Difficulty() < s.config.Limitation.MinPowDifficulty {
-		okm := message.MakeOK(false,
-			"",
-			fmt.Sprintf("error: min pow required is %d", s.config.Limitation.MinPowDifficulty),
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = limitsFail
-
-		return
-	}
-
-	if len(msg.Event.Tags) < s.config.Limitation.MaxEventTags {
-		okm := message.MakeOK(false,
-			"",
-			fmt.Sprintf("error: max limit of tags count is %d", s.config.Limitation.MaxEventTags),
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = limitsFail
-
-		return
-	}
-
-	if msg.Event.CreatedAt < s.config.Limitation.CreatedAtLowerLimit ||
-		msg.Event.CreatedAt > s.config.Limitation.CreatedAtUpperLimit {
-		okm := message.MakeOK(false,
-			"",
-			fmt.Sprintf("error: created at must be as least %d and at most %d",
-				s.config.Limitation.CreatedAtLowerLimit, s.config.Limitation.CreatedAtUpperLimit),
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = limitsFail
-
-		return
-	}
-
-	if !msg.Event.Kind.IsEphemeral() {
-		err := s.handlers.HandleEvent(msg.Event)
-		if err != nil {
-			okm := message.MakeOK(false,
-				msg.Event.ID,
-				err.Error(),
-			)
-
-			_ = conn.WriteMessage(1, okm)
-
-			status = serverFail
-
-			return
-		}
-		_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
-	}
-
-	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomName, eID[:]).Result()
-	if err != nil {
-		log.Printf("error: checking bloom filter: %s", err.Error())
-	}
-
-	// todo::: can we run goroutines per client?
-	for conn, client := range s.conns {
-		client.Lock()
-		for id, filters := range client.subs {
-			if !filters.Match(msg.Event) {
-				continue
-			}
-			_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))
-		}
-		client.Unlock()
-	}
-}
-
-// handleClose handles new incoming CLOSE messages from client.
-func (s *Server) handleClose(conn *websocket.Conn, m message.Message) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	msg, ok := m.(*message.Close)
-	if !ok {
-		_ = conn.WriteMessage(1, message.MakeNotice("error: can't parse CLOSE message."))
-
-		return
-	}
-
-	client, ok := s.conns[conn]
-	if !ok {
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't find connection %s.",
-			conn.RemoteAddr())))
-
-		return
-	}
-
-	client.Lock()
-	s.metrics.Subscriptions.Dec()
-	delete(client.subs, msg.String())
-	client.Unlock()
 }
 
 // Stop shutdowns the server gracefully.

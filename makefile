@@ -32,11 +32,4 @@ build:
 pre-commit: fmt check unit-test
 	@echo ready to commit...
 
-### docker-compose
-compose-up:
-	docker-compose up -d
-
-compose-down:
-	docker-compose down
-
 .PHONY: build
