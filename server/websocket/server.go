@@ -106,7 +106,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println("new websocket connection: ", conn.RemoteAddr().String())
 	s.metrics.Connections.Inc()
 
+	known := false
+	pubkey := ""
+
 	s.conns[conn] = clientState{
+		pubkey:  &pubkey,
+		isKnown: &known,
 		subs:    make(map[string]filter.Filters),
 		RWMutex: &sync.RWMutex{},
 	}

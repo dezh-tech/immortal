@@ -396,14 +396,14 @@ func (om OK) EncodeToJSON() ([]byte, error) {
 
 // Auth reperesents a NIP-01 AUTH message.
 type Auth struct {
-	Challenge *string
-	Event     *event.Event
+	Challenge string
+	Event     event.Event
 }
 
 // MakeAuth constructs a NIP-01 OK message to be sent to the client.
 func MakeAuth(challenge string) []byte {
 	om := Auth{
-		Challenge: &challenge,
+		Challenge: challenge,
 	}
 
 	res, err := om.EncodeToJSON()
@@ -435,7 +435,7 @@ func (am *Auth) DecodeFromJSON(data []byte) error {
 	}
 
 	if arr[1].IsObject() {
-		err := easyjson.Unmarshal([]byte(arr[1].Raw), am.Event)
+		err := easyjson.Unmarshal([]byte(arr[1].Raw), &am.Event)
 		if err != nil {
 			return types.DecodeError{
 				Reason: fmt.Sprintf("AUTH message: %s", err.Error()),
@@ -445,15 +445,15 @@ func (am *Auth) DecodeFromJSON(data []byte) error {
 		return nil
 	}
 
-	am.Challenge = &arr[1].Str
-
-	return nil
+	return types.DecodeError{
+		Reason: "AUTH is not valid.",
+	}
 }
 
-func (am Auth) EncodeToJSON() ([]byte, error) {
+func (am *Auth) EncodeToJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	w.RawString(`["AUTH",`)
-	w.Raw(json.Marshal(*am.Challenge))
+	w.Raw(json.Marshal(am.Challenge))
 	w.RawString(`]`)
 
 	res, err := w.BuildBytes()

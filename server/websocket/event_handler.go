@@ -136,7 +136,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Tags) < s.config.Limitation.MaxEventTags {
+	if len(msg.Event.Tags) > s.config.Limitation.MaxEventTags {
 		okm := message.MakeOK(false,
 			"",
 			fmt.Sprintf("error: max limit of tags count is %d", s.config.Limitation.MaxEventTags),

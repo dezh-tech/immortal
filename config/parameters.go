@@ -117,7 +117,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 				Admission:    []Admission{},
 			},
 			Contact: "",
-			URL:     "",
+			URL:     "wss://relay.jellyfish.land",
 		}
 
 		insertErr := c.SetParameters(db, newDocument)
