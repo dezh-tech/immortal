@@ -80,7 +80,7 @@ func (c *Config) LoadParameters(db *database.Database) error {
 			Description:    "a nostr relay designed for scale.",
 			Pubkey:         "aca682c51c44c9046461de0cb34bcc6338d5562cdf9062aee9c3ca5a4ca0ab3c",
 			Software:       "https://github.com/dezh-tech/immortal",
-			SupportedNips:  []int{1, 11},
+			SupportedNips:  []int{1, 11, 42, 70},
 			Version:        immortal.StringVersion(),
 			RelayCountries: []string{"*"},
 			LanguageTags:   []string{"*"},
