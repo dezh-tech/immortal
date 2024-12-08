@@ -465,3 +465,77 @@ func (am *Auth) EncodeToJSON() ([]byte, error) {
 
 	return res, nil
 }
+
+// Changed reperesents a NIP-37 CHANGED message.
+type Changed struct {
+	SubscriptionID string
+	filter.Filters
+	Timestamps []int64
+}
+
+// MakeChanged constructs a NIP-37 OK message to be sent to the client.
+func MakeChanged(sid string, ts []int64) []byte {
+	cm := Changed{
+		Timestamps:     ts,
+		SubscriptionID: sid,
+	}
+
+	res, err := cm.EncodeToJSON()
+	if err != nil {
+		return []byte{} // TODO::: should we return anything else here?
+	}
+
+	return res
+}
+
+func (Changed) Type() string { return "CHANGED" }
+
+func (cm Changed) String() string {
+	v, err := json.Marshal(cm)
+	if err != nil {
+		return ""
+	}
+
+	return string(v)
+}
+
+func (cm *Changed) DecodeFromJSON(data []byte) error {
+	r := gjson.ParseBytes(data)
+	arr := r.Array()
+	if len(arr) < 3 {
+		return types.DecodeError{
+			Reason: "CHANGED message: missing filters.",
+		}
+	}
+	cm.SubscriptionID = arr[1].Str
+	cm.Filters = make(filter.Filters, len(arr)-2)
+	f := 0
+	for i := 2; i < len(arr); i++ {
+		if err := easyjson.Unmarshal([]byte(arr[i].Raw), &cm.Filters[f]); err != nil {
+			return types.DecodeError{
+				Reason: fmt.Sprintf("CHANGED message: %s", err.Error()),
+			}
+		}
+		f++
+	}
+
+	return nil
+}
+
+func (cm *Changed) EncodeToJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	w.RawString(`["CHANGED","` + cm.SubscriptionID + `",`)
+	for _, ts := range cm.Timestamps {
+		w.Int64(ts)
+	}
+	w.RawString(`]`)
+
+	res, err := w.BuildBytes()
+	if err != nil {
+		return nil, types.EncodeError{
+			Reason: fmt.Sprintf("EVENT message: %s", err.Error()),
+		}
+	}
+
+	return res, nil
+}

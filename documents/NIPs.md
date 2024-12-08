@@ -6,6 +6,8 @@ The Immortal follows [NIPs](https://github.com/nostr-protocol/nips) and tries to
 - [ ] **NIP-09**: Event Deletion Request
 - [X] **NIP-11**: Relay Information Document
 - [X] **NIP-13**: Proof of Work
+- [ ] **NIP-29**: Relay-based Groups
+- [X] **NIP-37**: Event Changes
 - [ ] **NIP-40**: Expiration Timestamp
 - [X] **NIP-42**: Authentication of Clients to Relays
 - [ ] **NIP-50**: Search Capability

@@ -166,6 +166,9 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 		case "AUTH":
 			go s.handleAuth(conn, msg)
+
+		case "CHANGED":
+			go s.handleChanged(conn, msg)
 		}
 	}
 }
