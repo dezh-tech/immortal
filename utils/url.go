@@ -36,7 +36,7 @@ func LocalAddr() (string, error) {
 			case *net.IPAddr:
 				ip = v.IP
 			}
-			
+
 			return ip.String(), nil
 		}
 	}
