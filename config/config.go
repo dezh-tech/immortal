@@ -3,10 +3,10 @@ package config
 import (
 	"os"
 
+	"github.com/dezh-tech/immortal/client"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/relay/redis"
-	"github.com/dezh-tech/immortal/server/http"
-	"github.com/dezh-tech/immortal/server/websocket"
+	"github.com/dezh-tech/immortal/server"
 	"github.com/dezh-tech/immortal/types/nip11"
 	"github.com/dezh-tech/immortal/utils"
 	"github.com/joho/godotenv"
@@ -15,11 +15,11 @@ import (
 
 // Config reprsents the configs used by relay and other concepts on system.
 type Config struct {
-	Environment     string           `yaml:"environment"`
-	WebsocketServer websocket.Config `yaml:"ws_server"`
-	HTTPServer      http.Config      `yaml:"http_server"`
-	Database        database.Config  `yaml:"database"`
-	RedisConf       redis.Config     `yaml:"redis"`
+	Environment     string          `yaml:"environment"`
+	Kraken          client.Config   `yaml:"kraken"`
+	WebsocketServer server.Config   `yaml:"ws_server"`
+	Database        database.Config `yaml:"database"`
+	RedisConf       redis.Config    `yaml:"redis"`
 	Parameters      *Parameters
 }
 

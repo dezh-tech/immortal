@@ -11,22 +11,22 @@ environment: "prod"
 # ws_server contains information about websocket server.
 ws_server:
   # bind is the IP address to be bind and listen on.
-  # default if local host.
+  # default is local host.
   bind: "0.0.0.0"
 
   # port is websocket port to be listen on.
   # default is 7777.
   port: 7777
 
-# http_server contains information about http server.
-http_server:
-  # bind is the IP address to be bind and listen on.
-  # default if local host.
-  bind: "0.0.0.0"
+# kraken contains information about connection with kraken instance.
+kraken:
+  # IP address of kraken instance.
+  # default is local network kraken:8888.
+  endpoint: "kraken:8888"
 
-  # port is websocket port to be listen on.
-  # default is 8888.
-  port: 8888
+  # duration for kraken to ping this relay.
+  # default is 1 minute.
+  heartbeat_in_second: 60
 
 # database contains details of database connections and limitations.
 database:

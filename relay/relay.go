@@ -1,22 +1,23 @@
 package relay
 
 import (
+	"context"
 	"log"
 
+	"github.com/dezh-tech/immortal/client"
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/metrics"
 	"github.com/dezh-tech/immortal/relay/redis"
-	"github.com/dezh-tech/immortal/server/http"
-	"github.com/dezh-tech/immortal/server/websocket"
+	"github.com/dezh-tech/immortal/server"
+	"github.com/dezh-tech/immortal/utils"
 )
 
 // Relay keeps all concepts such as server, database and manages them.
 type Relay struct {
 	config          config.Config
-	websocketServer *websocket.Server
-	httpServer      *http.Server
+	websocketServer *server.Server
 	database        *database.Database
 	redis           *redis.Redis
 }
@@ -42,13 +43,23 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m, r)
+	ws, err := server.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m, r)
 	if err != nil {
 		return nil, err
 	}
 
-	hs, err := http.New(cfg.HTTPServer, db)
+	c, err := client.NewClient(cfg.Kraken.Endpoint)
 	if err != nil {
+		return nil, err
+	}
+
+	la, err := utils.LocalAddr()
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Register(context.Background(), la, cfg.Kraken.Heartbeat)
+	if err != nil || resp == nil || !resp.Success {
 		return nil, err
 	}
 
@@ -56,7 +67,6 @@ func New(cfg *config.Config) (*Relay, error) {
 		config:          *cfg,
 		websocketServer: ws,
 		database:        db,
-		httpServer:      hs,
 		redis:           r,
 	}, nil
 }
@@ -68,12 +78,6 @@ func (r *Relay) Start() chan error {
 
 	go func() {
 		if err := r.websocketServer.Start(); err != nil {
-			errCh <- err
-		}
-	}()
-
-	go func() {
-		if err := r.httpServer.Start(); err != nil {
 			errCh <- err
 		}
 	}()

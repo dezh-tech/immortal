@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package kraken;
+
+option go_package = "github.com/dezh-tech/immortal/api";
+
+// Service definition
+service Registry {
+  rpc registerService (registerServiceRequest) returns (registerServiceResponse) {}
+}
+
+// Request and response messages
+message registerServiceRequest {
+  string url = 1;
+  uint32 heartbeat_duration_in_sec = 2;
+  ServiceTypeEnum type = 3;
+}
+
+message registerServiceResponse {
+  bool success = 1;
+  optional string message = 2;
+}
+
+// Enum definitions
+enum ServiceTypeEnum {
+  RELAY = 0;
+}

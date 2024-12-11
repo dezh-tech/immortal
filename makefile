@@ -1,10 +1,20 @@
 PACKAGES=$(shell go list ./... | grep -v 'tests' | grep -v 'grpc/gen')
 
+ifneq (,$(filter $(OS),Windows_NT MINGW64))
+RM = del /q
+else
+RM = rm -rf
+endif
+
 ### Tools needed for development
 devtools:
 	@echo "Installing devtools"
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install mvdan.cc/gofumpt@latest
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.35
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5
+	go install github.com/pactus-project/protoc-gen-doc/cmd/protoc-gen-doc@v0.0.0-20240815105130-84e89d0170e4
+	go install github.com/bufbuild/buf/cmd/buf@v1.47
 
 ### Testing
 unit-test:
@@ -27,6 +37,11 @@ check:
 ### Building
 build:
 	go build -o build/immortal cmd/main.go
+
+### Proto
+proto:
+	$(RM) api/gen
+	cd client/buf && buf generate --template buf.gen.yaml ../proto
 
 ### pre commit
 pre-commit: fmt check unit-test

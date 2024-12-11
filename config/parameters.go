@@ -7,7 +7,7 @@ import (
 	"github.com/dezh-tech/immortal"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
-	"github.com/dezh-tech/immortal/server/websocket"
+	"github.com/dezh-tech/immortal/server"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -42,24 +42,24 @@ type Fees struct {
 }
 
 type Parameters struct {
-	Handler         *handler.Config   `bson:"handler"                   json:"handler"`
-	WebsocketServer *websocket.Config `bson:"server"                    json:"server"`
-	Retention       *Retention        `bson:"retention,omitempty"       json:"retention,omitempty"`
-	Fees            *Fees             `bson:"fees,omitempty"            json:"fees,omitempty"`
-	Name            string            `bson:"name"                      json:"name"`
-	Description     string            `bson:"description"               json:"description"`
-	Pubkey          string            `bson:"pubkey"                    json:"pubkey"`
-	Contact         string            `bson:"contact"                   json:"contact"`
-	Software        string            `bson:"software"                  json:"software"`
-	SupportedNips   []int             `bson:"supported_nips"            json:"supported_nips"`
-	Version         string            `bson:"version"                   json:"version"`
-	RelayCountries  []string          `bson:"relay_countries,omitempty" json:"relay_countries,omitempty"`
-	LanguageTags    []string          `bson:"language_tags,omitempty"   json:"language_tags,omitempty"`
-	Tags            []string          `bson:"tags,omitempty"            json:"tags,omitempty"`
-	PostingPolicy   string            `bson:"posting_policy,omitempty"  json:"posting_policy,omitempty"`
-	PaymentsURL     string            `bson:"payments_url,omitempty"    json:"payments_url,omitempty"`
-	Icon            string            `bson:"icon,omitempty"            json:"icon,omitempty"`
-	URL             string            `bson:"url,omitempty"             json:"url,omitempty"`
+	Handler         *handler.Config `bson:"handler"                   json:"handler"`
+	WebsocketServer *server.Config  `bson:"server"                    json:"server"`
+	Retention       *Retention      `bson:"retention,omitempty"       json:"retention,omitempty"`
+	Fees            *Fees           `bson:"fees,omitempty"            json:"fees,omitempty"`
+	Name            string          `bson:"name"                      json:"name"`
+	Description     string          `bson:"description"               json:"description"`
+	Pubkey          string          `bson:"pubkey"                    json:"pubkey"`
+	Contact         string          `bson:"contact"                   json:"contact"`
+	Software        string          `bson:"software"                  json:"software"`
+	SupportedNips   []int           `bson:"supported_nips"            json:"supported_nips"`
+	Version         string          `bson:"version"                   json:"version"`
+	RelayCountries  []string        `bson:"relay_countries,omitempty" json:"relay_countries,omitempty"`
+	LanguageTags    []string        `bson:"language_tags,omitempty"   json:"language_tags,omitempty"`
+	Tags            []string        `bson:"tags,omitempty"            json:"tags,omitempty"`
+	PostingPolicy   string          `bson:"posting_policy,omitempty"  json:"posting_policy,omitempty"`
+	PaymentsURL     string          `bson:"payments_url,omitempty"    json:"payments_url,omitempty"`
+	Icon            string          `bson:"icon,omitempty"            json:"icon,omitempty"`
+	URL             string          `bson:"url,omitempty"             json:"url,omitempty"`
 }
 
 func (c *Config) LoadParameters(db *database.Database) error {
@@ -88,8 +88,8 @@ func (c *Config) LoadParameters(db *database.Database) error {
 			PostingPolicy:  "",
 			PaymentsURL:    "",
 			Icon:           "https://raw.githubusercontent.com/dezh-tech/immortal/refs/heads/main/assets/images/immortal.png",
-			WebsocketServer: &websocket.Config{
-				Limitation: &websocket.Limitation{
+			WebsocketServer: &server.Config{
+				Limitation: &server.Limitation{
 					MaxMessageLength:    8192,          // Maximum length of a single message (in bytes or characters)
 					MaxSubscriptions:    20,            // Maximum number of concurrent subscriptions a client can create
 					MaxFilters:          20,            // Maximum number of filters a client can apply in a subscription

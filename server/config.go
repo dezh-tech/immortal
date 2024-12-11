@@ -1,4 +1,4 @@
-package websocket
+package server
 
 type Limitation struct {
 	MaxMessageLength    int   `bson:"max_message_length"     json:"max_message_length"` // todo?.
