@@ -2,6 +2,8 @@ package relay
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 
 	"github.com/dezh-tech/immortal/client"
@@ -43,7 +45,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	ws, err := server.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m, r)
+	ws, err := server.New(cfg.WebsocketServer, h, m, r)
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +60,13 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	resp, err := c.Register(context.Background(), la, cfg.Kraken.Heartbeat)
-	if err != nil || resp == nil || !resp.Success {
+	resp, err := c.Register(context.Background(), la, cfg.Kraken.Region, cfg.Kraken.Heartbeat)
+	if err != nil {
 		return nil, err
+	}
+
+	if !resp.Success {
+		return nil, fmt.Errorf("cant register to master: %s", *resp.Message)
 	}
 
 	return &Relay{

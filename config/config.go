@@ -7,8 +7,6 @@ import (
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server"
-	"github.com/dezh-tech/immortal/types/nip11"
-	"github.com/dezh-tech/immortal/utils"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
@@ -20,7 +18,6 @@ type Config struct {
 	WebsocketServer server.Config   `yaml:"ws_server"`
 	Database        database.Config `yaml:"database"`
 	RedisConf       redis.Config    `yaml:"redis"`
-	Parameters      *Parameters
 }
 
 // Load loads config from file and env.
@@ -61,75 +58,6 @@ func Load(path string) (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func (c *Config) GetNIP11Documents() *nip11.RelayInformationDocument {
-	n11d := &nip11.RelayInformationDocument{
-		Name:          c.Parameters.Name,
-		Description:   c.Parameters.Description,
-		PubKey:        c.Parameters.Pubkey,
-		SupportedNIPs: c.Parameters.SupportedNips,
-		Software:      c.Parameters.Software,
-		Version:       c.Parameters.Version,
-		Contact:       c.Parameters.Contact,
-		Limitation: &nip11.RelayLimitationDocument{
-			MaxMessageLength: c.WebsocketServer.Limitation.MaxMessageLength,
-			MaxSubscriptions: c.WebsocketServer.Limitation.MaxSubscriptions,
-			MaxFilters:       c.WebsocketServer.Limitation.MaxFilters,
-			MaxLimit:         c.Parameters.Handler.Limitation.MaxLimit,
-			MaxSubidLength:   c.WebsocketServer.Limitation.MaxSubidLength,
-			MaxEventTags:     c.WebsocketServer.Limitation.MaxEventTags,
-			MaxContentLength: c.WebsocketServer.Limitation.MaxContentLength,
-			MinPowDifficulty: c.WebsocketServer.Limitation.MinPowDifficulty,
-			AuthRequired:     c.WebsocketServer.Limitation.AuthRequired,
-			PaymentRequired:  c.WebsocketServer.Limitation.PaymentRequired,
-			RestrictedWrites: c.WebsocketServer.Limitation.RestrictedWrites,
-		},
-		RelayCountries: c.Parameters.RelayCountries,
-		LanguageTags:   c.Parameters.LanguageTags,
-		Tags:           c.Parameters.Tags,
-		PostingPolicy:  c.Parameters.PostingPolicy,
-		PaymentsURL:    c.Parameters.PaymentsURL,
-		Icon:           c.Parameters.Icon,
-		Fees:           new(nip11.RelayFeesDocument),
-	}
-
-	addmissions := make([]nip11.Admission, 0)
-	for _, a := range c.Parameters.Fees.Admission {
-		addmissions = append(addmissions, nip11.Admission{
-			Amount: a.Amount,
-			Unit:   a.Unit,
-		})
-	}
-
-	subscription := make([]nip11.Subscription, 0)
-	for _, s := range c.Parameters.Fees.Subscription {
-		subscription = append(subscription, nip11.Subscription{
-			Amount: s.Amount,
-			Unit:   s.Unit,
-			Period: s.Period,
-		})
-	}
-
-	publication := make([]nip11.Publication, 0)
-	for _, p := range c.Parameters.Fees.Publication {
-		publication = append(publication, nip11.Publication{
-			Kinds:  p.Kinds,
-			Amount: p.Amount,
-			Unit:   p.Unit,
-		})
-	}
-
-	n11d.Fees.Admission = addmissions
-	n11d.Fees.Subscription = subscription
-	n11d.Fees.Publication = publication
-
-	url, err := utils.ParseURL(c.Parameters.URL)
-	if err == nil {
-		n11d.URL = url
-	}
-
-	return n11d
 }
 
 // basicCheck validates the basic stuff in config.

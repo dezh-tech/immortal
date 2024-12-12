@@ -28,6 +28,10 @@ kraken:
   # default is 1 minute.
   heartbeat_in_second: 60
 
+  # region is the location for this specific relay.
+  # default is global.
+  region: global
+
 # database contains details of database connections and limitations.
 database:
   # db_name is the name of mongodb related to immortal

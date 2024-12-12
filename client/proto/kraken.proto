@@ -5,8 +5,16 @@ package kraken;
 option go_package = "github.com/dezh-tech/immortal/api";
 
 // Service definition
-service Registry {
+service ServiceRegistry {
   rpc registerService (registerServiceRequest) returns (registerServiceResponse) {}
+}
+
+service Config {
+  rpc getConfig (EmptyRequest) returns (getConfigResponse) {}
+}
+
+service Log {
+  rpc addLog (addLogRequest) returns (addLogResponse) {}
 }
 
 // Request and response messages
@@ -14,14 +22,34 @@ message registerServiceRequest {
   string url = 1;
   uint32 heartbeat_duration_in_sec = 2;
   ServiceTypeEnum type = 3;
+  string region = 4;
 }
 
 message registerServiceResponse {
   bool success = 1;
   optional string message = 2;
+  string token = 3;
+}
+
+message EmptyRequest {}
+
+message addLogRequest {
+  string message = 1;
+  string stack = 2;
+}
+
+message addLogResponse {
+  bool success = 1;
+  optional string message = 2;
+}
+
+// Configuration messages
+message getConfigResponse {
+  string url = 1;
 }
 
 // Enum definitions
 enum ServiceTypeEnum {
-  RELAY = 0;
+  UNKNOWN = 0;
+  RELAY = 1;
 }
