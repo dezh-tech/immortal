@@ -7,11 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"google.golang.org/grpc"
-
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server/grpc/gen"
+	"google.golang.org/grpc"
 )
 
 type Server struct {
