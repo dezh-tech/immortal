@@ -1,22 +1,27 @@
 package relay
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"time"
 
+	"github.com/dezh-tech/immortal/client"
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/database"
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/metrics"
 	"github.com/dezh-tech/immortal/relay/redis"
-	"github.com/dezh-tech/immortal/server/http"
+	"github.com/dezh-tech/immortal/server/grpc"
 	"github.com/dezh-tech/immortal/server/websocket"
+	"github.com/dezh-tech/immortal/utils"
 )
 
 // Relay keeps all concepts such as server, database and manages them.
 type Relay struct {
 	config          config.Config
 	websocketServer *websocket.Server
-	httpServer      *http.Server
+	grpcServer      *grpc.Server
 	database        *database.Database
 	redis           *redis.Redis
 }
@@ -28,13 +33,6 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	err = cfg.LoadParameters(db)
-	if err != nil {
-		return nil, err
-	}
-
-	h := handler.New(db, cfg.Parameters.Handler)
-
 	m := metrics.New()
 
 	r, err := redis.New(cfg.RedisConf)
@@ -42,22 +40,50 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	ws, err := websocket.New(cfg.WebsocketServer, cfg.GetNIP11Documents(), h, m, r)
+	c, err := client.NewClient(cfg.Kraken.Endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	hs, err := http.New(cfg.HTTPServer, db)
+	la, err := utils.LocalAddr()
 	if err != nil {
 		return nil, err
 	}
+
+	resp, err := c.RegisterService(context.Background(), la, cfg.Kraken.Region, cfg.Kraken.Heartbeat)
+	if err != nil {
+		return nil, err
+	}
+
+	if !resp.Success {
+		return nil, fmt.Errorf("cant register to master: %s", *resp.Message)
+	}
+
+	params, err := c.GetConfig(context.Background(), resp.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.LoadParameters(params)
+	if err != nil {
+		return nil, err
+	}
+
+	h := handler.New(db, cfg.Handler)
+
+	ws, err := websocket.New(cfg.WebsocketServer, h, m, r)
+	if err != nil {
+		return nil, err
+	}
+
+	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now())
 
 	return &Relay{
 		config:          *cfg,
 		websocketServer: ws,
 		database:        db,
-		httpServer:      hs,
 		redis:           r,
+		grpcServer:      gs,
 	}, nil
 }
 
@@ -73,7 +99,7 @@ func (r *Relay) Start() chan error {
 	}()
 
 	go func() {
-		if err := r.httpServer.Start(); err != nil {
+		if err := r.grpcServer.Start(); err != nil {
 			errCh <- err
 		}
 	}()
@@ -86,6 +112,10 @@ func (r *Relay) Stop() error {
 	log.Println("stopping relay...")
 
 	if err := r.websocketServer.Stop(); err != nil {
+		return err
+	}
+
+	if err := r.grpcServer.Stop(); err != nil {
 		return err
 	}
 

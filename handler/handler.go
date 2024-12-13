@@ -123,10 +123,10 @@ func getCollectionName(k types.Kind) string {
 
 type Handler struct {
 	db     *database.Database
-	config *Config
+	config Config
 }
 
-func New(db *database.Database, cfg *Config) *Handler {
+func New(db *database.Database, cfg Config) *Handler {
 	return &Handler{
 		db:     db,
 		config: cfg,

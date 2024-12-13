@@ -37,7 +37,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	client, ok := s.conns[conn]
 	if !ok {
 		_ = conn.WriteMessage(1, message.MakeOK(false,
-			"",
+			msg.Event.ID,
 			fmt.Sprintf("error: can't find connection %s",
 				conn.RemoteAddr())))
 
@@ -51,7 +51,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		authm := message.MakeAuth(client.challenge)
 
 		okm := message.MakeOK(false,
-			"",
+			msg.Event.ID,
 			"auth-required: we only accept events from authenticated users.",
 		)
 
@@ -68,7 +68,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		authm := message.MakeAuth(client.challenge)
 
 		okm := message.MakeOK(false,
-			"",
+			msg.Event.ID,
 			"auth-required: this event may only be published by its author.",
 		)
 
@@ -110,9 +110,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Content) > s.config.Limitation.MaxContentLength {
+	if len(msg.Event.Content) > int(s.config.Limitation.MaxContentLength) {
 		okm := message.MakeOK(false,
-			"",
+			msg.Event.ID,
 			fmt.Sprintf("error: max limit of content length is %d", s.config.Limitation.MaxContentLength),
 		)
 
@@ -123,9 +123,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if msg.Event.Difficulty() < s.config.Limitation.MinPowDifficulty {
+	if msg.Event.Difficulty() < int(s.config.Limitation.MinPowDifficulty) {
 		okm := message.MakeOK(false,
-			"",
+			msg.Event.ID,
 			fmt.Sprintf("error: min pow required is %d", s.config.Limitation.MinPowDifficulty),
 		)
 
@@ -136,9 +136,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Tags) > s.config.Limitation.MaxEventTags {
+	if len(msg.Event.Tags) > int(s.config.Limitation.MaxEventTags) {
 		okm := message.MakeOK(false,
-			"",
+			msg.Event.ID,
 			fmt.Sprintf("error: max limit of tags count is %d", s.config.Limitation.MaxEventTags),
 		)
 
@@ -152,7 +152,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	if msg.Event.CreatedAt < s.config.Limitation.CreatedAtLowerLimit ||
 		msg.Event.CreatedAt > s.config.Limitation.CreatedAtUpperLimit {
 		okm := message.MakeOK(false,
-			"",
+			msg.Event.ID,
 			fmt.Sprintf("error: created at must be as least %d and at most %d",
 				s.config.Limitation.CreatedAtLowerLimit, s.config.Limitation.CreatedAtUpperLimit),
 		)

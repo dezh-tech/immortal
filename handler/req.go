@@ -25,7 +25,7 @@ type filterQuery struct {
 
 	Since int64
 	Until int64
-	Limit uint16
+	Limit uint32
 }
 
 func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
@@ -140,10 +140,10 @@ func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, 
 	}
 
 	// Add Limit to options
-	if fq.Limit > 0 && fq.Limit < h.config.Limitation.MaxLimit {
+	if fq.Limit > 0 && fq.Limit < h.config.MaxQueryLimit {
 		opts.SetLimit(int64(fq.Limit))
 	} else {
-		opts.SetLimit(h.config.InitialQueryDefaultLimit)
+		opts.SetLimit(int64(h.config.DefaultQueryLimit))
 	}
 
 	opts.SetSort(bson.D{

@@ -55,7 +55,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Filters) >= s.config.Limitation.MaxFilters {
+	if len(msg.Filters) >= int(s.config.Limitation.MaxFilters) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of filters is: %d",
 			s.config.Limitation.MaxFilters)))
 
@@ -64,7 +64,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if s.config.Limitation.MaxSubidLength <= len(msg.SubscriptionID) {
+	if len(msg.SubscriptionID) >= int(s.config.Limitation.MaxSubidLength) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
 			s.config.Limitation.MaxSubidLength)))
 
@@ -73,7 +73,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(client.subs) >= s.config.Limitation.MaxSubscriptions {
+	if len(client.subs) >= int(s.config.Limitation.MaxSubscriptions) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of subs is: %d",
 			s.config.Limitation.MaxSubscriptions)))
 

@@ -1,10 +1,7 @@
 package websocket
 
 import (
-	_ "embed"
-	"encoding/json"
 	"fmt"
-	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -16,18 +13,12 @@ import (
 	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
-	"github.com/dezh-tech/immortal/types/nip11"
 	"github.com/gorilla/websocket"
 )
 
-var (
-	upgrader = websocket.Upgrader{
-		CheckOrigin: func(_ *http.Request) bool { return true },
-	}
-
-	//go:embed landing.html
-	landingTempl []byte
-)
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(_ *http.Request) bool { return true },
+}
 
 // Server represents a websocket serer which keeps track of client connections and handle them.
 type Server struct {
@@ -36,19 +27,16 @@ type Server struct {
 	config   Config
 	conns    map[*websocket.Conn]clientState
 	handlers *handler.Handler
-	nip11Doc *nip11.RelayInformationDocument
 	metrics  *metrics.Metrics
 	redis    *redis.Redis
 }
 
-func New(cfg Config, nip11Doc *nip11.RelayInformationDocument,
-	h *handler.Handler, m *metrics.Metrics, r *redis.Redis,
+func New(cfg Config, h *handler.Handler, m *metrics.Metrics, r *redis.Redis,
 ) (*Server, error) {
 	return &Server{
 		config:   cfg,
 		conns:    make(map[*websocket.Conn]clientState),
 		mu:       sync.RWMutex{},
-		nip11Doc: nip11Doc,
 		handlers: h,
 		metrics:  m,
 		redis:    r,
@@ -68,34 +56,6 @@ func (s *Server) Start() error {
 
 // handleWS is WebSocket handler.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Accept") == "application/nostr+json" {
-		w.Header().Set("Content-Type", "application/nostr+json")
-		w.WriteHeader(http.StatusOK)
-
-		_ = json.NewEncoder(w).Encode(s.nip11Doc) //nolint
-
-		return
-	}
-
-	if r.Header.Get("Upgrade") == "" {
-		t := template.New("webpage")
-		t, err := t.Parse(string(landingTempl))
-		if err != nil {
-			http.Error(w, "Error parsing template", http.StatusInternalServerError)
-
-			return
-		}
-
-		err = t.Execute(w, s.nip11Doc)
-		if err != nil {
-			http.Error(w, "Error executing template", http.StatusInternalServerError)
-
-			return
-		}
-
-		return
-	}
-
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
