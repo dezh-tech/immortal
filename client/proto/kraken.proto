@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package kraken;
 
-option go_package = "github.com/dezh-tech/immortal/api";
+option go_package = "github.com/dezh-tech/immortal/client";
 
 // Service definitions
 

@@ -18,6 +18,16 @@ ws_server:
   # default is 7777.
   port: 7777
 
+# grpc_server contains information about grpc server.
+grpc_server:
+  # bind is the IP address to be bind and listen on.
+  # default is local host.
+  bind: "0.0.0.0"
+
+  # port is grpc port to be listen on.
+  # default is 9000.
+  port: 9000
+
 # kraken contains information about connection with kraken instance.
 kraken:
   # IP address of kraken instance.

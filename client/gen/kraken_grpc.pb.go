@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: kraken.proto
 
-package api
+package client
 
 import (
 	context "context"

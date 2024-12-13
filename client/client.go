@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	kraken "github.com/dezh-tech/immortal/client/gen/go"
+	kraken "github.com/dezh-tech/immortal/client/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -28,7 +28,9 @@ func NewClient(endpoint string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) RegisterService(ctx context.Context, url, region string, hb uint32) (*kraken.RegisterServiceResponse, error) {
+func (c *Client) RegisterService(ctx context.Context,
+	url, region string, hb uint32,
+) (*kraken.RegisterServiceResponse, error) {
 	return c.RegistryService.RegisterService(ctx, &kraken.RegisterServiceRequest{
 		Type:                   kraken.ServiceTypeEnum_RELAY,
 		Url:                    url,

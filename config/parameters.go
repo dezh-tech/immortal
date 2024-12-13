@@ -1,15 +1,15 @@
 package config
 
 import (
-	kraken "github.com/dezh-tech/immortal/client/gen/go"
+	kraken "github.com/dezh-tech/immortal/client/gen"
 	"github.com/dezh-tech/immortal/handler"
-	"github.com/dezh-tech/immortal/server"
+	"github.com/dezh-tech/immortal/server/websocket"
 	"github.com/dezh-tech/immortal/utils"
 )
 
 type Parameters struct {
 	Handler         *handler.Config
-	WebsocketServer *server.Config
+	WebsocketServer *websocket.Config
 }
 
 func (c *Config) LoadParameters(params *kraken.GetConfigResponse) error {
@@ -20,7 +20,7 @@ func (c *Config) LoadParameters(params *kraken.GetConfigResponse) error {
 
 	c.WebsocketServer.URL = url
 
-	c.WebsocketServer.Limitation = &server.Limitation{
+	c.WebsocketServer.Limitation = &websocket.Limitation{
 		MaxMessageLength:    params.Limitations.MaxMessageLength,
 		MaxSubscriptions:    params.Limitations.MaxSubscriptions,
 		MaxFilters:          params.Limitations.MaxFilters,

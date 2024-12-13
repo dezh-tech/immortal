@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/dezh-tech/immortal/client"
 	"github.com/dezh-tech/immortal/config"
@@ -11,14 +12,16 @@ import (
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/metrics"
 	"github.com/dezh-tech/immortal/relay/redis"
-	"github.com/dezh-tech/immortal/server"
+	"github.com/dezh-tech/immortal/server/grpc"
+	"github.com/dezh-tech/immortal/server/websocket"
 	"github.com/dezh-tech/immortal/utils"
 )
 
 // Relay keeps all concepts such as server, database and manages them.
 type Relay struct {
 	config          config.Config
-	websocketServer *server.Server
+	websocketServer *websocket.Server
+	grpcServer      *grpc.Server
 	database        *database.Database
 	redis           *redis.Redis
 }
@@ -68,16 +71,19 @@ func New(cfg *config.Config) (*Relay, error) {
 
 	h := handler.New(db, cfg.Handler)
 
-	ws, err := server.New(cfg.WebsocketServer, h, m, r)
+	ws, err := websocket.New(cfg.WebsocketServer, h, m, r)
 	if err != nil {
 		return nil, err
 	}
+
+	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now())
 
 	return &Relay{
 		config:          *cfg,
 		websocketServer: ws,
 		database:        db,
 		redis:           r,
+		grpcServer:      gs,
 	}, nil
 }
 
@@ -92,6 +98,12 @@ func (r *Relay) Start() chan error {
 		}
 	}()
 
+	go func() {
+		if err := r.grpcServer.Start(); err != nil {
+			errCh <- err
+		}
+	}()
+
 	return errCh
 }
 
@@ -100,6 +112,10 @@ func (r *Relay) Stop() error {
 	log.Println("stopping relay...")
 
 	if err := r.websocketServer.Stop(); err != nil {
+		return err
+	}
+
+	if err := r.grpcServer.Stop(); err != nil {
 		return err
 	}
 
