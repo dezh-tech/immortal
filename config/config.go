@@ -5,6 +5,7 @@ import (
 
 	"github.com/dezh-tech/immortal/client"
 	"github.com/dezh-tech/immortal/database"
+	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server"
 	"github.com/joho/godotenv"
@@ -18,7 +19,7 @@ type Config struct {
 	WebsocketServer server.Config   `yaml:"ws_server"`
 	Database        database.Config `yaml:"database"`
 	RedisConf       redis.Config    `yaml:"redis"`
-	Parameters      Parameters
+	Handler         handler.Config
 }
 
 // Load loads config from file and env.

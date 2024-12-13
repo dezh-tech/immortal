@@ -18,25 +18,24 @@ func (c *Config) LoadParameters(params *kraken.GetConfigResponse) error {
 		return err
 	}
 
-	c.Parameters.WebsocketServer = &server.Config{
-		URL: url,
-		Limitation: &server.Limitation{
-			MaxMessageLength:    params.Limitations.MaxMessageLength,
-			MaxSubscriptions:    params.Limitations.MaxSubscriptions,
-			MaxFilters:          params.Limitations.MaxFilters,
-			MaxSubidLength:      params.Limitations.MaxSubidLength,
-			MinPowDifficulty:    params.Limitations.MinPowDifficulty,
-			AuthRequired:        params.Limitations.AuthRequired,
-			PaymentRequired:     params.Limitations.PaymentRequired,
-			RestrictedWrites:    params.Limitations.RestrictedWrites,
-			MaxEventTags:        params.Limitations.MaxEventTags,
-			MaxContentLength:    params.Limitations.MaxContentLength,
-			CreatedAtLowerLimit: params.Limitations.CreatedAtLowerLimit,
-			CreatedAtUpperLimit: params.Limitations.CreatedAtUpperLimit,
-		},
+	c.WebsocketServer.URL = url
+
+	c.WebsocketServer.Limitation = &server.Limitation{
+		MaxMessageLength:    params.Limitations.MaxMessageLength,
+		MaxSubscriptions:    params.Limitations.MaxSubscriptions,
+		MaxFilters:          params.Limitations.MaxFilters,
+		MaxSubidLength:      params.Limitations.MaxSubidLength,
+		MinPowDifficulty:    params.Limitations.MinPowDifficulty,
+		AuthRequired:        params.Limitations.AuthRequired,
+		PaymentRequired:     params.Limitations.PaymentRequired,
+		RestrictedWrites:    params.Limitations.RestrictedWrites,
+		MaxEventTags:        params.Limitations.MaxEventTags,
+		MaxContentLength:    params.Limitations.MaxContentLength,
+		CreatedAtLowerLimit: params.Limitations.CreatedAtLowerLimit,
+		CreatedAtUpperLimit: params.Limitations.CreatedAtUpperLimit,
 	}
 
-	c.Parameters.Handler = &handler.Config{
+	c.Handler = handler.Config{
 		DefaultQueryLimit: params.Limitations.DefaultQueryLimit,
 		MaxQueryLimit:     params.Limitations.MaxQueryLimit,
 	}

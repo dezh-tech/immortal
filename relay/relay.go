@@ -66,7 +66,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	h := handler.New(db, cfg.Parameters.Handler)
+	h := handler.New(db, cfg.Handler)
 
 	ws, err := server.New(cfg.WebsocketServer, h, m, r)
 	if err != nil {
