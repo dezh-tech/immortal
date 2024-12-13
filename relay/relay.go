@@ -47,7 +47,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	resp, err := c.Register(context.Background(), la, cfg.Kraken.Region, cfg.Kraken.Heartbeat)
+	resp, err := c.RegisterService(context.Background(), la, cfg.Kraken.Region, cfg.Kraken.Heartbeat)
 	if err != nil {
 		return nil, err
 	}

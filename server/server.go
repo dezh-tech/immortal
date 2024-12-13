@@ -1,7 +1,6 @@
 package server
 
 import (
-	_ "embed"
 	"fmt"
 	"log"
 	"net"

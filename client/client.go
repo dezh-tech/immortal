@@ -28,7 +28,7 @@ func NewClient(endpoint string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Register(ctx context.Context, url, region string, hb uint32) (*kraken.RegisterServiceResponse, error) {
+func (c *Client) RegisterService(ctx context.Context, url, region string, hb uint32) (*kraken.RegisterServiceResponse, error) {
 	return c.RegistryService.RegisterService(ctx, &kraken.RegisterServiceRequest{
 		Type:                   kraken.ServiceTypeEnum_RELAY,
 		Url:                    url,
@@ -40,5 +40,6 @@ func (c *Client) Register(ctx context.Context, url, region string, hb uint32) (*
 func (c *Client) GetConfig(ctx context.Context, id string) (*kraken.GetConfigResponse, error) {
 	md := metadata.New(map[string]string{"x-identifier": id})
 	ctx = metadata.NewOutgoingContext(ctx, md)
+
 	return c.ConfigService.GetConfig(ctx, &kraken.EmptyRequest{})
 }
