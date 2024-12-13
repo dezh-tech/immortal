@@ -25,7 +25,7 @@ type Server struct {
 	Redis     *redis.Redis
 }
 
-func New(conf *Config, redis *redis.Redis, db *database.Database, st time.Time) *Server {
+func New(conf *Config, r *redis.Redis, db *database.Database, st time.Time) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &Server{
@@ -33,7 +33,7 @@ func New(conf *Config, redis *redis.Redis, db *database.Database, st time.Time) 
 		cancel:    cancel,
 		config:    conf,
 		StartTime: st,
-		Redis:     redis,
+		Redis:     r,
 		DB:        db,
 	}
 }
