@@ -1,5 +1,5 @@
 <p align="center"> 
-    <img alt="immortal" src="./assets/images/immo.svg" width="150" height="150" />
+    <img alt="immortal" src="./.assets/images/immo.svg" width="150" height="150" />
 </p>
 
 <h1 align="center">
@@ -9,9 +9,9 @@ Immortal
 <br/>
 
 
-The Immortal is a [Nostr](https://nostr.com) relay implementation written in Golang.
+The Immortal is a [Nostr](https://nostr.com) relay implementation in Golang.
 
-Immortal aimed and designed to be **scalable**, **high-performance**, and **configurable**. Basically it's a good choice for paid relays or big community relays and not a good choice as a personal relay.
+Immortal aimed and designed to be **scalable**, **high-performance**, and **configurable**. It's a good choice for paid relays or big community relays and not a good choice for a personal relay.
 
 ## Supported NIPs
 
@@ -19,16 +19,16 @@ You can find supported NIPs details [here](./documents/NIPs.md).
 
 ## Updates
 
-Updates and changes or community discussions can be followed on the Github issue/discussion and/or the [Dezh Technologies Nostr profile](https://njump.me/dezh.tech).
+Updates, changes, or community discussions can be followed on the GitHub issue/discussion or the [Dezh Technologies Nostr profile](https://njump.me/dezh.tech).
 
 ## Contribution
 
-All kind of contributions are welcome!
+All kinds of contributions are welcome!
 Make sure you read the [Contribution guides](./CONTRIBUTING.md) before any code contribution.
 
 ## Donation
 
-Donations and financial support of the development process is possible using Bitcoin and lightning:
+Donations and financial support for the development process are possible using Bitcoin and Lightning:
 
 **on-chain**:
 
@@ -44,4 +44,4 @@ oldestvelvet57@walletofsatoshi.com
 
 ## License
 
-The Immortal software is published under the [MIT License](./LICENSE) and contributing and using this code means your agreement on the license.
+The Immortal software is published under the [MIT License](./LICENSE) and contributing and using this code means you agree with the license.
