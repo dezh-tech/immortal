@@ -1,7 +1,7 @@
 # --------------------------
 #! Stage 1: Build the Go binary
 # --------------------------
-FROM golang:1.22.5-alpine AS builder
+FROM golang:1.23.3-alpine AS builder
 
 WORKDIR /app
 
@@ -34,8 +34,12 @@ COPY --from=builder /app/build/immortal .
 COPY --from=builder /app/config/config.yml .
 
 #* Expose necessary ports for the application
-EXPOSE 9090
-EXPOSE 8080
+
+# websocket port
+EXPOSE 7777
+
+# grpc port
+EXPOSE 50050
 
 #* Set the entrypoint to run the application
 ENTRYPOINT ["./immortal", "run", "./config.yml"]
