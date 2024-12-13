@@ -25,8 +25,8 @@ grpc_server:
   bind: "0.0.0.0"
 
   # port is grpc port to be listen on.
-  # default is 9000.
-  port: 9000
+  # default is 50050.
+  port: 50050
 
 # kraken contains information about connection with kraken instance.
 kraken:
@@ -46,7 +46,7 @@ kraken:
 database:
   # db_name is the name of mongodb related to immortal
   # default is immortal.
-  db_name: "immortal"
+  db_name: immortal
 
   # query_timeout_in_ms specifies the maximum duration (in milliseconds) for query execution before timing out.
   # default is 3000.
@@ -68,4 +68,4 @@ redis:
 
   # bloom_name specifies the name of bloom filter key
   # default is IMMO_BLOOM.
-  bloom_name: "IMMO_BLOOM" 
+  bloom_name: IMMO_BLOOM
