@@ -110,7 +110,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Content) > s.config.Limitation.MaxContentLength {
+	if len(msg.Event.Content) > int(s.config.Limitation.MaxContentLength) {
 		okm := message.MakeOK(false,
 			"",
 			fmt.Sprintf("error: max limit of content length is %d", s.config.Limitation.MaxContentLength),
@@ -123,7 +123,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if msg.Event.Difficulty() < s.config.Limitation.MinPowDifficulty {
+	if msg.Event.Difficulty() < int(s.config.Limitation.MinPowDifficulty) {
 		okm := message.MakeOK(false,
 			"",
 			fmt.Sprintf("error: min pow required is %d", s.config.Limitation.MinPowDifficulty),
@@ -136,7 +136,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Event.Tags) > s.config.Limitation.MaxEventTags {
+	if len(msg.Event.Tags) > int(s.config.Limitation.MaxEventTags) {
 		okm := message.MakeOK(false,
 			"",
 			fmt.Sprintf("error: max limit of tags count is %d", s.config.Limitation.MaxEventTags),

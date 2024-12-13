@@ -14,7 +14,7 @@ type Filter struct {
 	Tags    map[string][]string
 	Since   int64  `json:"since"`
 	Until   int64  `json:"until"`
-	Limit   uint16 `json:"limit"`
+	Limit   uint32 `json:"limit"`
 
 	// todo::: should we proxy search to index server and elastic search?
 	Search string `json:"search"` // see NIP-50.

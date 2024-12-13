@@ -11,13 +11,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config reprsents the configs used by relay and other concepts on system.
+// Config represents the configs used by relay and other concepts on system.
 type Config struct {
 	Environment     string          `yaml:"environment"`
 	Kraken          client.Config   `yaml:"kraken"`
 	WebsocketServer server.Config   `yaml:"ws_server"`
 	Database        database.Config `yaml:"database"`
 	RedisConf       redis.Config    `yaml:"redis"`
+	Parameters      Parameters
 }
 
 // Load loads config from file and env.

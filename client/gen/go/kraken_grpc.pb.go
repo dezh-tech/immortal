@@ -26,6 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceRegistryClient interface {
+	// Registers a service with the registry
 	RegisterService(ctx context.Context, in *RegisterServiceRequest, opts ...grpc.CallOption) (*RegisterServiceResponse, error)
 }
 
@@ -50,6 +51,7 @@ func (c *serviceRegistryClient) RegisterService(ctx context.Context, in *Registe
 // All implementations should embed UnimplementedServiceRegistryServer
 // for forward compatibility
 type ServiceRegistryServer interface {
+	// Registers a service with the registry
 	RegisterService(context.Context, *RegisterServiceRequest) (*RegisterServiceResponse, error)
 }
 
@@ -114,6 +116,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ConfigClient interface {
+	// Retrieves the current configuration
 	GetConfig(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*GetConfigResponse, error)
 }
 
@@ -138,6 +141,7 @@ func (c *configClient) GetConfig(ctx context.Context, in *EmptyRequest, opts ...
 // All implementations should embed UnimplementedConfigServer
 // for forward compatibility
 type ConfigServer interface {
+	// Retrieves the current configuration
 	GetConfig(context.Context, *EmptyRequest) (*GetConfigResponse, error)
 }
 
@@ -202,6 +206,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LogClient interface {
+	// Adds a log entry
 	AddLog(ctx context.Context, in *AddLogRequest, opts ...grpc.CallOption) (*AddLogResponse, error)
 }
 
@@ -226,6 +231,7 @@ func (c *logClient) AddLog(ctx context.Context, in *AddLogRequest, opts ...grpc.
 // All implementations should embed UnimplementedLogServer
 // for forward compatibility
 type LogServer interface {
+	// Adds a log entry
 	AddLog(context.Context, *AddLogRequest) (*AddLogResponse, error)
 }
 

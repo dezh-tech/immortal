@@ -2,7 +2,6 @@ package relay
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
@@ -31,21 +30,9 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	err = cfg.LoadParameters(db)
-	if err != nil {
-		return nil, err
-	}
-
-	h := handler.New(db, cfg.Parameters.Handler)
-
 	m := metrics.New()
 
 	r, err := redis.New(cfg.RedisConf)
-	if err != nil {
-		return nil, err
-	}
-
-	ws, err := server.New(cfg.WebsocketServer, h, m, r)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +54,23 @@ func New(cfg *config.Config) (*Relay, error) {
 
 	if !resp.Success {
 		return nil, fmt.Errorf("cant register to master: %s", *resp.Message)
+	}
+
+	params, err := c.GetConfig(context.Background(), resp.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.LoadParameters(params)
+	if err != nil {
+		return nil, err
+	}
+
+	h := handler.New(db, cfg.Parameters.Handler)
+
+	ws, err := server.New(cfg.WebsocketServer, h, m, r)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Relay{

@@ -126,7 +126,7 @@ func easyjson4d398eaaDecodeGithubComDezhTechImmortalTypesFilter(in *jlexer.Lexer
 				out.Until = in.Int64()
 			}
 		case "limit":
-			out.Limit = in.Uint16()
+			out.Limit = in.Uint32()
 		case "search":
 			out.Search = in.String()
 		default:
@@ -257,7 +257,6 @@ func easyjson4d398eaaEncodeGithubComDezhTechImmortalTypesFilter(out *jwriter.Wri
 		out.String(in.Search)
 	}
 	for tag, values := range in.Tags {
-		const prefix string = ",\"authors\":" //nolint
 		if first {
 			first = false
 			out.RawString("\"#" + tag + "\":")
