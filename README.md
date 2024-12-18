@@ -24,7 +24,7 @@ Updates, changes, or community discussions can be followed on the GitHub issue/d
 ## Contribution
 
 All kinds of contributions are welcome!
-Make sure you read the [Contribution guides](./CONTRIBUTING.md) before any code contribution.
+Read the [Contribution guides](./CONTRIBUTING.md) before any code contribution.
 
 ## Donation
 
@@ -33,13 +33,13 @@ Donations and financial support for the development process are possible using B
 **on-chain**:
 
 ```
-bc1qxd3p6a46uzae86elteha7tygcz7f56mvvlznza
+bc1qa0z44j7m0v0rx85q0cag5juhxdshnmnrxnlr32
 ```
 
 **lightning**: 
 
 ```
-oldestvelvet57@walletofsatoshi.com
+dezh@coinos.io
 ```
 
 ## License
