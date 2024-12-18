@@ -29,6 +29,9 @@ WORKDIR /app
 ARG IMMO_MONGO_URI
 ENV IMMO_MONGO_URI=${IMMO_MONGO_URI}
 
+ARG IMMO_REDIS_URI
+ENV IMMO_REDIS_URI=${IMMO_REDIS_URI}
+
 #* Copy the compiled binary from the builder stage
 COPY --from=builder /app/build/immortal .
 COPY --from=builder /app/config/config.yml .
