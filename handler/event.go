@@ -80,11 +80,13 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 			},
 			bson.E{
 				Key: "$and",
-				Value: bson.M{
-					"tags": bson.M{
-						"$elemMatch": bson.M{
-							"0": "d",
-							"1": dTag,
+				Value: bson.A{
+					bson.M{
+						"tags": bson.M{
+							"$elemMatch": bson.M{
+								"0": "d",
+								"1": dTag,
+							},
 						},
 					},
 				},

@@ -1,5 +1,7 @@
+// Define the syntax version for Protocol Buffers
 syntax = "proto3";
 
+// Define the package for the services and messages
 package kraken;
 
 option go_package = "github.com/dezh-tech/immortal/client";
@@ -28,7 +30,7 @@ service Log {
 
 // Request to register a service
 message registerServiceRequest {
-  string url = 1;                        // Service URL
+  string port = 1;                        // Service grpc port
   uint32 heartbeat_duration_in_sec = 2;  // Heartbeat interval in seconds
   ServiceTypeEnum type = 3;              // Type of the service (e.g., RELAY)
   string region = 4;                     // Region of the service
