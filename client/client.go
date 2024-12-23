@@ -29,11 +29,11 @@ func NewClient(endpoint string) (*Client, error) {
 }
 
 func (c *Client) RegisterService(ctx context.Context,
-	url, region string, hb uint32,
+	port, region string, hb uint32,
 ) (*kraken.RegisterServiceResponse, error) {
 	return c.RegistryService.RegisterService(ctx, &kraken.RegisterServiceRequest{
 		Type:                   kraken.ServiceTypeEnum_RELAY,
-		Url:                    url,
+		Port:                   port,
 		HeartbeatDurationInSec: hb,
 		Region:                 region,
 	})

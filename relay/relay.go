@@ -14,7 +14,6 @@ import (
 	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server/grpc"
 	"github.com/dezh-tech/immortal/server/websocket"
-	"github.com/dezh-tech/immortal/utils"
 )
 
 // Relay keeps all concepts such as server, database and manages them.
@@ -45,12 +44,8 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	la, err := utils.LocalAddr()
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.RegisterService(context.Background(), la, cfg.Kraken.Region, cfg.Kraken.Heartbeat)
+	resp, err := c.RegisterService(context.Background(), fmt.Sprint(cfg.GRPCServer.Port),
+		cfg.Kraken.Region, cfg.Kraken.Heartbeat)
 	if err != nil {
 		return nil, err
 	}

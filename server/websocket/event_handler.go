@@ -72,9 +72,10 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 			"auth-required: this event may only be published by its author.",
 		)
 
+		_ = conn.WriteMessage(1, authm)
+
 		_ = conn.WriteMessage(1, okm)
 
-		_ = conn.WriteMessage(1, authm)
 		status = authFail
 
 		return
