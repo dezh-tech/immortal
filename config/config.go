@@ -8,6 +8,7 @@ import (
 	"github.com/dezh-tech/immortal/handler"
 	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server/grpc"
+	"github.com/dezh-tech/immortal/server/http"
 	"github.com/dezh-tech/immortal/server/websocket"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
@@ -21,6 +22,7 @@ type Config struct {
 	Database        database.Config  `yaml:"database"`
 	RedisConf       redis.Config     `yaml:"redis"`
 	GRPCServer      grpc.Config      `yaml:"grpc_server"`
+	Metrics         http.Config      `yaml:"metrics"`
 	Handler         handler.Config
 }
 

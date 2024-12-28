@@ -187,7 +187,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		log.Printf("error: checking bloom filter: %s", err.Error())
 	}
 
-	// todo::: can we run goroutines per client?
+	// todo::: should we run goroutines per client?
 	for conn, client := range s.conns {
 		client.Lock()
 		for id, filters := range client.subs {

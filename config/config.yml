@@ -11,7 +11,7 @@ environment: "prod"
 # ws_server contains information about websocket server.
 ws_server:
   # bind is the IP address to be bind and listen on.
-  # default is local host.
+  # default is 0.0.0.0.
   bind: "0.0.0.0"
 
   # port is websocket port to be listen on.
@@ -21,12 +21,26 @@ ws_server:
 # grpc_server contains information about grpc server.
 grpc_server:
   # bind is the IP address to be bind and listen on.
-  # default is local host.
+  # default is 0.0.0.0.
   bind: "0.0.0.0"
 
   # port is grpc port to be listen on.
   # default is 50050.
   port: 50050
+
+# metrics contains information about prometheus metrics https server.
+metrics:
+  # bind is the IP address to be bind and listen on.
+  # default is 0.0.0.0.
+  bind: "0.0.0.0"
+
+  # port is grpc port to be listen on.
+  # default is 9090.
+  port: 9090
+
+  # enable or disable metrics service.
+  # default is disabled.
+  enable: false
 
 # kraken contains information about connection with kraken instance.
 kraken:

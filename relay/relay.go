@@ -13,6 +13,7 @@ import (
 	"github.com/dezh-tech/immortal/metrics"
 	"github.com/dezh-tech/immortal/relay/redis"
 	"github.com/dezh-tech/immortal/server/grpc"
+	"github.com/dezh-tech/immortal/server/http"
 	"github.com/dezh-tech/immortal/server/websocket"
 )
 
@@ -21,6 +22,7 @@ type Relay struct {
 	config          config.Config
 	websocketServer *websocket.Server
 	grpcServer      *grpc.Server
+	httpServer      *http.Server
 	database        *database.Database
 	redis           *redis.Redis
 }
@@ -73,11 +75,17 @@ func New(cfg *config.Config) (*Relay, error) {
 
 	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now())
 
+	hs, err := http.New(cfg.Metrics, db)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Relay{
 		config:          *cfg,
 		websocketServer: ws,
 		database:        db,
 		redis:           r,
+		httpServer:      hs,
 		grpcServer:      gs,
 	}, nil
 }
@@ -99,6 +107,14 @@ func (r *Relay) Start() chan error {
 		}
 	}()
 
+	if r.config.Metrics.Enable {
+		go func() {
+			if err := r.httpServer.Start(); err != nil {
+				errCh <- err
+			}
+		}()
+	}
+
 	return errCh
 }
 
@@ -112,6 +128,12 @@ func (r *Relay) Stop() error {
 
 	if err := r.grpcServer.Stop(); err != nil {
 		return err
+	}
+
+	if r.config.Metrics.Enable {
+		if err := r.httpServer.Start(); err != nil {
+			return err
+		}
 	}
 
 	return r.database.Stop()
