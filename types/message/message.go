@@ -123,7 +123,7 @@ func (em Event) EncodeToJSON() ([]byte, error) {
 	return res, nil
 }
 
-// Req reperesents a NIP-01 REQ message.
+// Req represents a NIP-01 REQ message.
 type Req struct {
 	SubscriptionID string
 	filter.Filters
