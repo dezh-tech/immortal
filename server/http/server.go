@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/dezh-tech/immortal/database"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -15,7 +14,7 @@ type Server struct {
 	config Config
 }
 
-func New(cfg Config, db *database.Database) (*Server, error) {
+func New(cfg Config) (*Server, error) {
 	r := mux.NewRouter()
 
 	s := &Server{

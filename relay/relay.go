@@ -75,7 +75,7 @@ func New(cfg *config.Config) (*Relay, error) {
 
 	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now())
 
-	hs, err := http.New(cfg.Metrics, db)
+	hs, err := http.New(cfg.Metrics)
 	if err != nil {
 		return nil, err
 	}
