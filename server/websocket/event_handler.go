@@ -13,7 +13,8 @@ import (
 )
 
 // handleEvent handles new incoming EVENT messages from client.
-func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
+// todo::: too much complexity.
+func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	defer measureLatency(s.metrics.EventLatency)()

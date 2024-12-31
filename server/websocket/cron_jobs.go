@@ -34,7 +34,7 @@ func (s *Server) checkExpiration() {
 				}
 
 				if err := s.handler.DeleteByID(data[0],
-					types.Kind(kind)); err != nil {
+					types.Kind(kind)); err != nil { //nolint
 					failedJobs = append(failedJobs, job)
 				}
 			}
