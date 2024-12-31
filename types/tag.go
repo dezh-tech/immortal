@@ -23,6 +23,20 @@ func (tags Tags) ContainsAny(tagName string, values []string) bool {
 	return false
 }
 
+func (tags Tags) GetValue(tagName string) string {
+	for _, tag := range tags {
+		if len(tag) < 2 {
+			continue
+		}
+
+		if tag[0] == tagName {
+			return tag[1]
+		}
+	}
+
+	return ""
+}
+
 // Marshal Tag. Used for Serialization so string escaping should be as in RFC8259.
 func (tag Tag) MarshalTo(dst []byte) []byte {
 	dst = append(dst, '[')

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
+	"time"
 
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/dezh-tech/immortal/utils"
@@ -30,6 +32,23 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 		_ = conn.WriteMessage(1, okm)
 		status = parseFail
+
+		return
+	}
+
+	eID := msg.Event.GetRawID()
+
+	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
+	defer cancel()
+
+	exists, err := s.redis.Client.BFExists(qCtx, s.redis.BloomName, eID[:]).Result()
+	if err != nil {
+		log.Printf("error: checking bloom filter: %s", err.Error())
+	}
+
+	if exists {
+		okm := message.MakeOK(true, msg.Event.ID, "")
+		_ = conn.WriteMessage(1, okm)
 
 		return
 	}
@@ -81,21 +100,48 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	eID := msg.Event.GetRawID()
+	expirationTag := msg.Event.Tags.GetValue("expiration")
 
-	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
-	defer cancel()
+	if expirationTag != "" {
+		expiration, err := strconv.ParseInt(expirationTag, 10, 64)
+		if err != nil {
+			okm := message.MakeOK(false,
+				msg.Event.ID,
+				fmt.Sprintf("invalid: expiration tag %s.", expirationTag),
+			)
 
-	exists, err := s.redis.Client.BFExists(qCtx, s.redis.BloomName, eID[:]).Result()
-	if err != nil {
-		log.Printf("error: checking bloom filter: %s", err.Error())
-	}
+			_ = conn.WriteMessage(1, okm)
 
-	if exists {
-		okm := message.MakeOK(true, msg.Event.ID, "")
-		_ = conn.WriteMessage(1, okm)
+			status = invalidFail
 
-		return
+			return
+		}
+
+		if time.Now().Unix() >= expiration {
+			okm := message.MakeOK(false,
+				msg.Event.ID,
+				fmt.Sprintf("invalid: this event was expired in %s.", time.Unix(expiration, 0).String()),
+			)
+
+			_ = conn.WriteMessage(1, okm)
+
+			status = invalidFail
+
+			return
+		}
+
+		if err := s.redis.AddDelayedJob("expiration_events",
+			fmt.Sprintf("%s:%d", msg.Event.ID, msg.Event.Kind), time.Until(time.Unix(expiration, 0))); err != nil {
+			okm := message.MakeOK(false,
+				msg.Event.ID, "error: can't add event to expiration queue.",
+			)
+
+			_ = conn.WriteMessage(1, okm)
+
+			status = invalidFail
+
+			return
+		}
 	}
 
 	if !msg.Event.IsValid(eID) {
@@ -166,11 +212,11 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 
 	if !msg.Event.Kind.IsEphemeral() {
-		err := s.handlers.HandleEvent(msg.Event)
+		err := s.handler.HandleEvent(msg.Event)
 		if err != nil {
 			okm := message.MakeOK(false,
 				msg.Event.ID,
-				err.Error(),
+				"error: can't write event to database.",
 			)
 
 			_ = conn.WriteMessage(1, okm)
@@ -184,7 +230,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomName, eID[:]).Result()
 	if err != nil {
-		log.Printf("error: checking bloom filter: %s", err.Error())
+		log.Printf("error: adding event to bloom filter.")
 	}
 
 	// todo::: can we run goroutines per client?
