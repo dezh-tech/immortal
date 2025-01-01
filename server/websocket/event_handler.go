@@ -131,7 +131,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 			return
 		}
 
-		if err := s.redis.AddDelayedJob("expiration_events",
+		if err := s.redis.AddDelayedTask("expiration_events",
 			fmt.Sprintf("%s:%d", msg.Event.ID, msg.Event.Kind), time.Until(time.Unix(expiration, 0))); err != nil {
 			okm := message.MakeOK(false,
 				msg.Event.ID, "error: can't add event to expiration queue.",

@@ -11,17 +11,15 @@ import (
 
 func (s *Server) checkExpiration() {
 	for range time.Tick(time.Minute) {
-		jobs, err := s.redis.GetReadyJobs("expiration_events")
+		tasks, err := s.redis.GetReadyTasks("expiration_events")
 		if err != nil {
 			log.Println("error in checking expired events", err)
 		}
 
-		failedJobs := make([]string, 0)
+		failedTasks := make([]string, 0)
 
-		if len(jobs) != 0 {
-			log.Println("got jobs...", jobs)
-
-			for _, job := range jobs {
+		if len(tasks) != 0 {
+			for _, job := range tasks {
 				data := strings.Split(job, ":")
 
 				if len(data) != 2 {
@@ -30,19 +28,19 @@ func (s *Server) checkExpiration() {
 
 				kind, err := strconv.Atoi(data[1])
 				if err != nil {
-					failedJobs = append(failedJobs, job)
+					continue
 				}
 
 				if err := s.handler.DeleteByID(data[0],
 					types.Kind(kind)); err != nil { //nolint
-					failedJobs = append(failedJobs, job)
+					failedTasks = append(failedTasks, job)
 				}
 			}
 		}
 
-		if len(failedJobs) != 0 {
-			for _, fj := range failedJobs {
-				if err := s.redis.AddDelayedJob("expiration_events",
+		if len(failedTasks) != 0 {
+			for _, fj := range failedTasks {
+				if err := s.redis.AddDelayedTask("expiration_events",
 					fj, time.Minute*10); err != nil {
 					continue // todo::: retry then send log to manager.
 				}

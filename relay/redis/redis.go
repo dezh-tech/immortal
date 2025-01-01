@@ -38,8 +38,8 @@ func New(cfg Config) (*Redis, error) {
 	}, nil
 }
 
-// ! note: delayed jobs probably are not concurrent safe at the moment.
-func (r Redis) AddDelayedJob(listName string,
+// ! note: delayed tasks probably are not concurrent safe at the moment.
+func (r Redis) AddDelayedTask(listName string,
 	data string, delay time.Duration,
 ) error {
 	taskReadyInSeconds := time.Now().Add(delay).Unix()
@@ -47,7 +47,11 @@ func (r Redis) AddDelayedJob(listName string,
 		Score:  float64(taskReadyInSeconds),
 		Member: data,
 	}
-	_, err := r.Client.ZAdd(context.Background(), listName, member).Result()
+
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	_, err := r.Client.ZAdd(ctx, listName, member).Result()
 	if err != nil {
 		return err
 	}
@@ -55,7 +59,7 @@ func (r Redis) AddDelayedJob(listName string,
 	return nil
 }
 
-func (r Redis) GetReadyJobs(listName string) ([]string, error) {
+func (r Redis) GetReadyTasks(listName string) ([]string, error) {
 	maxTime := time.Now().Unix()
 
 	opt := &redis.ZRangeBy{
@@ -63,25 +67,31 @@ func (r Redis) GetReadyJobs(listName string) ([]string, error) {
 		Max: fmt.Sprintf("%d", maxTime),
 	}
 
-	cmd := r.Client.ZRevRangeByScore(context.Background(), listName, opt)
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	cmd := r.Client.ZRevRangeByScore(ctx, listName, opt)
 	resultSet, err := cmd.Result()
 	if err != nil {
 		return nil, err
 	}
 
-	if err := r.RemoveJobs(listName, resultSet); err != nil {
+	if err := r.RemoveTasks(listName, resultSet); err != nil {
 		return nil, err
 	}
 
 	return resultSet, nil
 }
 
-func (r Redis) RemoveJobs(listName string, jobs []string) error {
+func (r Redis) RemoveTasks(listName string, jobs []string) error {
 	if len(jobs) == 0 {
 		return nil
 	}
 
-	_, err := r.Client.ZRem(context.Background(),
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	_, err := r.Client.ZRem(ctx,
 		listName, jobs).Result()
 	if err != nil {
 		return err
