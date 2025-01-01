@@ -37,3 +37,66 @@ func New(cfg Config) (*Redis, error) {
 		QueryTimeout: time.Duration(cfg.QueryTimeout) * time.Millisecond,
 	}, nil
 }
+
+// ! note: delayed tasks probably are not concurrent safe at the moment.
+func (r Redis) AddDelayedTask(listName string,
+	data string, delay time.Duration,
+) error {
+	taskReadyInSeconds := time.Now().Add(delay).Unix()
+	member := redis.Z{
+		Score:  float64(taskReadyInSeconds),
+		Member: data,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	_, err := r.Client.ZAdd(ctx, listName, member).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r Redis) GetReadyTasks(listName string) ([]string, error) {
+	maxTime := time.Now().Unix()
+
+	opt := &redis.ZRangeBy{
+		Min:   fmt.Sprintf("%d", 0),
+		Max:   fmt.Sprintf("%d", maxTime),
+		Count: 100,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	cmd := r.Client.ZRevRangeByScore(ctx, listName, opt)
+	resultSet, err := cmd.Result()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.RemoveTasks(listName, resultSet); err != nil {
+		return nil, err
+	}
+
+	return resultSet, nil
+}
+
+func (r Redis) RemoveTasks(listName string, tasks []string) error {
+	if len(tasks) == 0 {
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	_, err := r.Client.ZRem(ctx,
+		listName, tasks).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

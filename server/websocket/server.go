@@ -24,28 +24,30 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	mu sync.RWMutex
 
-	config   Config
-	conns    map[*websocket.Conn]clientState
-	handlers *handler.Handler
-	metrics  *metrics.Metrics
-	redis    *redis.Redis
+	config  Config
+	conns   map[*websocket.Conn]clientState
+	handler *handler.Handler
+	metrics *metrics.Metrics
+	redis   *redis.Redis
 }
 
 func New(cfg Config, h *handler.Handler, m *metrics.Metrics, r *redis.Redis,
 ) (*Server, error) {
 	return &Server{
-		config:   cfg,
-		conns:    make(map[*websocket.Conn]clientState),
-		mu:       sync.RWMutex{},
-		handlers: h,
-		metrics:  m,
-		redis:    r,
+		config:  cfg,
+		conns:   make(map[*websocket.Conn]clientState),
+		mu:      sync.RWMutex{},
+		handler: h,
+		metrics: m,
+		redis:   r,
 	}, nil
 }
 
 // Start starts a new server instance.
 func (s *Server) Start() error {
 	log.Println("websocket server started successfully...")
+
+	go s.checkExpiration()
 
 	http.Handle("/", s)
 	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint

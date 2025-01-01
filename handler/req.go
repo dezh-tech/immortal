@@ -61,6 +61,7 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 	var finalResult []event.Event
 
 	for kind, filters := range queryKinds {
+		// todo::: querying database in goroutines.
 		collection := h.db.Client.Database(h.db.DBName).Collection(getCollectionName(kind))
 		for _, f := range filters {
 			query, opts, err := h.FilterToQuery(&f)
