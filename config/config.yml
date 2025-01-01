@@ -66,6 +66,14 @@ redis:
   # default is 5000.
   connection_timeout_in_ms: 5000
 
-  # bloom_name specifies the name of bloom filter key
+  # bloom_filter_name specifies the name of bloom filter key
   # default is IMMO_BLOOM.
-  bloom_name: IMMO_BLOOM
+  bloom_filter_name: IMMO_BLOOM
+
+  # black_list_filter_name specifies the name of blacklist cuckoo filter key
+  # default is IMMO_BLACK_LIST.
+  black_list_filter_name: IMMO_BLACK_LIST
+
+  # white_list_filter_name specifies the name of whitelist cuckoo filter key
+  # default is IMMO_WHITE_LIST.
+  white_list_filter_name: IMMO_WHITE_LIST

@@ -9,9 +9,12 @@ import (
 )
 
 type Redis struct {
-	Client       *redis.Client
-	BloomName    string
-	QueryTimeout time.Duration
+	Client              *redis.Client
+	BloomFilterName     string
+	WhiteListFilterName string
+	BlackListFilterName string
+	Name                string
+	QueryTimeout        time.Duration
 }
 
 func New(cfg Config) (*Redis, error) {
@@ -32,9 +35,11 @@ func New(cfg Config) (*Redis, error) {
 	}
 
 	return &Redis{
-		Client:       rc,
-		BloomName:    cfg.BloomName,
-		QueryTimeout: time.Duration(cfg.QueryTimeout) * time.Millisecond,
+		Client:              rc,
+		BloomFilterName:     cfg.BloomFilterName,
+		WhiteListFilterName: cfg.WhiteListFilterName,
+		BlackListFilterName: cfg.BlackListFilterName,
+		QueryTimeout:        time.Duration(cfg.QueryTimeout) * time.Millisecond,
 	}, nil
 }
 
