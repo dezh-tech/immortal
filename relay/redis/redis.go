@@ -63,8 +63,9 @@ func (r Redis) GetReadyTasks(listName string) ([]string, error) {
 	maxTime := time.Now().Unix()
 
 	opt := &redis.ZRangeBy{
-		Min: fmt.Sprintf("%d", 0),
-		Max: fmt.Sprintf("%d", maxTime),
+		Min:   fmt.Sprintf("%d", 0),
+		Max:   fmt.Sprintf("%d", maxTime),
+		Count: 100,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
@@ -83,8 +84,8 @@ func (r Redis) GetReadyTasks(listName string) ([]string, error) {
 	return resultSet, nil
 }
 
-func (r Redis) RemoveTasks(listName string, jobs []string) error {
-	if len(jobs) == 0 {
+func (r Redis) RemoveTasks(listName string, tasks []string) error {
+	if len(tasks) == 0 {
 		return nil
 	}
 
@@ -92,7 +93,7 @@ func (r Redis) RemoveTasks(listName string, jobs []string) error {
 	defer cancel()
 
 	_, err := r.Client.ZRem(ctx,
-		listName, jobs).Result()
+		listName, tasks).Result()
 	if err != nil {
 		return err
 	}

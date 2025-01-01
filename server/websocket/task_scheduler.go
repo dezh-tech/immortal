@@ -19,8 +19,8 @@ func (s *Server) checkExpiration() {
 		failedTasks := make([]string, 0)
 
 		if len(tasks) != 0 {
-			for _, job := range tasks {
-				data := strings.Split(job, ":")
+			for _, task := range tasks {
+				data := strings.Split(task, ":")
 
 				if len(data) != 2 {
 					continue
@@ -33,15 +33,15 @@ func (s *Server) checkExpiration() {
 
 				if err := s.handler.DeleteByID(data[0],
 					types.Kind(kind)); err != nil { //nolint
-					failedTasks = append(failedTasks, job)
+					failedTasks = append(failedTasks, task)
 				}
 			}
 		}
 
 		if len(failedTasks) != 0 {
-			for _, fj := range failedTasks {
+			for _, ft := range failedTasks {
 				if err := s.redis.AddDelayedTask("expiration_events",
-					fj, time.Minute*10); err != nil {
+					ft, time.Minute*10); err != nil {
 					continue // todo::: retry then send log to manager.
 				}
 			}
