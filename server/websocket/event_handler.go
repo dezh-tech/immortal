@@ -57,6 +57,14 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	}
 
 	exists, err := bloomCheckCmd.Result()
+	if err != nil {
+		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
+		_ = conn.WriteMessage(1, okm)
+
+		status = serverFail
+
+		return
+	}
 	if exists {
 		okm := message.MakeOK(true, msg.Event.ID, "")
 		_ = conn.WriteMessage(1, okm)
@@ -65,6 +73,14 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	}
 
 	notAllowedToWrite, err := blackListCheckCmd.Result()
+	if err != nil {
+		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
+		_ = conn.WriteMessage(1, okm)
+
+		status = serverFail
+
+		return
+	}
 	if notAllowedToWrite {
 		okm := message.MakeOK(false, msg.Event.ID, "blocked: pubkey is blocked, contact support for more details.")
 		_ = conn.WriteMessage(1, okm)
@@ -75,6 +91,14 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	}
 
 	allowedToWrite, err := whiteListCheckCmd.Result()
+	if err != nil {
+		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
+		_ = conn.WriteMessage(1, okm)
+
+		status = serverFail
+
+		return
+	}
 	if !allowedToWrite {
 		okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
 		_ = conn.WriteMessage(1, okm)

@@ -44,7 +44,7 @@ func New(cfg Config) (*Redis, error) {
 }
 
 // ! note: delayed tasks probably are not concurrent safe at the moment.
-func (r Redis) AddDelayedTask(listName string,
+func (r *Redis) AddDelayedTask(listName string,
 	data string, delay time.Duration,
 ) error {
 	taskReadyInSeconds := time.Now().Add(delay).Unix()
@@ -64,7 +64,7 @@ func (r Redis) AddDelayedTask(listName string,
 	return nil
 }
 
-func (r Redis) GetReadyTasks(listName string) ([]string, error) {
+func (r *Redis) GetReadyTasks(listName string) ([]string, error) {
 	maxTime := time.Now().Unix()
 
 	opt := &redis.ZRangeBy{
@@ -89,7 +89,7 @@ func (r Redis) GetReadyTasks(listName string) ([]string, error) {
 	return resultSet, nil
 }
 
-func (r Redis) RemoveTasks(listName string, tasks []string) error {
+func (r *Redis) RemoveTasks(listName string, tasks []string) error {
 	if len(tasks) == 0 {
 		return nil
 	}
