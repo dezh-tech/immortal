@@ -9,9 +9,12 @@ import (
 )
 
 type Redis struct {
-	Client       *redis.Client
-	BloomName    string
-	QueryTimeout time.Duration
+	Client              *redis.Client
+	BloomFilterName     string
+	WhiteListFilterName string
+	BlackListFilterName string
+	Name                string
+	QueryTimeout        time.Duration
 }
 
 func New(cfg Config) (*Redis, error) {
@@ -32,14 +35,16 @@ func New(cfg Config) (*Redis, error) {
 	}
 
 	return &Redis{
-		Client:       rc,
-		BloomName:    cfg.BloomName,
-		QueryTimeout: time.Duration(cfg.QueryTimeout) * time.Millisecond,
+		Client:              rc,
+		BloomFilterName:     cfg.BloomFilterName,
+		WhiteListFilterName: cfg.WhiteListFilterName,
+		BlackListFilterName: cfg.BlackListFilterName,
+		QueryTimeout:        time.Duration(cfg.QueryTimeout) * time.Millisecond,
 	}, nil
 }
 
 // ! note: delayed tasks probably are not concurrent safe at the moment.
-func (r Redis) AddDelayedTask(listName string,
+func (r *Redis) AddDelayedTask(listName string,
 	data string, delay time.Duration,
 ) error {
 	taskReadyInSeconds := time.Now().Add(delay).Unix()
@@ -59,7 +64,7 @@ func (r Redis) AddDelayedTask(listName string,
 	return nil
 }
 
-func (r Redis) GetReadyTasks(listName string) ([]string, error) {
+func (r *Redis) GetReadyTasks(listName string) ([]string, error) {
 	maxTime := time.Now().Unix()
 
 	opt := &redis.ZRangeBy{
@@ -84,7 +89,7 @@ func (r Redis) GetReadyTasks(listName string) ([]string, error) {
 	return resultSet, nil
 }
 
-func (r Redis) RemoveTasks(listName string, tasks []string) error {
+func (r *Redis) RemoveTasks(listName string, tasks []string) error {
 	if len(tasks) == 0 {
 		return nil
 	}
