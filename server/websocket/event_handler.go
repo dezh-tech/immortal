@@ -280,8 +280,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 			return
 		}
-		_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 	}
+	
+	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
 	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomFilterName, eID[:]).Result()
 	if err != nil {
