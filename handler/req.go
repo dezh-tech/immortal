@@ -28,7 +28,7 @@ type filterQuery struct {
 	Limit uint32
 }
 
-func (h *Handler) HandleReq(f filter.Filter) ([]event.Event, error) {
+func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 

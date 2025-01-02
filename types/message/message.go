@@ -140,7 +140,7 @@ func (rm *Req) DecodeFromJSON(data []byte) error {
 		}
 	}
 	rm.SubscriptionID = arr[1].Str
-	rm.Filter = *new(filter.Filter)
+	rm.Filter = filter.Filter{}
 	if err := easyjson.Unmarshal([]byte(arr[2].Raw), &rm.Filter); err != nil {
 		return types.DecodeError{
 			Reason: fmt.Sprintf("REQ message: %s", err.Error()),
@@ -150,7 +150,7 @@ func (rm *Req) DecodeFromJSON(data []byte) error {
 	return nil
 }
 
-func (rm Req) EncodeToJSON() ([]byte, error) {
+func (rm *Req) EncodeToJSON() ([]byte, error) {
 	return nil, nil
 }
 

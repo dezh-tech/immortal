@@ -73,7 +73,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	res, err := s.handler.HandleReq(msg.Filter)
+	res, err := s.handler.HandleReq(&msg.Filter)
 	if err != nil {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
 		status = databaseFail
