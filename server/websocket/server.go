@@ -74,7 +74,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.conns[conn] = clientState{
 		pubkey:  &pubkey,
 		isKnown: &known,
-		subs:    make(map[string]filter.Filters),
+		subs:    make(map[string]filter.Filter),
 		RWMutex: &sync.RWMutex{},
 	}
 

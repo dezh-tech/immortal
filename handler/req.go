@@ -28,33 +28,31 @@ type filterQuery struct {
 	Limit uint32
 }
 
-func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
+func (h *Handler) HandleReq(f filter.Filter) ([]event.Event, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 
 	queryKinds := make(map[types.Kind][]filterQuery)
 
-	for _, f := range fs {
-		qf := filterQuery{
-			Tags:    f.Tags,
-			Authors: f.Authors,
-			IDs:     f.IDs,
-			Since:   f.Since,
-			Until:   f.Until,
-			Limit:   f.Limit,
-		}
+	qf := filterQuery{
+		Tags:    f.Tags,
+		Authors: f.Authors,
+		IDs:     f.IDs,
+		Since:   f.Since,
+		Until:   f.Until,
+		Limit:   f.Limit,
+	}
 
-		if len(f.Kinds) != 0 {
-			uniqueKinds := removeDuplicateKind(f.Kinds)
-			for _, k := range uniqueKinds {
-				queryKinds[k] = append(queryKinds[k], qf)
-			}
-		} else {
-			//! we query most requested kinds if there is no kind provided.
-			// FIX: any better way?
-			for _, k := range possibleKinds {
-				queryKinds[k] = append(queryKinds[k], qf)
-			}
+	if len(f.Kinds) != 0 {
+		uniqueKinds := removeDuplicateKind(f.Kinds)
+		for _, k := range uniqueKinds {
+			queryKinds[k] = append(queryKinds[k], qf)
+		}
+	} else {
+		//! we query most requested kinds if there is no kind provided.
+		// FIX: any better way?
+		for _, k := range possibleKinds {
+			queryKinds[k] = append(queryKinds[k], qf)
 		}
 	}
 

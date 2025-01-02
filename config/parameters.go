@@ -23,7 +23,6 @@ func (c *Config) LoadParameters(params *kraken.GetConfigResponse) error {
 	c.WebsocketServer.Limitation = &websocket.Limitation{
 		MaxMessageLength:    params.Limitations.MaxMessageLength,
 		MaxSubscriptions:    params.Limitations.MaxSubscriptions,
-		MaxFilters:          params.Limitations.MaxFilters,
 		MaxSubidLength:      params.Limitations.MaxSubidLength,
 		MinPowDifficulty:    params.Limitations.MinPowDifficulty,
 		AuthRequired:        params.Limitations.AuthRequired,
