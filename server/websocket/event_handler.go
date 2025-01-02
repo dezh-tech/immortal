@@ -212,7 +212,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	if !msg.Event.Kind.IsEphemeral() {
+	if !msg.Event.Kind.IsEphemeral() && expirationTag != "0" {
 		err := s.handler.HandleEvent(msg.Event)
 		if err != nil {
 			okm := message.MakeOK(false,
