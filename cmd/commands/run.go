@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/dezh-tech/immortal/cmd/relay"
 	"github.com/dezh-tech/immortal/config"
-	"github.com/dezh-tech/immortal/relay"
 )
 
 func HandleRun(args []string) {

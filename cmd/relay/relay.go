@@ -6,14 +6,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/dezh-tech/immortal/client"
 	"github.com/dezh-tech/immortal/config"
-	"github.com/dezh-tech/immortal/database"
-	"github.com/dezh-tech/immortal/handler"
-	"github.com/dezh-tech/immortal/metrics"
-	"github.com/dezh-tech/immortal/relay/redis"
-	"github.com/dezh-tech/immortal/server/grpc"
-	"github.com/dezh-tech/immortal/server/websocket"
+	"github.com/dezh-tech/immortal/delivery/grpc"
+	"github.com/dezh-tech/immortal/delivery/websocket"
+	"github.com/dezh-tech/immortal/infrastructure/database"
+	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
+	"github.com/dezh-tech/immortal/infrastructure/metrics"
+	"github.com/dezh-tech/immortal/infrastructure/redis"
+	"github.com/dezh-tech/immortal/repository"
 )
 
 // Relay keeps all concepts such as server, database and manages them.
@@ -39,13 +39,13 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	c, err := client.NewClient(cfg.Kraken.Endpoint)
+	c, err := grpcclient.New(cfg.GRPCClient.Endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	resp, err := c.RegisterService(context.Background(), fmt.Sprint(cfg.GRPCServer.Port),
-		cfg.Kraken.Region, cfg.Kraken.Heartbeat)
+		cfg.GRPCClient.Region, cfg.GRPCClient.Heartbeat)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, fmt.Errorf("cant register to master: %s", *resp.Message)
 	}
 
-	params, err := c.GetConfig(context.Background(), resp.Token)
+	params, err := c.GetParameters(context.Background(), resp.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	h := handler.New(db, cfg.Handler)
+	h := repository.New(db, cfg.Handler)
 
 	ws, err := websocket.New(cfg.WebsocketServer, h, m, r)
 	if err != nil {

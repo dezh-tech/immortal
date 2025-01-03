@@ -1,4 +1,4 @@
-package handler
+package repository
 
 type Config struct {
 	DefaultQueryLimit uint32

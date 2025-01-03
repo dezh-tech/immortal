@@ -1,18 +1,18 @@
 package config
 
 import (
-	kraken "github.com/dezh-tech/immortal/client/gen"
-	"github.com/dezh-tech/immortal/handler"
-	"github.com/dezh-tech/immortal/server/websocket"
+	"github.com/dezh-tech/immortal/delivery/websocket"
+	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
+	"github.com/dezh-tech/immortal/repository"
 	"github.com/dezh-tech/immortal/utils"
 )
 
 type Parameters struct {
-	Handler         *handler.Config
+	Handler         *repository.Config
 	WebsocketServer *websocket.Config
 }
 
-func (c *Config) LoadParameters(params *kraken.GetConfigResponse) error {
+func (c *Config) LoadParameters(params *mpb.GetParametersResponse) error {
 	url, err := utils.ParseURL(params.Url)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (c *Config) LoadParameters(params *kraken.GetConfigResponse) error {
 		CreatedAtUpperLimit: params.Limitations.CreatedAtUpperLimit,
 	}
 
-	c.Handler = handler.Config{
+	c.Handler = repository.Config{
 		DefaultQueryLimit: params.Limitations.DefaultQueryLimit,
 		MaxQueryLimit:     params.Limitations.MaxQueryLimit,
 	}

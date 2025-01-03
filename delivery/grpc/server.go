@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dezh-tech/immortal/database"
-	"github.com/dezh-tech/immortal/relay/redis"
-	"github.com/dezh-tech/immortal/server/grpc/gen"
+	rpb "github.com/dezh-tech/immortal/delivery/grpc/gen"
+	"github.com/dezh-tech/immortal/infrastructure/database"
+	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"google.golang.org/grpc"
 )
 
@@ -50,7 +50,7 @@ func (s *Server) Start() error {
 
 	healthServer := newHealthServer(s)
 
-	gen.RegisterHealthServiceServer(grpcServer, healthServer)
+	rpb.RegisterHealthServiceServer(grpcServer, healthServer)
 
 	s.listener = listener
 	s.grpc = grpcServer

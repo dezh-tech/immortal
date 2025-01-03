@@ -40,10 +40,10 @@ build:
 
 ### Proto
 proto:
-	$(RM) client/gen
-	$(RM) server/grpc/gen
-	cd client/buf && buf generate --template buf.gen.yaml ../proto
-	cd server/grpc/buf && buf generate --template buf.gen.yaml ../proto
+	$(RM) infrastructure/grpc_client/gen
+	$(RM) delivery/grpc/gen
+	cd infrastructure/grpc_client/buf && buf generate --template buf.gen.yaml ../proto
+	cd delivery/grpc/buf && buf generate --template buf.gen.yaml ../proto
 
 ### pre commit
 pre-commit: fmt check unit-test

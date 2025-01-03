@@ -28,13 +28,13 @@ grpc_server:
   # default is 50050.
   port: 50050
 
-# kraken contains information about connection with kraken instance.
-kraken:
-  # IP address of kraken instance.
-  # default is local network kraken:8888.
-  endpoint: "kraken:8888"
+# manager contains information about connection with manager instance.
+manger:
+  # IP address of manager instance.
+  # default is local network manager:8888.
+  endpoint: "manager:8888"
 
-  # duration for kraken to ping this relay.
+  # duration for manager to ping this relay.
   # default is 1 minute.
   heartbeat_in_second: 60
 

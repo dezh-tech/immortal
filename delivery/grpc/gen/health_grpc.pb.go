@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: health.proto
 
-package gen
+package grpc
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	HealthService_Status_FullMethodName = "/immortal.HealthService/Status"
+	HealthService_Status_FullMethodName = "/relay.v1.HealthService/Status"
 )
 
 // HealthServiceClient is the client API for HealthService service.
@@ -94,7 +94,7 @@ func _HealthService_Status_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var HealthService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "immortal.HealthService",
+	ServiceName: "relay.v1.HealthService",
 	HandlerType: (*HealthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
