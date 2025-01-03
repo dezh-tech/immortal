@@ -1,17 +1,11 @@
 syntax = "proto3";
 
-package immortal;
+package relay.v1;
 
-option go_package = "github.com/dezh-tech/immortal/server/grpc/gen";
+option go_package = "github.com/dezh-tech/immortal/delivery/grpc";
 
 service HealthService {
     rpc Status (StatusRequest) returns (StatusResponse);
-}
-
-enum Status {
-    UNKNOWN = 0;
-    CONNECTED = 1;
-    DISCONNECTED = 2;
 }
 
 message Service {
@@ -26,4 +20,10 @@ message StatusResponse {
     repeated Service services = 1;
     int64 uptime = 2;
     string version = 3;
+}
+
+enum Status {
+    UNKNOWN = 0;
+    CONNECTED = 1;
+    DISCONNECTED = 2;
 }

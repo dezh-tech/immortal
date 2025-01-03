@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package manager.v1;
+
+option go_package = "github.com/dezh-tech/immortal/infrastructure/grpc_client";
+
+service Log {
+  rpc AddLog (AddLogRequest) returns (AddLogResponse);
+}
+
+message AddLogRequest {
+  string message = 1;                   
+  string stack = 2;                      
+}
+
+message AddLogResponse {
+  bool success = 1;               
+  optional string message = 2;         
+}

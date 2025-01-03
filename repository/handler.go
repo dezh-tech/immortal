@@ -1,7 +1,7 @@
-package handler
+package repository
 
 import (
-	"github.com/dezh-tech/immortal/database"
+	"github.com/dezh-tech/immortal/infrastructure/database"
 	"github.com/dezh-tech/immortal/types"
 )
 

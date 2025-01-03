@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dezh-tech/immortal"
-	"github.com/dezh-tech/immortal/server/grpc/gen"
+	rpb "github.com/dezh-tech/immortal/delivery/grpc/gen"
 )
 
 type healthServer struct {
@@ -18,18 +18,18 @@ func newHealthServer(server *Server) *healthServer {
 	}
 }
 
-func (s healthServer) Status(ctx context.Context, _ *gen.StatusRequest) (*gen.StatusResponse, error) {
-	services := make([]*gen.Service, 0)
+func (s healthServer) Status(ctx context.Context, _ *rpb.StatusRequest) (*rpb.StatusResponse, error) {
+	services := make([]*rpb.Service, 0)
 
-	redisStatus := gen.Status_CONNECTED
+	redisStatus := rpb.Status_CONNECTED
 	redisMessage := ""
 
 	if err := s.Redis.Client.Ping(ctx).Err(); err != nil {
-		redisStatus = gen.Status_DISCONNECTED
+		redisStatus = rpb.Status_DISCONNECTED
 		redisMessage = err.Error()
 	}
 
-	redis := gen.Service{
+	redis := rpb.Service{
 		Name:    "redis",
 		Status:  redisStatus,
 		Message: redisMessage,
@@ -37,15 +37,15 @@ func (s healthServer) Status(ctx context.Context, _ *gen.StatusRequest) (*gen.St
 
 	services = append(services, &redis)
 
-	mongoStatus := gen.Status_CONNECTED
+	mongoStatus := rpb.Status_CONNECTED
 	mongoMessage := ""
 
 	if err := s.DB.Client.Ping(ctx, nil); err != nil {
-		mongoStatus = gen.Status_DISCONNECTED
+		mongoStatus = rpb.Status_DISCONNECTED
 		mongoMessage = err.Error()
 	}
 
-	mongo := gen.Service{
+	mongo := rpb.Service{
 		Name:    "mongo",
 		Status:  mongoStatus,
 		Message: mongoMessage,
@@ -53,7 +53,7 @@ func (s healthServer) Status(ctx context.Context, _ *gen.StatusRequest) (*gen.St
 
 	services = append(services, &mongo)
 
-	return &gen.StatusResponse{
+	return &rpb.StatusResponse{
 		Uptime:   int64(time.Since(s.StartTime).Seconds()),
 		Version:  immortal.StringVersion(),
 		Services: services,

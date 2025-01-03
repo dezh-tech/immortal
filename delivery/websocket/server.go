@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/dezh-tech/immortal/handler"
-	"github.com/dezh-tech/immortal/metrics"
-	"github.com/dezh-tech/immortal/relay/redis"
+	"github.com/dezh-tech/immortal/infrastructure/metrics"
+	"github.com/dezh-tech/immortal/infrastructure/redis"
+	"github.com/dezh-tech/immortal/repository"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
@@ -26,12 +26,12 @@ type Server struct {
 
 	config  Config
 	conns   map[*websocket.Conn]clientState
-	handler *handler.Handler
+	handler *repository.Handler
 	metrics *metrics.Metrics
 	redis   *redis.Redis
 }
 
-func New(cfg Config, h *handler.Handler, m *metrics.Metrics, r *redis.Redis,
+func New(cfg Config, h *repository.Handler, m *metrics.Metrics, r *redis.Redis,
 ) (*Server, error) {
 	return &Server{
 		config:  cfg,
