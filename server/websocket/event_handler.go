@@ -157,7 +157,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	expirationTag := msg.Event.Tags.GetValue("expiration")
 
-	if expirationTag != "" {
+	if expirationTag != "" &&
+		expirationTag != "0" &&
+		!msg.Event.Kind.IsEphemeral() {
 		expiration, err := strconv.ParseInt(expirationTag, 10, 64)
 		if err != nil {
 			okm := message.MakeOK(false,
