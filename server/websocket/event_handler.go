@@ -157,7 +157,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	expirationTag := msg.Event.Tags.GetValue("expiration")
 
-	if expirationTag != "" {
+	if expirationTag != "" &&
+		expirationTag != "0" &&
+		!msg.Event.Kind.IsEphemeral() {
 		expiration, err := strconv.ParseInt(expirationTag, 10, 64)
 		if err != nil {
 			okm := message.MakeOK(false,
@@ -266,7 +268,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	if !msg.Event.Kind.IsEphemeral() {
+	if !msg.Event.Kind.IsEphemeral() && expirationTag != "0" {
 		err := s.handler.HandleEvent(msg.Event)
 		if err != nil {
 			okm := message.MakeOK(false,
@@ -280,8 +282,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 			return
 		}
-		_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 	}
+
+	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
 	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomFilterName, eID[:]).Result()
 	if err != nil {

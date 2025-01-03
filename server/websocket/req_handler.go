@@ -55,15 +55,6 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.Filters) >= int(s.config.Limitation.MaxFilters) {
-		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of filters is: %d",
-			s.config.Limitation.MaxFilters)))
-
-		status = limitsFail
-
-		return
-	}
-
 	if len(msg.SubscriptionID) >= int(s.config.Limitation.MaxSubidLength) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
 			s.config.Limitation.MaxSubidLength)))
@@ -82,7 +73,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	res, err := s.handler.HandleReq(msg.Filters)
+	res, err := s.handler.HandleReq(&msg.Filter)
 	if err != nil {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
 		status = databaseFail
@@ -99,6 +90,6 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 
 	client.Lock()
 	s.metrics.Subscriptions.Inc()
-	client.subs[msg.SubscriptionID] = msg.Filters
+	client.subs[msg.SubscriptionID] = msg.Filter
 	client.Unlock()
 }

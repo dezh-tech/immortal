@@ -10,6 +10,6 @@ type clientState struct {
 	challenge string
 	pubkey    *string
 	isKnown   *bool
-	subs      map[string]filter.Filters
+	subs      map[string]filter.Filter
 	*sync.RWMutex
 }

@@ -5,7 +5,6 @@ import "net/url"
 type Limitation struct {
 	MaxMessageLength    int32 // todo?.
 	MaxSubscriptions    int32
-	MaxFilters          int32
 	MaxSubidLength      int32
 	MinPowDifficulty    int32
 	AuthRequired        bool
