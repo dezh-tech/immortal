@@ -40,15 +40,28 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	eID := msg.Event.GetRawID()
 	pubkey := msg.Event.PublicKey
 
+	if !msg.Event.IsValid(eID) {
+		okm := message.MakeOK(false,
+			msg.Event.ID,
+			"invalid: id or sig is not correct.",
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		status = invalidFail
+
+		return
+	}
+
 	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
 	defer cancel()
 
 	pipe := s.redis.Client.Pipeline()
 
-	bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
+	// bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
 
-	// TODO::: check config to enable filter checks
-	whiteListCheckCmd := pipe.CFExists(qCtx, s.redis.WhiteListFilterName, pubkey)
+	// todo::: check config to enable/disable filter checks.
+	// whiteListCheckCmd := pipe.CFExists(qCtx, s.redis.WhiteListFilterName, pubkey)
 	blackListCheckCmd := pipe.CFExists(qCtx, s.redis.BlackListFilterName, pubkey)
 
 	_, err := pipe.Exec(qCtx)
@@ -56,21 +69,22 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		log.Printf("error: checking filters: %s", err.Error())
 	}
 
-	exists, err := bloomCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
+	// exists, err := bloomCheckCmd.Result()
+	// if err != nil {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
+	// 	_ = conn.WriteMessage(1, okm)
 
-		status = serverFail
+	// 	status = serverFail
 
-		return
-	}
-	if exists {
-		okm := message.MakeOK(true, msg.Event.ID, "")
-		_ = conn.WriteMessage(1, okm)
+	// 	return
+	// }
 
-		return
-	}
+	// if exists {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "duplicate: this event is already received.")
+	// 	_ = conn.WriteMessage(1, okm)
+
+	// 	return
+	// }
 
 	notAllowedToWrite, err := blackListCheckCmd.Result()
 	if err != nil {
@@ -90,23 +104,23 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	allowedToWrite, err := whiteListCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
+	// allowedToWrite, err := whiteListCheckCmd.Result()
+	// if err != nil {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
+	// 	_ = conn.WriteMessage(1, okm)
 
-		status = serverFail
+	// 	status = serverFail
 
-		return
-	}
-	if !allowedToWrite {
-		okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
-		_ = conn.WriteMessage(1, okm)
+	// 	return
+	// }
+	// if !allowedToWrite {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
+	// 	_ = conn.WriteMessage(1, okm)
 
-		status = limitsFail
+	// 	status = limitsFail
 
-		return
-	}
+	// 	return
+	// }
 
 	client, ok := s.conns[conn]
 	if !ok {
@@ -185,7 +199,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 			return
 		}
 
-		if err := s.redis.AddDelayedTask("expiration_events",
+		if err := s.redis.AddDelayedTask(expirationTaskListName,
 			fmt.Sprintf("%s:%d", msg.Event.ID, msg.Event.Kind), time.Until(time.Unix(expiration, 0))); err != nil {
 			okm := message.MakeOK(false,
 				msg.Event.ID, "error: can't add event to expiration queue.",
@@ -197,19 +211,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 			return
 		}
-	}
-
-	if !msg.Event.IsValid(eID) {
-		okm := message.MakeOK(false,
-			msg.Event.ID,
-			"invalid: id or sig is not correct.",
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = invalidFail
-
-		return
 	}
 
 	if len(msg.Event.Content) > int(s.config.Limitation.MaxContentLength) {

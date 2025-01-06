@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/dezh-tech/immortal/types"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -38,6 +40,23 @@ func Connect(cfg Config) (*Database, error) {
 
 	if err := client.Ping(qCtx, nil); err != nil {
 		return nil, err
+	}
+
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "id", Value: 1},
+		},
+		Options: options.Index().SetUnique(true).SetName("uq_id"),
+	}
+
+	for _, collName := range types.KindToName {
+		qCtx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.QueryTimeout)*time.Millisecond)
+		_, err := client.Database(cfg.DBName).Collection(collName).Indexes().CreateOne(qCtx, indexModel)
+		if err != nil {
+			defer cancel()
+			continue
+		}
+		defer cancel()
 	}
 
 	return &Database{

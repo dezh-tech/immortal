@@ -29,7 +29,7 @@ grpc_server:
   port: 50050
 
 # manager contains information about connection with manager instance.
-manger:
+manager:
   # IP address of manager instance.
   # default is local network manager:8888.
   endpoint: "manager:8888"

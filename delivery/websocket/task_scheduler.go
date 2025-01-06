@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -9,11 +8,13 @@ import (
 	"github.com/dezh-tech/immortal/types"
 )
 
+const expirationTaskListName = "expiration_events"
+
 func (s *Server) checkExpiration() {
 	for range time.Tick(time.Minute) {
-		tasks, err := s.redis.GetReadyTasks("expiration_events")
+		tasks, err := s.redis.GetReadyTasks(expirationTaskListName)
 		if err != nil {
-			log.Println("error in checking expired events", err)
+			continue
 		}
 
 		failedTasks := make([]string, 0)
@@ -40,9 +41,9 @@ func (s *Server) checkExpiration() {
 
 		if len(failedTasks) != 0 {
 			for _, ft := range failedTasks {
-				if err := s.redis.AddDelayedTask("expiration_events",
+				if err := s.redis.AddDelayedTask(expirationTaskListName,
 					ft, time.Minute*10); err != nil {
-					continue // todo::: retry then send log to manager.
+					continue
 				}
 			}
 		}
