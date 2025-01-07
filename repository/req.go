@@ -50,8 +50,8 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 				queryKinds[k] = append(queryKinds[k], qf)
 			}
 		} else {
-			//! we query most requested kinds if there is no kind provided.
-			// FIX: any better way?
+			// ! it makes query to the most requested kinds if there is no kind provided.
+			// ? fix::: any better way?
 			for _, k := range possibleKinds {
 				queryKinds[k] = append(queryKinds[k], qf)
 			}
@@ -103,17 +103,18 @@ func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, 
 	query := make(bson.D, 0)
 	opts := options.Find()
 
-	// Filter by IDs
+	query = append(query, bson.E{Key: "pubkey", Value: bson.M{
+		"$exists": true,
+	}})
+
 	if len(fq.IDs) > 0 {
 		query = append(query, bson.E{Key: "id", Value: bson.M{"$in": fq.IDs}})
 	}
 
-	// Filter by Authors
 	if len(fq.Authors) > 0 {
 		query = append(query, bson.E{Key: "pubkey", Value: bson.M{"$in": fq.Authors}})
 	}
 
-	// Filter by Tags
 	if len(fq.Tags) > 0 {
 		tagQueries := bson.A{}
 		for tagKey, tagValues := range fq.Tags {
@@ -130,17 +131,14 @@ func (h *Handler) FilterToQuery(fq *filterQuery) (bson.D, *options.FindOptions, 
 		query = append(query, bson.E{Key: "$and", Value: tagQueries})
 	}
 
-	// Filter by Since (created_at >=)
 	if fq.Since > 0 {
 		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$gte": fq.Since}})
 	}
 
-	// Filter by Until (created_at <=)
 	if fq.Until > 0 {
 		query = append(query, bson.E{Key: "created_at", Value: bson.M{"$lte": fq.Since}})
 	}
 
-	// Add Limit to options
 	if fq.Limit > 0 && fq.Limit < h.config.MaxQueryLimit {
 		opts.SetLimit(int64(fq.Limit))
 	} else {

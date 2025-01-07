@@ -40,6 +40,19 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	eID := msg.Event.GetRawID()
 	pubkey := msg.Event.PublicKey
 
+	if !msg.Event.IsValid(eID) {
+		okm := message.MakeOK(false,
+			msg.Event.ID,
+			"invalid: id or sig is not correct.",
+		)
+
+		_ = conn.WriteMessage(1, okm)
+
+		status = invalidFail
+
+		return
+	}
+
 	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
 	defer cancel()
 
@@ -47,7 +60,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
 
-	// TODO::: check config to enable filter checks
+	// todo::: check config to enable/disable filter checks.
 	whiteListCheckCmd := pipe.CFExists(qCtx, s.redis.WhiteListFilterName, pubkey)
 	blackListCheckCmd := pipe.CFExists(qCtx, s.redis.BlackListFilterName, pubkey)
 
@@ -65,8 +78,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 		return
 	}
+
 	if exists {
-		okm := message.MakeOK(true, msg.Event.ID, "")
+		okm := message.MakeOK(false, msg.Event.ID, "duplicate: this event is already received.")
 		_ = conn.WriteMessage(1, okm)
 
 		return
@@ -185,7 +199,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 			return
 		}
 
-		if err := s.redis.AddDelayedTask("expiration_events",
+		if err := s.redis.AddDelayedTask(expirationTaskListName,
 			fmt.Sprintf("%s:%d", msg.Event.ID, msg.Event.Kind), time.Until(time.Unix(expiration, 0))); err != nil {
 			okm := message.MakeOK(false,
 				msg.Event.ID, "error: can't add event to expiration queue.",
@@ -197,19 +211,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 			return
 		}
-	}
-
-	if !msg.Event.IsValid(eID) {
-		okm := message.MakeOK(false,
-			msg.Event.ID,
-			"invalid: id or sig is not correct.",
-		)
-
-		_ = conn.WriteMessage(1, okm)
-
-		status = invalidFail
-
-		return
 	}
 
 	if len(msg.Event.Content) > int(s.config.Limitation.MaxContentLength) {
@@ -280,8 +281,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 			return
 		}
-		_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 	}
+
+	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
 	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomFilterName, eID[:]).Result()
 	if err != nil {
