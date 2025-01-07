@@ -50,8 +50,8 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 				queryKinds[k] = append(queryKinds[k], qf)
 			}
 		} else {
-			//! we query most requested kinds if there is no kind provided.
-			//? fix::: any better way?
+			// ! it makes query to the most requested kinds if there is no kind provided.
+			// ? fix::: any better way?
 			for _, k := range possibleKinds {
 				queryKinds[k] = append(queryKinds[k], qf)
 			}

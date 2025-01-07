@@ -53,10 +53,11 @@ func Connect(cfg Config) (*Database, error) {
 		qCtx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.QueryTimeout)*time.Millisecond)
 		_, err := client.Database(cfg.DBName).Collection(collName).Indexes().CreateOne(qCtx, indexModel)
 		if err != nil {
-			defer cancel()
+			cancel()
+
 			continue
 		}
-		defer cancel()
+		cancel()
 	}
 
 	return &Database{
