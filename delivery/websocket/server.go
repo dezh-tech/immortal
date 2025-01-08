@@ -51,13 +51,13 @@ func New(cfg Config, h *repository.Handler, m *metrics.Metrics,
 func (s *Server) Start() error {
 	go s.checkExpiration()
 
-	addr := net.JoinHostPort(s.config.Bind, //nolint
+	addr := net.JoinHostPort(s.config.Bind,
 		strconv.Itoa(int(s.config.Port)))
 
 	logger.Info("websocket server started", "listen", addr)
 
 	http.Handle("/", s)
-	err := http.ListenAndServe(addr, nil)
+	err := http.ListenAndServe(addr, nil) //nolint
 
 	return err
 }
