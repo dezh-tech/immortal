@@ -104,6 +104,7 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 		if err != nil {
 			logger.Error("can't send log to manager", "err", err)
 		}
+
 		return err
 	}
 

@@ -40,6 +40,7 @@ func (h *Handler) DeleteByID(id string, kind types.Kind) error {
 		if err != nil {
 			logger.Error("can't send log to manager", "err", err)
 		}
+
 		return err
 	}
 

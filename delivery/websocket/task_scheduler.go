@@ -13,7 +13,7 @@ import (
 
 const expirationTaskListName = "expiration_events"
 
-func (s *Server) checkExpiration() {
+func (s *Server) checkExpiration() { //nolint
 	for range time.Tick(time.Minute) {
 		tasks, err := s.redis.GetReadyTasks(expirationTaskListName)
 		if err != nil {

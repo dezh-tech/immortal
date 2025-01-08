@@ -82,6 +82,7 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 						logger.Error("can't send log to manager", "err", err)
 					}
 				}
+
 				return nil, err
 			}
 
