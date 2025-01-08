@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -18,7 +17,7 @@ func (s *Server) checkExpiration() { //nolint
 		tasks, err := s.redis.GetReadyTasks(expirationTaskListName)
 		if err != nil {
 			_, err := s.grpc.AddLog(context.Background(),
-				fmt.Sprintf("redis error while receiving ready tasks: %v", err))
+				"redis error while receiving ready tasks", err.Error())
 			if err != nil {
 				logger.Error("can't send log to manager", "err", err)
 			}

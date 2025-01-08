@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
@@ -36,7 +35,7 @@ func (h *Handler) DeleteByID(id string, kind types.Kind) error {
 	_, err := coll.UpdateOne(ctx, filter, update)
 	if err != nil {
 		_, err := h.grpc.AddLog(context.Background(),
-			fmt.Sprintf("database error while removing event: %v", err))
+			"database error while removing event", err.Error())
 		if err != nil {
 			logger.Error("can't send log to manager", "err", err)
 		}

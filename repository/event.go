@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types/event"
@@ -100,7 +99,7 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 	_, err := coll.ReplaceOne(ctx, filter, e, opts)
 	if err != nil {
 		_, err := h.grpc.AddLog(context.Background(),
-			fmt.Sprintf("database error while adding new event: %v", err))
+			"database error while adding new event", err.Error())
 		if err != nil {
 			logger.Error("can't send log to manager", "err", err)
 		}

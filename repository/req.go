@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
@@ -77,7 +76,7 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 			if err != nil {
 				if !errors.Is(err, mongo.ErrNoDocuments) {
 					_, err := h.grpc.AddLog(context.Background(),
-						fmt.Sprintf("database error while making query: %v", err))
+						"database error while making query", err.Error())
 					if err != nil {
 						logger.Error("can't send log to manager", "err", err)
 					}
