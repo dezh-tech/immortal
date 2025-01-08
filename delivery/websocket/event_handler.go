@@ -59,10 +59,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
 
-	// todo::: check config to enable/disable filter checks.
-	// whiteListCheckCmd := pipe.CFExists(qCtx, s.redis.WhiteListFilterName, pubkey)
-	// blackListCheckCmd := pipe.CFExists(qCtx, s.redis.BlackListFilterName, pubkey)
-
 	_, err := pipe.Exec(qCtx)
 	if err != nil {
 		logger.Error("checking bloom filter", "err", err.Error())
@@ -84,42 +80,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 		return
 	}
-
-	// notAllowedToWrite, err := blackListCheckCmd.Result()
-	// if err != nil {
-	// 	okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-	// 	_ = conn.WriteMessage(1, okm)
-
-	// 	status = serverFail
-
-	// 	return
-	// }
-	// if notAllowedToWrite {
-	// 	okm := message.MakeOK(false, msg.Event.ID, "blocked: pubkey is blocked, contact support for more details.")
-	// 	_ = conn.WriteMessage(1, okm)
-
-	// 	status = limitsFail
-
-	// 	return
-	// }
-
-	// allowedToWrite, err := whiteListCheckCmd.Result()
-	// if err != nil {
-	// 	okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-	// 	_ = conn.WriteMessage(1, okm)
-
-	// 	status = serverFail
-
-	// 	return
-	// }
-	// if !allowedToWrite {
-	// 	okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
-	// 	_ = conn.WriteMessage(1, okm)
-
-	// 	status = limitsFail
-
-	// 	return
-	// }
 
 	client, ok := s.conns[conn]
 	if !ok {
