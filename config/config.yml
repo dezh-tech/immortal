@@ -42,10 +42,6 @@ manager:
   # default is global.
   region: global
 
-  # stack is the stack name which the immortal instance is located in.
-  # default is immortal.
-  stack: immortal
-
 # database contains details of database connections and limitations.
 database:
   # db_name is the name of mongodb related to immortal

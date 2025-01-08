@@ -55,9 +55,9 @@ func (c *Client) GetParameters(ctx context.Context) (*mpb.GetParametersResponse,
 	return c.ParametersService.GetParameters(ctx, &mpb.GetParametersRequest{})
 }
 
-func (c *Client) AddLog(ctx context.Context, msg string) (*mpb.AddLogResponse, error) {
+func (c *Client) AddLog(ctx context.Context, msg, stack string) (*mpb.AddLogResponse, error) {
 	return c.LogService.AddLog(ctx, &mpb.AddLogRequest{
 		Message: msg,
-		Stack:   c.config.Stack,
+		Stack:   stack,
 	})
 }
