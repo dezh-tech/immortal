@@ -3,10 +3,10 @@ package websocket
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/pkg/utils"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
@@ -38,7 +38,6 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	}
 
 	eID := msg.Event.GetRawID()
-	pubkey := msg.Event.PublicKey
 
 	if !msg.Event.IsValid(eID) {
 		okm := message.MakeOK(false,
@@ -61,12 +60,12 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
 
 	// todo::: check config to enable/disable filter checks.
-	whiteListCheckCmd := pipe.CFExists(qCtx, s.redis.WhiteListFilterName, pubkey)
-	blackListCheckCmd := pipe.CFExists(qCtx, s.redis.BlackListFilterName, pubkey)
+	// whiteListCheckCmd := pipe.CFExists(qCtx, s.redis.WhiteListFilterName, pubkey)
+	// blackListCheckCmd := pipe.CFExists(qCtx, s.redis.BlackListFilterName, pubkey)
 
 	_, err := pipe.Exec(qCtx)
 	if err != nil {
-		log.Printf("error: checking filters: %s", err.Error())
+		logger.Error("checking bloom filter", "err", err.Error())
 	}
 
 	exists, err := bloomCheckCmd.Result()
@@ -86,41 +85,41 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	notAllowedToWrite, err := blackListCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
+	// notAllowedToWrite, err := blackListCheckCmd.Result()
+	// if err != nil {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
+	// 	_ = conn.WriteMessage(1, okm)
 
-		status = serverFail
+	// 	status = serverFail
 
-		return
-	}
-	if notAllowedToWrite {
-		okm := message.MakeOK(false, msg.Event.ID, "blocked: pubkey is blocked, contact support for more details.")
-		_ = conn.WriteMessage(1, okm)
+	// 	return
+	// }
+	// if notAllowedToWrite {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "blocked: pubkey is blocked, contact support for more details.")
+	// 	_ = conn.WriteMessage(1, okm)
 
-		status = limitsFail
+	// 	status = limitsFail
 
-		return
-	}
+	// 	return
+	// }
 
-	allowedToWrite, err := whiteListCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
+	// allowedToWrite, err := whiteListCheckCmd.Result()
+	// if err != nil {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
+	// 	_ = conn.WriteMessage(1, okm)
 
-		status = serverFail
+	// 	status = serverFail
 
-		return
-	}
-	if !allowedToWrite {
-		okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
-		_ = conn.WriteMessage(1, okm)
+	// 	return
+	// }
+	// if !allowedToWrite {
+	// 	okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
+	// 	_ = conn.WriteMessage(1, okm)
 
-		status = limitsFail
+	// 	status = limitsFail
 
-		return
-	}
+	// 	return
+	// }
 
 	client, ok := s.conns[conn]
 	if !ok {
@@ -287,7 +286,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomFilterName, eID[:]).Result()
 	if err != nil {
-		log.Printf("error: adding event to bloom filter.")
+		logger.Info("adding event to bloom filter", "err", err.Error(), msg.Event.ID)
 	}
 
 	// todo::: can we run goroutines per client?
