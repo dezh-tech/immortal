@@ -1,19 +1,28 @@
 package websocket
 
 import (
+	"context"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
 )
 
 const expirationTaskListName = "expiration_events"
 
-func (s *Server) checkExpiration() {
+func (s *Server) checkExpiration() { //nolint
 	for range time.Tick(time.Minute) {
 		tasks, err := s.redis.GetReadyTasks(expirationTaskListName)
 		if err != nil {
+			_, err := s.grpc.AddLog(context.Background(),
+				fmt.Sprintf("redis error while receiving ready tasks: %v", err))
+			if err != nil {
+				logger.Error("can't send log to manager", "err", err)
+			}
+
 			continue
 		}
 

@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types/event"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -97,6 +99,12 @@ func (h *Handler) HandleEvent(e *event.Event) error {
 	opts := options.Replace().SetUpsert(true)
 	_, err := coll.ReplaceOne(ctx, filter, e, opts)
 	if err != nil {
+		_, err := h.grpc.AddLog(context.Background(),
+			fmt.Sprintf("database error while adding new event: %v", err))
+		if err != nil {
+			logger.Error("can't send log to manager", "err", err)
+		}
+
 		return err
 	}
 

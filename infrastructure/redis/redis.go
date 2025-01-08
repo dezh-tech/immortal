@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -18,6 +19,8 @@ type Redis struct {
 }
 
 func New(cfg Config) (*Redis, error) {
+	logger.Info("connecting to redis")
+
 	opts, err := redis.ParseURL(cfg.URI)
 	if err != nil {
 		return nil, err
@@ -41,6 +44,12 @@ func New(cfg Config) (*Redis, error) {
 		BlackListFilterName: cfg.BlackListFilterName,
 		QueryTimeout:        time.Duration(cfg.QueryTimeout) * time.Millisecond,
 	}, nil
+}
+
+func (r *Redis) Close() error {
+	logger.Info("closing redis connection")
+
+	return r.Client.Close()
 }
 
 // ! note: delayed tasks probably are not concurrent safe at the moment.

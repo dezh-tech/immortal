@@ -14,7 +14,7 @@ import (
 	"github.com/tidwall/gjson" // TODO::: remove/replace me!
 )
 
-// Message reperesents an NIP-01 message which can be sent to or received by client.
+// Message represents an NIP-01 message which can be sent to or received by client.
 type Message interface {
 	Type() string
 	DecodeFromJSON([]byte) error
@@ -158,7 +158,7 @@ func (rm Req) EncodeToJSON() ([]byte, error) {
 	return nil, nil
 }
 
-// Notice reperesents a NIP-01 NOTICE message.
+// Notice represents a NIP-01 NOTICE message.
 type Notice string
 
 func MakeNotice(msg string) []byte {
@@ -200,7 +200,7 @@ func (nm Notice) EncodeToJSON() ([]byte, error) {
 	return res, nil
 }
 
-// EOSE reperesents a NIP-01 EOSE message.
+// EOSE represents a NIP-01 EOSE message.
 type EOSE string
 
 func MakeEOSE(sID string) []byte {
@@ -242,7 +242,7 @@ func (em EOSE) EncodeToJSON() ([]byte, error) {
 	return res, nil
 }
 
-// Close reperesents a NIP-01 CLOSE message.
+// Close represents a NIP-01 CLOSE message.
 type Close string
 
 func (Close) Type() string { return "CLOSE" }
@@ -282,7 +282,7 @@ func (cm Close) EncodeToJSON() ([]byte, error) {
 	return res, nil
 }
 
-// Closed reperesents a NIP-01 CLOSED message.
+// Closed represents a NIP-01 CLOSED message.
 type Closed struct {
 	SubscriptionID string
 	Reason         string
@@ -335,7 +335,7 @@ func (cm Closed) EncodeToJSON() ([]byte, error) {
 	return res, nil
 }
 
-// OK reperesents a NIP-01 OK message.
+// OK represents a NIP-01 OK message.
 type OK struct {
 	OK      bool
 	EventID string
@@ -394,7 +394,7 @@ func (om OK) EncodeToJSON() ([]byte, error) {
 	return res, nil
 }
 
-// Auth reperesents a NIP-01 AUTH message.
+// Auth represents a NIP-01 AUTH message.
 type Auth struct {
 	Challenge string
 	Event     event.Event

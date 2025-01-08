@@ -3,8 +3,8 @@ package config
 import (
 	"github.com/dezh-tech/immortal/delivery/websocket"
 	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
+	"github.com/dezh-tech/immortal/pkg/utils"
 	"github.com/dezh-tech/immortal/repository"
-	"github.com/dezh-tech/immortal/utils"
 )
 
 type Parameters struct {

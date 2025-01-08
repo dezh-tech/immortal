@@ -2,14 +2,15 @@ package websocket
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strconv"
 	"sync"
 
+	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/infrastructure/metrics"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/repository"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
@@ -29,9 +30,11 @@ type Server struct {
 	handler *repository.Handler
 	metrics *metrics.Metrics
 	redis   *redis.Redis
+	grpc    grpcclient.IClient
 }
 
-func New(cfg Config, h *repository.Handler, m *metrics.Metrics, r *redis.Redis,
+func New(cfg Config, h *repository.Handler, m *metrics.Metrics,
+	r *redis.Redis, grpc grpcclient.IClient,
 ) (*Server, error) {
 	return &Server{
 		config:  cfg,
@@ -40,18 +43,21 @@ func New(cfg Config, h *repository.Handler, m *metrics.Metrics, r *redis.Redis,
 		handler: h,
 		metrics: m,
 		redis:   r,
+		grpc:    grpc,
 	}, nil
 }
 
 // Start starts a new server instance.
 func (s *Server) Start() error {
-	log.Println("websocket server started successfully...")
-
 	go s.checkExpiration()
 
+	addr := net.JoinHostPort(s.config.Bind,
+		strconv.Itoa(int(s.config.Port)))
+
+	logger.Info("websocket server started", "listen", addr)
+
 	http.Handle("/", s)
-	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint
-		strconv.Itoa(int(s.config.Port))), nil)
+	err := http.ListenAndServe(addr, nil) //nolint
 
 	return err
 }
@@ -65,7 +71,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	s.mu.Lock()
 
-	log.Println("new websocket connection: ", conn.RemoteAddr().String())
+	logger.Debug("incoming websocket connection",
+		"addr", conn.RemoteAddr().String())
+
 	s.metrics.Connections.Inc()
 
 	known := false
@@ -88,6 +96,9 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 	for {
 		_, buf, err := conn.ReadMessage()
 		if err != nil {
+			logger.Debug("failed to read form connection", "conn",
+				conn.RemoteAddr().String(), "err", err.Error())
+
 			// clean up closed connection.
 			s.mu.Lock()
 
@@ -116,6 +127,9 @@ func (s *Server) readLoop(conn *websocket.Conn) {
 
 		s.metrics.MessagesTotal.Inc()
 
+		logger.Debug("incoming message", "conn",
+			conn.RemoteAddr().String(), "msg", msg.String())
+
 		switch msg.Type() {
 		case "REQ":
 			go s.handleReq(conn, msg)
@@ -137,7 +151,7 @@ func (s *Server) Stop() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	log.Println("stopping websocket server...")
+	logger.Info("stopping websocket server")
 
 	for wsConn, client := range s.conns {
 		client.Lock()

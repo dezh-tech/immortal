@@ -2,9 +2,9 @@ package database
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,6 +18,8 @@ type Database struct {
 }
 
 func Connect(cfg Config) (*Database, error) {
+	logger.Info("connecting to database")
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.ConnectionTimeout)*time.Millisecond)
 	defer cancel()
 
@@ -55,6 +57,9 @@ func Connect(cfg Config) (*Database, error) {
 		if err != nil {
 			cancel()
 
+			// todo::: skip `Index already exists with a different name` errors.
+			logger.Error("can't create index for id field", "err", err)
+
 			continue
 		}
 		cancel()
@@ -68,7 +73,11 @@ func Connect(cfg Config) (*Database, error) {
 }
 
 func (db *Database) Stop() error {
-	log.Println("closing database connection...")
+	logger.Info("closing database connection")
 
-	return db.Client.Disconnect(context.Background())
+	if err := db.Client.Disconnect(context.Background()); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -42,6 +42,10 @@ manager:
   # default is global.
   region: global
 
+  # stack is the stack name which the immortal instance is located in.
+  # default is immortal.
+  stack: immortal
+
 # database contains details of database connections and limitations.
 database:
   # db_name is the name of mongodb related to immortal
@@ -77,3 +81,25 @@ redis:
   # white_list_filter_name specifies the name of whitelist cuckoo filter key
   # default is IMMO_WHITE_LIST.
   white_list_filter_name: IMMO_WHITE_LIST
+
+
+# log contains configs for logs output in console and file.
+logger:
+  # level determine the log level.
+  level: "info" 
+  
+  # filename is the output file containing logs.
+  filename: "immortal.log" 
+  
+  # max_size_in_mb is the maximum size of log file.
+  max_size_in_mb: 10
+
+  # max_backups determines the maximum number of backup of log file size.
+  max_backups: 10 
+
+  # compress determines to compress the log files or not.
+  compress: true
+
+  # targets is targets for logs to be written to.
+  targets: [file, console] 
+  
