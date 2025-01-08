@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"log"
 	"net"
 	"strconv"
 	"time"
@@ -10,6 +9,7 @@ import (
 	rpb "github.com/dezh-tech/immortal/delivery/grpc/gen"
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"google.golang.org/grpc"
 )
 
@@ -44,8 +44,6 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	log.Println("grpc server started...")
-
 	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor())
 
 	healthServer := newHealthServer(s)
@@ -55,18 +53,20 @@ func (s *Server) Start() error {
 	s.listener = listener
 	s.grpc = grpcServer
 
-	return s.grpc.Serve(listener)
+	logger.Info("gRPC server started successfully", "listen", listener.Addr().String())
+
+	if err := s.grpc.Serve(listener); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Server) Stop() error {
+	logger.Info("stopping gRPC server")
+
 	s.cancel()
-
-	log.Println("grpc server stopped...")
-
 	s.grpc.Stop()
-	if err := s.listener.Close(); err != nil {
-		return err
-	}
 
 	return nil
 }

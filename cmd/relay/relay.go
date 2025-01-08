@@ -102,8 +102,6 @@ func (r *Relay) Start() chan error {
 		}
 	}()
 
-	logger.Info("relay started successfully")
-
 	return errCh
 }
 
@@ -122,8 +120,6 @@ func (r *Relay) Stop() error {
 	if err := r.database.Stop(); err != nil {
 		return err
 	}
-
-	logger.Info("relay stopped successfully")
 
 	return nil
 }

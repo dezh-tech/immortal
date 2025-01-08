@@ -49,13 +49,15 @@ func New(cfg Config, h *repository.Handler, m *metrics.Metrics,
 
 // Start starts a new server instance.
 func (s *Server) Start() error {
-	logger.Info("starting websocket server")
-
 	go s.checkExpiration()
 
+	addr := net.JoinHostPort(s.config.Bind, //nolint
+		strconv.Itoa(int(s.config.Port)))
+
+	logger.Info("websocket server started", "listen", addr)
+
 	http.Handle("/", s)
-	err := http.ListenAndServe(net.JoinHostPort(s.config.Bind, //nolint
-		strconv.Itoa(int(s.config.Port))), nil)
+	err := http.ListenAndServe(addr, nil)
 
 	return err
 }
@@ -174,8 +176,6 @@ func (s *Server) Stop() error {
 
 		client.Unlock()
 	}
-
-	logger.Info("websocket server stopped successfully")
 
 	return nil
 }

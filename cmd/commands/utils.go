@@ -1,11 +1,12 @@
 package commands
 
 import (
-	"log"
 	"os"
+
+	"github.com/dezh-tech/immortal/pkg/logger"
 )
 
 func ExitOnError(err error) {
-	log.Printf("immortal error: %s\n", err.Error()) //nolint
+	logger.Error("immortal error", "err", err.Error())
 	os.Exit(1)
 }
