@@ -3,9 +3,9 @@ package websocket
 import (
 	"fmt"
 
+	"github.com/dezh-tech/immortal/pkg/utils"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/message"
-	"github.com/dezh-tech/immortal/utils"
 	"github.com/gorilla/websocket"
 )
 

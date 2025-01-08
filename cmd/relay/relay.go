@@ -3,7 +3,6 @@ package relay
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/dezh-tech/immortal/config"
@@ -13,6 +12,7 @@ import (
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/infrastructure/metrics"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/repository"
 )
 
@@ -39,13 +39,13 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	c, err := grpcclient.New(cfg.GRPCClient.Endpoint)
+	c, err := grpcclient.New(cfg.GRPCClient.Endpoint, cfg.GRPCClient)
 	if err != nil {
 		return nil, err
 	}
 
 	resp, err := c.RegisterService(context.Background(), fmt.Sprint(cfg.GRPCServer.Port),
-		cfg.GRPCClient.Region, cfg.GRPCClient.Heartbeat)
+		cfg.GRPCClient.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,9 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, fmt.Errorf("cant register to master: %s", *resp.Message)
 	}
 
-	params, err := c.GetParameters(context.Background(), resp.Token)
+	c.SetID(resp.Token)
+
+	params, err := c.GetParameters(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -64,9 +66,9 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	h := repository.New(db, cfg.Handler)
+	h := repository.New(cfg.Handler, db, c)
 
-	ws, err := websocket.New(cfg.WebsocketServer, h, m, r)
+	ws, err := websocket.New(cfg.WebsocketServer, h, m, r, c)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +86,8 @@ func New(cfg *config.Config) (*Relay, error) {
 
 // Start runs the relay and its children.
 func (r *Relay) Start() chan error {
-	log.Println("relay started successfully...")
+	logger.Info("starting the relay")
+
 	errCh := make(chan error, 2)
 
 	go func() {
@@ -99,12 +102,14 @@ func (r *Relay) Start() chan error {
 		}
 	}()
 
+	logger.Info("relay started successfully")
+
 	return errCh
 }
 
 // Stop shutdowns the relay and its children gracefully.
 func (r *Relay) Stop() error {
-	log.Println("stopping relay...")
+	logger.Info("stopping the relay")
 
 	if err := r.websocketServer.Stop(); err != nil {
 		return err
@@ -114,5 +119,11 @@ func (r *Relay) Stop() error {
 		return err
 	}
 
-	return r.database.Stop()
+	if err := r.database.Stop(); err != nil {
+		return err
+	}
+
+	logger.Info("relay stopped successfully")
+
+	return nil
 }

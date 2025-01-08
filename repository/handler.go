@@ -2,8 +2,23 @@ package repository
 
 import (
 	"github.com/dezh-tech/immortal/infrastructure/database"
+	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/types"
 )
+
+type Handler struct {
+	db     *database.Database
+	grpc   grpcclient.IClient
+	config Config
+}
+
+func New(cfg Config, db *database.Database, grpc grpcclient.IClient) *Handler {
+	return &Handler{
+		db:     db,
+		config: cfg,
+		grpc:   grpc,
+	}
+}
 
 func getCollectionName(k types.Kind) string {
 	collName, ok := types.KindToName[k]
@@ -28,16 +43,4 @@ func getCollectionName(k types.Kind) string {
 	}
 
 	return "unknown"
-}
-
-type Handler struct {
-	db     *database.Database
-	config Config
-}
-
-func New(db *database.Database, cfg Config) *Handler {
-	return &Handler{
-		db:     db,
-		config: cfg,
-	}
 }

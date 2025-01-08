@@ -2,13 +2,13 @@ package commands
 
 import (
 	"errors"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/dezh-tech/immortal/cmd/relay"
 	"github.com/dezh-tech/immortal/config"
+	"github.com/dezh-tech/immortal/pkg/logger"
 )
 
 func HandleRun(args []string) {
@@ -16,12 +16,12 @@ func HandleRun(args []string) {
 		ExitOnError(errors.New("at least 1 arguments expected\nuse help command for more information"))
 	}
 
-	log.Println("loading config...")
-
 	cfg, err := config.Load(args[2])
 	if err != nil {
 		ExitOnError(err)
 	}
+
+	logger.InitGlobalLogger(&cfg.Logger)
 
 	r, err := relay.New(cfg)
 	if err != nil {
@@ -35,13 +35,13 @@ func HandleRun(args []string) {
 
 	select {
 	case sig := <-sigChan:
-		log.Printf("Received signal: %s\nInitiating graceful shutdown...\n", sig.String()) //nolint
+		logger.Info("Received signal: Initiating graceful shutdown", "signal", sig.String())
 		if err := r.Stop(); err != nil {
 			ExitOnError(err)
 		}
 
 	case err := <-errCh:
-		log.Printf("Unexpected error: %v\nInitiating shutdown due to the error...\n", err) //nolint
+		logger.Info("Unexpected error: Initiating shutdown due to the error", "err", err)
 		if err := r.Stop(); err != nil {
 			ExitOnError(err)
 		}

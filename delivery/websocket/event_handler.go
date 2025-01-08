@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/dezh-tech/immortal/pkg/utils"
 	"github.com/dezh-tech/immortal/types/message"
-	"github.com/dezh-tech/immortal/utils"
 	"github.com/gorilla/websocket"
 )
 

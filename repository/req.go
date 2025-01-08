@@ -2,11 +2,15 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -71,6 +75,13 @@ func (h *Handler) HandleReq(fs filter.Filters) ([]event.Event, error) {
 
 			cursor, err := collection.Find(ctx, query, opts)
 			if err != nil {
+				if !errors.Is(err, mongo.ErrNoDocuments) {
+					_, err := h.grpc.AddLog(context.Background(),
+						fmt.Sprintf("database error while making query: %v", err))
+					if err != nil {
+						logger.Error("can't send log to manager", "err", err)
+					}
+				}
 				return nil, err
 			}
 
