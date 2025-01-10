@@ -60,7 +60,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
 
-	var whiteListCheckCmd *gredis.BoolCmd = nil
+	var whiteListCheckCmd *gredis.BoolCmd
 
 	if s.config.Limitation.RestrictedWrites {
 		whiteListCheckCmd = pipe.CFExists(qCtx, s.redis.WhiteListFilterName, msg.Event.PublicKey)
@@ -208,7 +208,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 }
 
-func checkLimitations(c clientState, redis *redis.Redis,
+func checkLimitations(c clientState, r *redis.Redis,
 	limits Limitation, msg message.Event) (accepted bool, isAuthFail bool,
 	failType string, resp string,
 ) {
@@ -233,7 +233,7 @@ func checkLimitations(c clientState, redis *redis.Redis,
 				time.Unix(expiration, 0).String())
 		}
 
-		if err := redis.AddDelayedTask(expirationTaskListName,
+		if err := r.AddDelayedTask(expirationTaskListName,
 			fmt.Sprintf("%s:%d", msg.Event.ID, msg.Event.Kind), time.Until(time.Unix(expiration, 0))); err != nil {
 			return false, false, serverFail, "error: can't add event to expiration queue."
 		}
