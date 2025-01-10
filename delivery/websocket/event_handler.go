@@ -209,8 +209,8 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 }
 
 func checkLimitations(c clientState, r *redis.Redis,
-	limits Limitation, msg message.Event) (accepted bool, isAuthFail bool,
-	failType string, resp string,
+	limits Limitation, msg message.Event) (bool, bool,
+	string, string,
 ) {
 	if limits.AuthRequired && !*c.isKnown {
 		return false, true, authFail, "auth-required: we only accept events from authenticated users."
