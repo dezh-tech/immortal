@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package relay.v1;
+
+option go_package = "github.com/dezh-tech/immortal/delivery/grpc";
+
+service ShutdownService {
+    rpc Shutdown (ShutdownRequest) returns (ShutdownResponse);
+}
+
+message ShutdownRequest {}
+
+message ShutdownResponse {}

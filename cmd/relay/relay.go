@@ -85,7 +85,7 @@ func New(cfg *config.Config) (*Relay, error) {
 }
 
 // Start runs the relay and its children.
-func (r *Relay) Start() chan error {
+func (r *Relay) Start(shutdownch chan struct{}) chan error {
 	logger.Info("starting the relay")
 
 	errCh := make(chan error, 2)
@@ -97,7 +97,7 @@ func (r *Relay) Start() chan error {
 	}()
 
 	go func() {
-		if err := r.grpcServer.Start(); err != nil {
+		if err := r.grpcServer.Start(shutdownch); err != nil {
 			errCh <- err
 		}
 	}()
@@ -118,6 +118,10 @@ func (r *Relay) Stop() error {
 	}
 
 	if err := r.database.Stop(); err != nil {
+		return err
+	}
+
+	if err := r.redis.Close(); err != nil {
 		return err
 	}
 
