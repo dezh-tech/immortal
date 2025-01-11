@@ -9,8 +9,8 @@ type Limitation struct {
 	MaxSubidLength      int32
 	MinPowDifficulty    int32
 	AuthRequired        bool
-	PaymentRequired     bool // todo.
-	RestrictedWrites    bool // todo.
+	PaymentRequired     bool
+	RestrictedWrites    bool
 	MaxEventTags        int32
 	MaxContentLength    int32
 	CreatedAtLowerLimit int64
