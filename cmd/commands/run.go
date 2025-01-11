@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/dezh-tech/immortal"
 	"github.com/dezh-tech/immortal/cmd/relay"
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/pkg/logger"
@@ -23,6 +24,8 @@ func HandleRun(args []string) {
 
 	logger.InitGlobalLogger(&cfg.Logger)
 
+	logger.Info("running immortal", "version", immortal.StringVersion())
+
 	r, err := relay.New(cfg)
 	if err != nil {
 		ExitOnError(err)
@@ -31,7 +34,9 @@ func HandleRun(args []string) {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
-	errCh := r.Start()
+	shutdownch := make(chan struct{}, 1)
+
+	errCh := r.Start(shutdownch)
 
 	select {
 	case sig := <-sigChan:
@@ -42,6 +47,12 @@ func HandleRun(args []string) {
 
 	case err := <-errCh:
 		logger.Info("Unexpected error: Initiating shutdown due to the error", "err", err)
+		if err := r.Stop(); err != nil {
+			ExitOnError(err)
+		}
+
+	case shsig := <-shutdownch:
+		logger.Info("Received signal from manager over grpc: Initiating graceful shutdown", "signal", shsig)
 		if err := r.Stop(); err != nil {
 			ExitOnError(err)
 		}

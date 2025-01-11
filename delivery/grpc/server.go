@@ -37,7 +37,7 @@ func New(conf *Config, r *redis.Redis, db *database.Database, st time.Time) *Ser
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(shutdownch chan struct{}) error {
 	listener, err := net.Listen("tcp", net.JoinHostPort(s.config.Bind, //nolint
 		strconv.Itoa(int(s.config.Port))))
 	if err != nil {
@@ -47,8 +47,10 @@ func (s *Server) Start() error {
 	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor())
 
 	healthServer := newHealthServer(s)
+	shutdownServer := newShutdownServer(s, shutdownch)
 
 	rpb.RegisterHealthServiceServer(grpcServer, healthServer)
+	rpb.RegisterShutdownServiceServer(grpcServer, shutdownServer)
 
 	s.listener = listener
 	s.grpc = grpcServer
