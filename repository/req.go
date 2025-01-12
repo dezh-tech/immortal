@@ -59,7 +59,7 @@ func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
 
 	finalLimit := h.config.DefaultQueryLimit
 	if f.Limit > 0 && f.Limit < h.config.MaxQueryLimit {
-		finalLimit = uint32(f.Limit)
+		finalLimit = f.Limit
 	}
 
 	limitStage := bson.D{
@@ -71,8 +71,7 @@ func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 
-	collection := h.db.Client.Database(h.db.DBName).Collection("empty")
-	cursor, err := collection.Aggregate(ctx, pipeline)
+	cursor, err := h.db.Client.Database(h.db.DBName).Collection("empty").Aggregate(ctx, pipeline)
 	if err != nil {
 		_, err := h.grpc.AddLog(context.Background(),
 			"database error while adding new event", err.Error())

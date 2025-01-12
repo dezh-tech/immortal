@@ -9,6 +9,8 @@ import (
 	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/pkg/utils"
+	"github.com/dezh-tech/immortal/types"
+	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
 	gredis "github.com/redis/go-redis/v9"
@@ -173,8 +175,29 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 	}
 
 	if !msg.Event.Kind.IsEphemeral() {
-		err := s.handler.HandleEvent(msg.Event)
-		if err != nil {
+		if msg.Event.Kind == types.KindEventDeletionRequest {
+			filterString := msg.Event.Tags.GetValue("filter")
+			filter, err := filter.Decode([]byte(filterString))
+			if err != nil {
+				okm := message.MakeOK(false,
+					msg.Event.ID,
+					fmt.Sprintf("error: parse deletion event: %s", filterString),
+				)
+
+				_ = conn.WriteMessage(1, okm)
+
+				status = invalidFail
+
+				return
+			}
+
+			// you can only delete events you own.
+			filter.Authors = []string{msg.Event.PublicKey}
+
+			go s.handler.DeleteByFilter(filter)
+		}
+
+		if err := s.handler.HandleEvent(msg.Event); err != nil {
 			okm := message.MakeOK(false,
 				msg.Event.ID,
 				"error: can't write event to database.",
