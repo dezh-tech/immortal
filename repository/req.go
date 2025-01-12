@@ -80,7 +80,6 @@ func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
 		}
 
 		return nil, err
-
 	}
 	defer cursor.Close(ctx)
 
@@ -93,7 +92,6 @@ func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
 		}
 
 		return nil, err
-
 	}
 
 	return finalResult, nil

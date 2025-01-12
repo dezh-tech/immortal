@@ -17,7 +17,7 @@ import (
 )
 
 // handleEvent handles new incoming EVENT messages from client.
-func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
+func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	defer measureLatency(s.metrics.EventLatency)()
@@ -176,12 +176,13 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 
 	if !msg.Event.Kind.IsEphemeral() {
 		if msg.Event.Kind == types.KindEventDeletionRequest {
-			filterString := msg.Event.Tags.GetValue("filter")
-			filter, err := filter.Decode([]byte(filterString))
+			deleteFilterString := msg.Event.Tags.GetValue("filter")
+
+			deleteFilter, err := filter.Decode([]byte(deleteFilterString))
 			if err != nil {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
-					fmt.Sprintf("error: parse deletion event: %s", filterString),
+					fmt.Sprintf("error: parse deletion event: %s", deleteFilterString),
 				)
 
 				_ = conn.WriteMessage(1, okm)
@@ -192,9 +193,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 			}
 
 			// you can only delete events you own.
-			filter.Authors = []string{msg.Event.PublicKey}
+			deleteFilter.Authors = []string{msg.Event.PublicKey}
 
-			go s.handler.DeleteByFilter(filter)
+			go s.handler.DeleteByFilter(deleteFilter) //nolint
 		}
 
 		if err := s.handler.HandleEvent(msg.Event); err != nil {

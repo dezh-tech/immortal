@@ -52,16 +52,20 @@ func (h *Handler) DeleteByFilter(f *filter.Filter) error {
 	// helps us ti prevent multiple database calls and it would help us to do the operation faster.
 	// to do the same thing for deletion we need to filter the documents with $match, then update the
 	// fields of deleted event to null (expect the `id` since its unique index to prevent overwrites) with $unset
-	// then we apply them to collection using $merge. although we can't use multiple $merge's on one pipeline and we must have
+	// then we apply them to collection using $merge. 
+	// although we can't use multiple $merge's on one pipeline and we must have
 	// only one merge at the end of pipeline commands. also, $unionWith is restricted to be used with $merge.
 
 	//  notes::: these details may help you to think for solutions better:
 	// 1. we create a collection for each kind or each group of kinds.
 	// using this model forces us to make query to all collections corresponding to provided kinds when
-	// we are dealing with filters since filters contain a list of kinds (which can be empty and we are then forced to query all collections)
+	// we are dealing with filters since filters contain a list of kinds
+	// (which can be empty and we are then forced to query all collections)
 
-	// 2. when we delete an event we $unset all fields expect `id`. when we make a query to read from database, we ignore fields which
-	// their fields are null. and when we write new events we prevent overwriting events with duplicated `id`. so we can handle the deletion properly.
+	// 2. when we delete an event we $unset all fields expect `id`. 
+	// when we make a query to read from database, we ignore fields which
+	// their fields are null. and when we write new events we prevent overwriting
+	// events with duplicated `id`. so we can handle the deletion properly.
 
 	// resources::: these links may help you:
 	// 1. https://www.mongodb.com/docs/manual/reference/operator/aggregation/merge/#restrictions
@@ -92,13 +96,12 @@ func (h *Handler) DeleteByFilter(f *filter.Filter) error {
 		}},
 	}
 
-	for kind, filter := range queryKinds {
+	for kind, deleteFilter := range queryKinds {
 		collectionName, isMultiKindColl := getCollectionName(kind)
 
-		query := filterToMongoQuery(filter, isMultiKindColl, kind)
+		query := filterToMongoQuery(deleteFilter, isMultiKindColl, kind)
 
 		ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
-		defer cancel()
 
 		_, err := h.db.Client.Database(h.db.DBName).Collection(collectionName).UpdateMany(ctx, query, update)
 		if err != nil {
@@ -108,9 +111,11 @@ func (h *Handler) DeleteByFilter(f *filter.Filter) error {
 				logger.Error("can't send log to manager", "err", err)
 			}
 
+			cancel()
+
 			return err
 		}
-
+		cancel()
 	}
 
 	return nil
