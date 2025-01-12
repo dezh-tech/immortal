@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) DeleteByID(id string, kind types.Kind) error {
-	filter := bson.D{
+	deleteFilter := bson.D{
 		{Key: "id", Value: id},
 	}
 
@@ -31,7 +31,7 @@ func (h *Handler) DeleteByID(id string, kind types.Kind) error {
 	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
 
-	_, err := coll.UpdateOne(ctx, filter, update)
+	_, err := coll.UpdateOne(ctx, deleteFilter, update)
 	if err != nil {
 		_, err := h.grpc.AddLog(context.Background(),
 			"database error while removing event", err.Error())
@@ -52,7 +52,7 @@ func (h *Handler) DeleteByFilter(f *filter.Filter) error {
 	// helps us ti prevent multiple database calls and it would help us to do the operation faster.
 	// to do the same thing for deletion we need to filter the documents with $match, then update the
 	// fields of deleted event to null (expect the `id` since its unique index to prevent overwrites) with $unset
-	// then we apply them to collection using $merge. 
+	// then we apply them to collection using $merge.
 	// although we can't use multiple $merge's on one pipeline and we must have
 	// only one merge at the end of pipeline commands. also, $unionWith is restricted to be used with $merge.
 
@@ -62,7 +62,7 @@ func (h *Handler) DeleteByFilter(f *filter.Filter) error {
 	// we are dealing with filters since filters contain a list of kinds
 	// (which can be empty and we are then forced to query all collections)
 
-	// 2. when we delete an event we $unset all fields expect `id`. 
+	// 2. when we delete an event we $unset all fields expect `id`.
 	// when we make a query to read from database, we ignore fields which
 	// their fields are null. and when we write new events we prevent overwriting
 	// events with duplicated `id`. so we can handle the deletion properly.
