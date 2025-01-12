@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
@@ -73,13 +74,27 @@ func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
 	collection := h.db.Client.Database(h.db.DBName).Collection("empty")
 	cursor, err := collection.Aggregate(ctx, pipeline)
 	if err != nil {
+		_, err := h.grpc.AddLog(context.Background(),
+			"database error while adding new event", err.Error())
+		if err != nil {
+			logger.Error("can't send log to manager", "err", err)
+		}
+
 		return nil, err
+
 	}
 	defer cursor.Close(ctx)
 
 	var finalResult []event.Event
 	if err := cursor.All(ctx, &finalResult); err != nil {
+		_, err := h.grpc.AddLog(context.Background(),
+			"database error while adding new event", err.Error())
+		if err != nil {
+			logger.Error("can't send log to manager", "err", err)
+		}
+
 		return nil, err
+
 	}
 
 	return finalResult, nil
