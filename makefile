@@ -13,7 +13,6 @@ devtools:
 	go install mvdan.cc/gofumpt@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.35
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5
-	go install github.com/pactus-project/protoc-gen-doc/cmd/protoc-gen-doc@v0.0.0-20240815105130-84e89d0170e4
 	go install github.com/bufbuild/buf/cmd/buf@v1.47
 
 ### Testing

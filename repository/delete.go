@@ -9,7 +9,8 @@ import (
 )
 
 func (h *Handler) DeleteByID(id string, kind types.Kind) error {
-	coll := h.db.Client.Database(h.db.DBName).Collection(getCollectionName(kind))
+	collName, _ := getCollectionName(kind)
+	coll := h.db.Client.Database(h.db.DBName).Collection(collName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()
