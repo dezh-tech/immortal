@@ -174,7 +174,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	if !msg.Event.Kind.IsEphemeral() {
+	if !msg.Event.Kind.IsEphemeral() { //nolint
 		if msg.Event.Kind == types.KindEventDeletionRequest {
 			deleteFilterString := msg.Event.Tags.GetValue("filter")
 
