@@ -193,7 +193,35 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 			}
 
 			// you can only delete events you own.
-			deleteFilter.Authors = []string{msg.Event.PublicKey}
+			if len(deleteFilter.Authors) == 1 {
+				if deleteFilter.Authors[0] != msg.Event.PublicKey {
+					okm := message.MakeOK(false,
+						msg.Event.ID,
+						fmt.Sprintf(
+							"error: you can request to delete your events only: %s",
+							deleteFilter.Authors),
+					)
+
+					_ = conn.WriteMessage(1, okm)
+
+					status = invalidFail
+
+					return
+				}
+			} else {
+				okm := message.MakeOK(false,
+					msg.Event.ID,
+					fmt.Sprintf(
+						"error: you can request to delete your events only: %s",
+						deleteFilter.Authors),
+				)
+
+				_ = conn.WriteMessage(1, okm)
+
+				status = invalidFail
+
+				return
+			}
 
 			go s.handler.DeleteByFilter(deleteFilter) //nolint
 		}
