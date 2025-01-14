@@ -40,8 +40,10 @@ func (s *Server) checkExpiration() { //nolint
 					continue
 				}
 
+				// lint error is g115 gosec rule. this rule is broken. 
+				// see: https://github.com/securego/gosec/issues/1288
 				if err := s.handler.DeleteByID(data[0],
-					types.Kind(kind)); err != nil {
+					types.Kind(kind)); err != nil { //nolint
 					failedTasks = append(failedTasks, task)
 				}
 			}
