@@ -11,7 +11,8 @@ import (
 )
 
 func (h *Handler) HandleEvent(e *event.Event) error {
-	coll := h.db.Client.Database(h.db.DBName).Collection(getCollectionName(e.Kind))
+	collName, _ := getCollectionName(e.Kind)
+	coll := h.db.Client.Database(h.db.DBName).Collection(collName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 	defer cancel()

@@ -9,13 +9,15 @@ import (
 	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/pkg/utils"
+	"github.com/dezh-tech/immortal/types"
+	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
 	gredis "github.com/redis/go-redis/v9"
 )
 
 // handleEvent handles new incoming EVENT messages from client.
-func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
+func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	defer measureLatency(s.metrics.EventLatency)()
@@ -172,9 +174,59 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if !msg.Event.Kind.IsEphemeral() {
-		err := s.handler.HandleEvent(msg.Event)
-		if err != nil {
+	if !msg.Event.Kind.IsEphemeral() { //nolint
+		if msg.Event.Kind == types.KindEventDeletionRequest {
+			deleteFilterString := msg.Event.Tags.GetValue("filter")
+
+			deleteFilter, err := filter.Decode([]byte(deleteFilterString))
+			if err != nil {
+				okm := message.MakeOK(false,
+					msg.Event.ID,
+					fmt.Sprintf("error: parse deletion event: %s", deleteFilterString),
+				)
+
+				_ = conn.WriteMessage(1, okm)
+
+				status = invalidFail
+
+				return
+			}
+
+			// you can only delete events you own.
+			if len(deleteFilter.Authors) == 1 {
+				if deleteFilter.Authors[0] != msg.Event.PublicKey {
+					okm := message.MakeOK(false,
+						msg.Event.ID,
+						fmt.Sprintf(
+							"error: you can request to delete your events only: %s",
+							deleteFilter.Authors),
+					)
+
+					_ = conn.WriteMessage(1, okm)
+
+					status = invalidFail
+
+					return
+				}
+			} else {
+				okm := message.MakeOK(false,
+					msg.Event.ID,
+					fmt.Sprintf(
+						"error: you can request to delete your events only: %s",
+						deleteFilter.Authors),
+				)
+
+				_ = conn.WriteMessage(1, okm)
+
+				status = invalidFail
+
+				return
+			}
+
+			go s.handler.DeleteByFilter(deleteFilter) //nolint
+		}
+
+		if err := s.handler.HandleEvent(msg.Event); err != nil {
 			okm := message.MakeOK(false,
 				msg.Event.ID,
 				"error: can't write event to database.",

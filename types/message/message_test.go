@@ -34,13 +34,13 @@ var testCases = []testCase{
 	},
 	{
 		Name:    "REQ message",
-		Message: []byte(`["REQ","million", {"kinds": [1]}, {"kinds": [30023 ], "#d": ["buteko",    "batuke"]}]`),
+		Message: []byte(`["REQ","million", {"kinds": [30023 ], "#d": ["buteko",    "batuke"]}]`),
 		ExpectedEnvelope: &message.Req{
 			SubscriptionID: "million",
-			Filters: filter.Filters{{Kinds: []types.Kind{1}}, {
+			Filter: filter.Filter{
 				Kinds: []types.Kind{30023},
 				Tags:  map[string][]string{"d": {"buteko", "batuke"}},
-			}},
+			},
 		},
 	},
 	{

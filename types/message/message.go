@@ -126,7 +126,7 @@ func (em Event) EncodeToJSON() ([]byte, error) {
 // Req represents a NIP-01 REQ message.
 type Req struct {
 	SubscriptionID string
-	filter.Filters
+	filter.Filter
 }
 
 func (Req) Type() string { return "REQ" }
@@ -140,21 +140,17 @@ func (rm *Req) DecodeFromJSON(data []byte) error {
 		}
 	}
 	rm.SubscriptionID = arr[1].Str
-	rm.Filters = make(filter.Filters, len(arr)-2)
-	f := 0
-	for i := 2; i < len(arr); i++ {
-		if err := easyjson.Unmarshal([]byte(arr[i].Raw), &rm.Filters[f]); err != nil {
-			return types.DecodeError{
-				Reason: fmt.Sprintf("REQ message: %s", err.Error()),
-			}
+	rm.Filter = filter.Filter{}
+	if err := easyjson.Unmarshal([]byte(arr[2].Raw), &rm.Filter); err != nil {
+		return types.DecodeError{
+			Reason: fmt.Sprintf("REQ message: %s", err.Error()),
 		}
-		f++
 	}
 
 	return nil
 }
 
-func (rm Req) EncodeToJSON() ([]byte, error) {
+func (rm *Req) EncodeToJSON() ([]byte, error) {
 	return nil, nil
 }
 

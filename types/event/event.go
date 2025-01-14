@@ -99,14 +99,14 @@ func (e *Event) IsValid(id [32]byte) bool {
 		return false
 	}
 
-	// TODO::: replace with libsecp256k1 (C++ version).
+	// todo::: replace with libsecp256k1 (C++ version).
 	return sig.Verify(id[:], pubkey)
 }
 
-// IsProtected checks is ["-"] is present, look nip-70 for more.
+// IsProtected checks if ["-"] tag is present, check nip-70 for more.
 func (e *Event) IsProtected() bool {
 	for _, t := range e.Tags {
-		if len(t) < 1 {
+		if len(t) != 1 {
 			continue
 		}
 
