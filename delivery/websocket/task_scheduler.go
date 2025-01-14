@@ -35,13 +35,13 @@ func (s *Server) checkExpiration() { //nolint
 					continue
 				}
 
-				kind, err := strconv.Atoi(data[1])
+				kind, err := strconv.ParseUint(data[1], 10, 16)
 				if err != nil {
 					continue
 				}
 
 				if err := s.handler.DeleteByID(data[0],
-					types.Kind(kind)); err != nil { //nolint
+					types.Kind(kind)); err != nil {
 					failedTasks = append(failedTasks, task)
 				}
 			}
