@@ -47,19 +47,20 @@ func (h *Handler) DeleteByID(id string, kind types.Kind) error {
 	return nil
 }
 
-func (h *Handler) NIP09Deletion(event event.Event) error {
+func (h *Handler) NIP09Deletion(event *event.Event) error {
 	kinds := event.Tags.GetValues("k")
 	eventIDs := event.Tags.GetValues("e")
 
 	queryKinds := []types.Kind{}
 
 	for _, k := range kinds {
-		k, err := strconv.Atoi(k)
+		k, err := strconv.ParseInt(k, 10, 16)
 		if err != nil {
 			continue
 		}
 
-		queryKinds = append(queryKinds, types.Kind(k))
+		// todo:: update gosec linter and remove //nolint comment.
+		queryKinds = append(queryKinds, types.Kind(k)) //nolint
 	}
 
 	deleteFilter := bson.D{
@@ -81,7 +82,6 @@ func (h *Handler) NIP09Deletion(event event.Event) error {
 
 	for _, kind := range queryKinds {
 		ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
-		defer cancel()
 
 		collectionName, _ := getCollectionName(kind)
 		coll := h.db.Client.Database(h.db.DBName).Collection(collectionName)
@@ -94,8 +94,11 @@ func (h *Handler) NIP09Deletion(event event.Event) error {
 				logger.Error("can't send log to manager", "err", err)
 			}
 
+			cancel()
+
 			return err
 		}
+		cancel()
 	}
 
 	return nil

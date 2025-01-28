@@ -177,7 +177,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	if !msg.Event.Kind.IsEphemeral() { //nolint
 		if msg.Event.Kind == types.KindEventDeletionRequest {
-			if err := s.handler.NIP09Deletion(*msg.Event); err != nil {
+			if err := s.handler.NIP09Deletion(msg.Event); err != nil {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
 					"error: can't delete requested event(s).",
