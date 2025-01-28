@@ -47,9 +47,9 @@ func (h *Handler) DeleteByID(id string, kind types.Kind) error {
 	return nil
 }
 
-func (h *Handler) NIP09Deletion(event *event.Event) error {
-	kinds := event.Tags.GetValues("k")
-	eventIDs := event.Tags.GetValues("e")
+func (h *Handler) NIP09Deletion(e *event.Event) error {
+	kinds := e.Tags.GetValues("k")
+	eventIDs := e.Tags.GetValues("e")
 
 	queryKinds := []types.Kind{}
 
@@ -64,7 +64,7 @@ func (h *Handler) NIP09Deletion(event *event.Event) error {
 	}
 
 	deleteFilter := bson.D{
-		{Key: "pubkey", Value: event.PublicKey},
+		{Key: "pubkey", Value: e.PublicKey},
 	}
 
 	deleteFilter = append(deleteFilter, bson.E{Key: "id", Value: bson.M{"$in": eventIDs}})
