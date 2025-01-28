@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
+	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -40,6 +42,60 @@ func (h *Handler) DeleteByID(id string, kind types.Kind) error {
 		}
 
 		return err
+	}
+
+	return nil
+}
+
+func (h *Handler) NIP09Deletion(event event.Event) error {
+	kinds := event.Tags.GetValues("k")
+	eventIDs := event.Tags.GetValues("e")
+
+	queryKinds := []types.Kind{}
+
+	for _, k := range kinds {
+		k, err := strconv.Atoi(k)
+		if err != nil {
+			continue
+		}
+
+		queryKinds = append(queryKinds, types.Kind(k))
+	}
+
+	deleteFilter := bson.D{
+		{Key: "pubkey", Value: event.PublicKey},
+	}
+
+	deleteFilter = append(deleteFilter, bson.E{Key: "id", Value: bson.M{"$in": eventIDs}})
+
+	update := bson.D{
+		{Key: "$unset", Value: bson.D{
+			{Key: "pubkey"},
+			{Key: "created_at"},
+			{Key: "kind"},
+			{Key: "tags"},
+			{Key: "content"},
+			{Key: "sig"},
+		}},
+	}
+
+	for _, kind := range queryKinds {
+		ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
+		defer cancel()
+
+		collectionName, _ := getCollectionName(kind)
+		coll := h.db.Client.Database(h.db.DBName).Collection(collectionName)
+
+		_, err := coll.UpdateOne(ctx, deleteFilter, update)
+		if err != nil {
+			_, err := h.grpc.AddLog(context.Background(),
+				"database error while removing event", err.Error())
+			if err != nil {
+				logger.Error("can't send log to manager", "err", err)
+			}
+
+			return err
+		}
 	}
 
 	return nil

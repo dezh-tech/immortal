@@ -37,6 +37,21 @@ func (tags Tags) GetValue(tagName string) string {
 	return ""
 }
 
+func (tags Tags) GetValues(tagName string) []string {
+	values := []string{}
+	for _, tag := range tags {
+		if len(tag) < 2 {
+			continue
+		}
+
+		if tag[0] == tagName {
+			values = append(values, tag[1])
+		}
+	}
+
+	return values
+}
+
 // Marshal Tag. Used for Serialization so string escaping should be as in RFC8259.
 func (tag Tag) MarshalTo(dst []byte) []byte {
 	dst = append(dst, '[')

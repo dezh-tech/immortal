@@ -35,6 +35,7 @@ const (
 	KindChannelMessage               Kind = 42
 	KindChannelHideMessage           Kind = 43
 	KindChannelMuteUser              Kind = 44
+	KindRightToVanish                Kind = 62
 	KindChessPGN                     Kind = 64
 	KindMergeRequests                Kind = 818
 	KindBid                          Kind = 1021
