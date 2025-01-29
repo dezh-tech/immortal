@@ -208,7 +208,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 			}
 
 			if err := s.handler.DeleteByFilter(
-				&filter.Filter{Authors: []string{msg.Event.PublicKey}}); err != nil {
+				&filter.Filter{Authors: []string{msg.Event.PublicKey}, Until: msg.Event.CreatedAt}); err != nil {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
 					"error: can't execute vanish request.",
@@ -224,7 +224,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 			if err := s.handler.DeleteByFilter(
 				&filter.Filter{Kinds: []types.Kind{types.KindGiftWrap}, Tags: map[string][]string{
 					"p": {msg.Event.PublicKey},
-				}}); err != nil {
+				}, Until: msg.Event.CreatedAt}); err != nil {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
 					"error: can't delete requested event(s).",
