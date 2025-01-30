@@ -8,7 +8,7 @@ var (
 	major = 0
 	minor = 0
 	patch = 8
-	meta  = "beta"
+	meta  = ""
 )
 
 func StringVersion() string {
