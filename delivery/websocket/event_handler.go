@@ -1,10 +1,10 @@
 package websocket
 
 import (
-	"context"
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dezh-tech/immortal/infrastructure/redis"
@@ -14,7 +14,6 @@ import (
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
-	gredis "github.com/redis/go-redis/v9"
 )
 
 // handleEvent handles new incoming EVENT messages from client.
@@ -56,80 +55,18 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
-	defer cancel()
-
-	pipe := s.redis.Client.Pipeline()
-
-	bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
-
-	var whiteListCheckCmd *gredis.BoolCmd
-
-	if s.config.Limitation.RestrictedWrites {
-		whiteListCheckCmd = pipe.CFExists(qCtx, s.redis.WhiteListFilterName, msg.Event.PublicKey)
-	}
-
-	blackListCheckCmd := pipe.CFExists(qCtx, s.redis.BlackListFilterName, msg.Event.PublicKey)
-
-	_, err := pipe.Exec(qCtx)
-	if err != nil {
-		logger.Error("checking bloom filter", "err", err.Error())
-	}
-
-	exists, err := bloomCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
-
-		status = serverFail
-
-		return
-	}
-
-	if exists {
-		okm := message.MakeOK(false, msg.Event.ID, "duplicate: this event is already received.")
-		_ = conn.WriteMessage(1, okm)
-
-		return
-	}
-
-	isBlackListed, err := blackListCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
-
-		status = serverFail
-
-		return
-	}
-	if isBlackListed {
-		okm := message.MakeOK(false, msg.Event.ID, "blocked: pubkey is blocked, contact support for more details.")
+	if err := s.redis.CheckAcceptability(s.config.Limitation.RestrictedWrites,
+		eID[:], msg.Event.PublicKey); err != nil {
+		okm := message.MakeOK(false, msg.Event.ID, err.Error())
 		_ = conn.WriteMessage(1, okm)
 
 		status = limitsFail
 
-		return
-	}
-
-	if s.config.Limitation.RestrictedWrites {
-		isWhiteListed, err := whiteListCheckCmd.Result()
-		if err != nil {
-			okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-			_ = conn.WriteMessage(1, okm)
-
+		if strings.HasPrefix(err.Error(), "internal") {
 			status = serverFail
-
-			return
 		}
 
-		if !isWhiteListed {
-			okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
-			_ = conn.WriteMessage(1, okm)
-
-			status = limitsFail
-
-			return
-		}
+		return
 	}
 
 	client, ok := s.conns[conn]
@@ -192,9 +129,9 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		}
 
 		if msg.Event.Kind == types.KindRightToVanish {
-			relays := msg.Event.Tags.GetValues("relays")
-			if !(slices.Contains(relays, "ALL_RELAYS") ||
-				slices.Contains(relays, s.config.URL.String())) {
+			relays := msg.Event.Tags.GetValues("relay")
+			if !slices.Contains(relays, "ALL_RELAYS") &&
+				!slices.Contains(relays, s.config.URL.String()) {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
 					"error: can't execute vanish request.",
@@ -254,8 +191,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
-	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomFilterName, eID[:]).Result()
-	if err != nil {
+	if err := s.redis.AddEventToBloom(eID[:]); err != nil {
 		logger.Info("adding event to bloom filter", "err", err.Error(), msg.Event.ID)
 	}
 

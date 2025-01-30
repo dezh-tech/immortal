@@ -254,4 +254,5 @@ var KindToName = map[Kind]string{
 	KindVideoViewEvent:              "video_view_events",
 	KindCommunityDefinition:         "community_definitions",
 	KindGroupsMetadata:              "groups_metadata",
+	KindRightToVanish:               "right_to_vanish",
 }
