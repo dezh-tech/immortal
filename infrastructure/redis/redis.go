@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -50,6 +51,71 @@ func (r *Redis) Close() error {
 	logger.Info("closing redis connection")
 
 	return r.Client.Close()
+}
+
+func (r *Redis) AddEventToBloom(id []byte) error {
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	_, err := r.Client.BFAdd(ctx, r.BloomFilterName, id).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Redis) CheckAcceptability(restrictedWrites bool, eid []byte, pubkey string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), r.QueryTimeout)
+	defer cancel()
+
+	pipe := r.Client.Pipeline()
+
+	bloomCheckCmd := pipe.BFExists(ctx, r.BloomFilterName, eid)
+
+	var whiteListCheckCmd *redis.BoolCmd
+
+	if restrictedWrites {
+		whiteListCheckCmd = pipe.CFExists(ctx, r.WhiteListFilterName, pubkey)
+	}
+
+	blackListCheckCmd := pipe.CFExists(ctx, r.BlackListFilterName, pubkey)
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return errors.New("internal: error while checking event acceptability")
+	}
+
+	exists, err := bloomCheckCmd.Result()
+	if err != nil {
+		return errors.New("internal: cna't lookup bloom filter")
+	}
+
+	if exists {
+		return errors.New("duplicate: this event is already received")
+	}
+
+	isBlackListed, err := blackListCheckCmd.Result()
+	if err != nil {
+		return errors.New("internal: cna't lookup black list")
+	}
+
+	if isBlackListed {
+		return errors.New("blocked: pubkey is blocked")
+	}
+
+	if restrictedWrites {
+		isWhiteListed, err := whiteListCheckCmd.Result()
+		if err != nil {
+			return errors.New("internal: cna't lookup white list")
+		}
+
+		if !isWhiteListed {
+			return errors.New("restricted: not allowed to write")
+		}
+	}
+
+	return nil
 }
 
 // ! note: delayed tasks probably are not concurrent safe at the moment.

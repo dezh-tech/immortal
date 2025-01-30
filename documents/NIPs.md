@@ -8,4 +8,5 @@
 - [X] **NIP-42**: Authentication of Clients to Relays
 - [ ] **NIP-50**: Search Capability
 - [X] **NIP-56**: Reporting
+- [X] **NIP-62**: Right to Vanish
 - [X] **NIP-70**: Protected Events

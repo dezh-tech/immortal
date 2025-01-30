@@ -1,9 +1,10 @@
 package websocket
 
 import (
-	"context"
 	"fmt"
+	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dezh-tech/immortal/infrastructure/redis"
@@ -13,7 +14,6 @@ import (
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
-	gredis "github.com/redis/go-redis/v9"
 )
 
 // handleEvent handles new incoming EVENT messages from client.
@@ -55,80 +55,18 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	qCtx, cancel := context.WithTimeout(context.Background(), s.redis.QueryTimeout)
-	defer cancel()
-
-	pipe := s.redis.Client.Pipeline()
-
-	bloomCheckCmd := pipe.BFExists(qCtx, s.redis.BloomFilterName, eID[:])
-
-	var whiteListCheckCmd *gredis.BoolCmd
-
-	if s.config.Limitation.RestrictedWrites {
-		whiteListCheckCmd = pipe.CFExists(qCtx, s.redis.WhiteListFilterName, msg.Event.PublicKey)
-	}
-
-	blackListCheckCmd := pipe.CFExists(qCtx, s.redis.BlackListFilterName, msg.Event.PublicKey)
-
-	_, err := pipe.Exec(qCtx)
-	if err != nil {
-		logger.Error("checking bloom filter", "err", err.Error())
-	}
-
-	exists, err := bloomCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
-
-		status = serverFail
-
-		return
-	}
-
-	if exists {
-		okm := message.MakeOK(false, msg.Event.ID, "duplicate: this event is already received.")
-		_ = conn.WriteMessage(1, okm)
-
-		return
-	}
-
-	isBlackListed, err := blackListCheckCmd.Result()
-	if err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-		_ = conn.WriteMessage(1, okm)
-
-		status = serverFail
-
-		return
-	}
-	if isBlackListed {
-		okm := message.MakeOK(false, msg.Event.ID, "blocked: pubkey is blocked, contact support for more details.")
+	if err := s.redis.CheckAcceptability(s.config.Limitation.RestrictedWrites,
+		eID[:], msg.Event.PublicKey); err != nil {
+		okm := message.MakeOK(false, msg.Event.ID, err.Error())
 		_ = conn.WriteMessage(1, okm)
 
 		status = limitsFail
 
-		return
-	}
-
-	if s.config.Limitation.RestrictedWrites {
-		isWhiteListed, err := whiteListCheckCmd.Result()
-		if err != nil {
-			okm := message.MakeOK(false, msg.Event.ID, "error: internal error")
-			_ = conn.WriteMessage(1, okm)
-
+		if strings.HasPrefix(err.Error(), "internal") {
 			status = serverFail
-
-			return
 		}
 
-		if !isWhiteListed {
-			okm := message.MakeOK(false, msg.Event.ID, "restricted: not allowed to write.")
-			_ = conn.WriteMessage(1, okm)
-
-			status = limitsFail
-
-			return
-		}
+		return
 	}
 
 	client, ok := s.conns[conn]
@@ -176,54 +114,65 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	if !msg.Event.Kind.IsEphemeral() { //nolint
 		if msg.Event.Kind == types.KindEventDeletionRequest {
-			deleteFilterString := msg.Event.Tags.GetValue("filter")
-
-			deleteFilter, err := filter.Decode([]byte(deleteFilterString))
-			if err != nil {
+			if err := s.handler.NIP09Deletion(msg.Event); err != nil {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
-					fmt.Sprintf("error: parse deletion event: %s", deleteFilterString),
+					"error: can't delete requested event(s).",
 				)
 
 				_ = conn.WriteMessage(1, okm)
 
-				status = invalidFail
+				status = serverFail
 
 				return
 			}
+		}
 
-			// you can only delete events you own.
-			if len(deleteFilter.Authors) == 1 {
-				if deleteFilter.Authors[0] != msg.Event.PublicKey {
-					okm := message.MakeOK(false,
-						msg.Event.ID,
-						fmt.Sprintf(
-							"error: you can request to delete your events only: %s",
-							deleteFilter.Authors),
-					)
-
-					_ = conn.WriteMessage(1, okm)
-
-					status = invalidFail
-
-					return
-				}
-			} else {
+		if msg.Event.Kind == types.KindRightToVanish {
+			relays := msg.Event.Tags.GetValues("relay")
+			if !slices.Contains(relays, "ALL_RELAYS") &&
+				!slices.Contains(relays, s.config.URL.String()) {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
-					fmt.Sprintf(
-						"error: you can request to delete your events only: %s",
-						deleteFilter.Authors),
+					"error: can't execute vanish request.",
 				)
 
 				_ = conn.WriteMessage(1, okm)
 
-				status = invalidFail
+				status = serverFail
 
 				return
 			}
 
-			go s.handler.DeleteByFilter(deleteFilter) //nolint
+			if err := s.handler.DeleteByFilter(
+				&filter.Filter{Authors: []string{msg.Event.PublicKey}, Until: msg.Event.CreatedAt}); err != nil {
+				okm := message.MakeOK(false,
+					msg.Event.ID,
+					"error: can't execute vanish request.",
+				)
+
+				_ = conn.WriteMessage(1, okm)
+
+				status = serverFail
+
+				return
+			}
+
+			if err := s.handler.DeleteByFilter(
+				&filter.Filter{Kinds: []types.Kind{types.KindGiftWrap}, Tags: map[string][]string{
+					"p": {msg.Event.PublicKey},
+				}, Until: msg.Event.CreatedAt}); err != nil {
+				okm := message.MakeOK(false,
+					msg.Event.ID,
+					"error: can't delete requested event(s).",
+				)
+
+				_ = conn.WriteMessage(1, okm)
+
+				status = serverFail
+
+				return
+			}
 		}
 
 		if err := s.handler.HandleEvent(msg.Event); err != nil {
@@ -242,16 +191,15 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 
 	_ = conn.WriteMessage(1, message.MakeOK(true, msg.Event.ID, ""))
 
-	_, err = s.redis.Client.BFAdd(qCtx, s.redis.BloomFilterName, eID[:]).Result()
-	if err != nil {
+	if err := s.redis.AddEventToBloom(eID[:]); err != nil {
 		logger.Info("adding event to bloom filter", "err", err.Error(), msg.Event.ID)
 	}
 
 	// todo::: can we run goroutines per client?
 	for conn, client := range s.conns {
 		client.Lock()
-		for id, filters := range client.subs {
-			if !filters.Match(msg.Event) {
+		for id, filter := range client.subs {
+			if !filter.Match(msg.Event) {
 				continue
 			}
 			_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))

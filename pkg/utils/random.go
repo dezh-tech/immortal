@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"time"
-
-	"golang.org/x/exp/rand"
+	"crypto/rand"
+	"math/big"
 )
 
 const (
@@ -14,19 +13,19 @@ const (
 )
 
 func GenerateChallenge(n int) string {
-	src := rand.NewSource(uint64(time.Now().UnixNano()))
-	b := make([]byte, n)
-	for i, cache, remain := n-1, src.Uint64(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = src.Uint64(), letterIdxMax
-		}
-		if idx := cache & letterIdxMask; idx < uint64(len(chars)) {
-			b[i] = chars[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
+	token := ""
+	for i := 0; i < n; i++ {
+		token += string(chars[cryptoRandSecure(int64(len(chars)))])
 	}
 
-	return string(b)
+	return token
+}
+
+func cryptoRandSecure(n int64) int64 {
+	nBig, err := rand.Int(rand.Reader, big.NewInt(n))
+	if err != nil {
+		return 0
+	}
+
+	return nBig.Int64()
 }
