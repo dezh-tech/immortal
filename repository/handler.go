@@ -22,7 +22,7 @@ func New(cfg Config, db *database.Database, grpc grpcclient.IClient) *Handler {
 	}
 }
 
-func filterToMongoQuery(f *filter.Filter, isMultiKindColl bool, k types.Kind) bson.D {
+func filterToMongoQuery(f *filter.Filter, isMultiKindColl bool, k types.Kind, pubkey string) bson.D {
 	query := make(bson.D, 0)
 
 	if isMultiKindColl {
@@ -39,6 +39,10 @@ func filterToMongoQuery(f *filter.Filter, isMultiKindColl bool, k types.Kind) bs
 
 	if len(f.Authors) > 0 {
 		query = append(query, bson.E{Key: "pubkey", Value: bson.M{"$in": f.Authors}})
+	}
+
+	if k == types.KindGiftWrap && pubkey != "" {
+		f.Tags["p"] = []string{pubkey}
 	}
 
 	if len(f.Tags) > 0 {

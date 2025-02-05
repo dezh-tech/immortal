@@ -2,8 +2,10 @@ package websocket
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/dezh-tech/immortal/pkg/utils"
+	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/message"
 	"github.com/gorilla/websocket"
 )
@@ -38,7 +40,9 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if s.config.Limitation.AuthRequired && !*client.isKnown {
+	if (s.config.Limitation.AuthRequired ||
+		slices.Contains(msg.Filter.Kinds, types.KindGiftWrap)) &&
+		!*client.isKnown {
 		client.challenge = utils.GenerateChallenge(10)
 		authm := message.MakeAuth(client.challenge)
 
@@ -73,7 +77,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	res, err := s.handler.HandleReq(&msg.Filter)
+	res, err := s.handler.HandleReq(&msg.Filter, *client.pubkey)
 	if err != nil {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: can't process REQ message: %s", err.Error())))
 		status = databaseFail

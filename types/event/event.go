@@ -10,6 +10,8 @@ import (
 	"github.com/mailru/easyjson"
 )
 
+const hextable = "0123456789abcdef"
+
 // Event represents an event structure defined on NIP-01.
 type Event struct {
 	ID        string     `bson:"id"         json:"id"`
@@ -77,23 +79,43 @@ func (e *Event) GetRawID() [32]byte {
 	return sha256.Sum256(e.Serialize())
 }
 
-// IsValid function validats an event Signature and ID.
-func (e *Event) IsValid(id [32]byte) bool {
+// checkID checks if the user provided id is valid.
+func (e *Event) checkID(id [32]byte) bool {
+	for i := 0; i < 32; i++ {
+		b := hextable[id[i]>>4]
+		if b != e.ID[i*2] {
+			return false
+		}
+
+		b = hextable[id[i]&0x0f]
+		if b != e.ID[i*2+1] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (e *Event) checkSig(id [32]byte) bool {
+	// turn pubkey hex to byte array.
 	pk, err := hex.DecodeString(e.PublicKey)
 	if err != nil {
 		return false
 	}
 
+	// construct the pubkey from byte array.
 	pubkey, err := schnorr.ParsePubKey(pk)
 	if err != nil {
 		return false
 	}
 
+	// turn signature hex to byte array.
 	s, err := hex.DecodeString(e.Signature)
 	if err != nil {
 		return false
 	}
 
+	// construct signature from byte array.
 	sig, err := schnorr.ParseSignature(s)
 	if err != nil {
 		return false
@@ -101,6 +123,20 @@ func (e *Event) IsValid(id [32]byte) bool {
 
 	// todo::: replace with libsecp256k1 (C++ version).
 	return sig.Verify(id[:], pubkey)
+}
+
+// IsValid function validats an event Signature and ID.
+func (e *Event) IsValid(id [32]byte) bool {
+	// make sure the user provided id is valid.
+	if !e.checkID(id) {
+		return false
+	}
+
+	if !e.checkSig(id) {
+		return false
+	}
+
+	return true
 }
 
 // IsProtected checks if ["-"] tag is present, check nip-70 for more.
