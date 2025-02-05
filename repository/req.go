@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
+func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, error) {
 	queryKinds := make(map[types.Kind]*filter.Filter)
 
 	if len(f.Kinds) != 0 {
@@ -30,7 +30,7 @@ func (h *Handler) HandleReq(f *filter.Filter) ([]event.Event, error) {
 	for kind, filter := range queryKinds {
 		collectionName, isMultiKindColl := getCollectionName(kind)
 
-		query := filterToMongoQuery(filter, isMultiKindColl, kind)
+		query := filterToMongoQuery(filter, isMultiKindColl, kind, pubkey)
 
 		matchStage := bson.D{
 			{Key: "$match", Value: query},

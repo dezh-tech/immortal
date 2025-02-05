@@ -158,7 +158,7 @@ func (h *Handler) DeleteByFilter(f *filter.Filter) error {
 	for kind, deleteFilter := range queryKinds {
 		collectionName, isMultiKindColl := getCollectionName(kind)
 
-		query := filterToMongoQuery(deleteFilter, isMultiKindColl, kind)
+		query := filterToMongoQuery(deleteFilter, isMultiKindColl, kind, "")
 
 		ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
 
