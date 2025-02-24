@@ -1,25 +1,69 @@
 package repository
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
+	"github.com/meilisearch/meilisearch-go"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Handler struct {
-	db     *database.Database
-	grpc   grpcclient.IClient
-	config Config
+	db          *database.Database
+	meiliClient meilisearch.ServiceManager
+	grpc        grpcclient.IClient
+	config      Config
 }
 
-func New(cfg Config, db *database.Database, grpc grpcclient.IClient) *Handler {
+func New(cfg Config, db *database.Database, meiliClient meilisearch.ServiceManager, grpc grpcclient.IClient) *Handler {
 	return &Handler{
-		db:     db,
-		config: cfg,
-		grpc:   grpc,
+		db:          db,
+		meiliClient: meiliClient,
+		config:      cfg,
+		grpc:        grpc,
 	}
+}
+
+func buildMeiliQuery(f *filter.Filter) string {
+	var filters []string
+
+	filters = append(filters, "pubkey EXISTS")
+
+	if len(f.IDs) > 0 {
+		ids := strings.Join(f.IDs, "\", \"")
+		filters = append(filters, fmt.Sprintf("id IN [\"%s\"]", ids))
+	}
+
+	if len(f.Authors) > 0 {
+		authors := strings.Join(f.Authors, "\", \"")
+		filters = append(filters, fmt.Sprintf("pubkey IN [\"%s\"]", authors))
+	}
+
+	if len(f.Tags) > 0 {
+		var tagConditions []string
+		for tagKey, tagValues := range f.Tags {
+			tagValuesStr := strings.Join(tagValues, "\", \"")
+			tagConditions = append(tagConditions, fmt.Sprintf("(tags = [\"%s\", \"%s\"])", tagKey, tagValuesStr))
+		}
+		if len(tagConditions) > 0 {
+			filters = append(filters, fmt.Sprintf("(%s)", strings.Join(tagConditions, " OR ")))
+		}
+	}
+
+	if f.Since > 0 {
+		filters = append(filters, fmt.Sprintf("created_at >= %d", f.Since))
+	}
+
+	if f.Until > 0 {
+		filters = append(filters, fmt.Sprintf("created_at <= %d", f.Until))
+	}
+
+	// todo: search content
+	return strings.Join(filters, " AND ")
 }
 
 func filterToMongoQuery(f *filter.Filter, isMultiKindColl bool, k types.Kind, pubkey string) bson.D {

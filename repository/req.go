@@ -2,96 +2,71 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
+
+	"github.com/meilisearch/meilisearch-go"
 
 	"github.com/dezh-tech/immortal/pkg/logger"
-	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, error) {
-	queryKinds := make(map[types.Kind]*filter.Filter)
 
-	if len(f.Kinds) != 0 {
-		uniqueKinds := removeDuplicateKinds(f.Kinds)
-		for _, k := range uniqueKinds {
-			queryKinds[k] = f
-		}
-	} else {
-		for k := range types.KindToName {
-			queryKinds[k] = f
-		}
+	query := buildMeiliQuery(f)
+	// todo: specify the timeout of the http client for meilisearch when first initializing the
+
+	finalLimit := f.Limit
+	if f.Limit <= 0 || f.Limit >= h.config.MaxQueryLimit {
+		finalLimit = h.config.DefaultQueryLimit
 	}
 
-	var pipeline mongo.Pipeline
-
-	for kind, filter := range queryKinds {
-		collectionName, isMultiKindColl := getCollectionName(kind)
-
-		query := filterToMongoQuery(filter, isMultiKindColl, kind, pubkey)
-
-		matchStage := bson.D{
-			{Key: "$match", Value: query},
-		}
-
-		unionStage := bson.D{
-			{Key: "$unionWith", Value: bson.D{
-				{Key: "coll", Value: collectionName},
-				{Key: "pipeline", Value: mongo.Pipeline{
-					matchStage,
-				}},
-			}},
-		}
-
-		pipeline = append(pipeline, unionStage)
+	// todo: 1059 exclusion using pubkey
+	var sortBy []string
+	if f.Search == "" {
+		sortBy = []string{"created_at:desc", "id:asc"}
 	}
 
-	sortStage := bson.D{
-		{Key: "$sort", Value: bson.D{
-			{Key: "created_at", Value: -1},
-			{Key: "id", Value: 1},
-		}},
-	}
+	searchResult, err := h.meiliClient.Index("events").Search("", &meilisearch.SearchRequest{
+		Limit:  int64(finalLimit),
+		Sort:   sortBy,
+		Filter: query,
+	}) // todo: add this name(events) to configs so it's not hard coded
 
-	pipeline = append(pipeline, sortStage)
-
-	finalLimit := h.config.DefaultQueryLimit
-	if f.Limit > 0 && f.Limit < h.config.MaxQueryLimit {
-		finalLimit = f.Limit
-	}
-
-	limitStage := bson.D{
-		{Key: "$limit", Value: finalLimit},
-	}
-
-	pipeline = append(pipeline, limitStage)
-
-	ctx, cancel := context.WithTimeout(context.Background(), h.db.QueryTimeout)
-	defer cancel()
-
-	cursor, err := h.db.Client.Database(h.db.DBName).Collection("empty").Aggregate(ctx, pipeline)
 	if err != nil {
 		_, err := h.grpc.AddLog(context.Background(),
-			"database error while adding new event", err.Error())
+			"search index error while searching for an event", err.Error())
 		if err != nil {
 			logger.Error("can't send log to manager", "err", err)
 		}
 
 		return nil, err
 	}
-	defer cursor.Close(ctx)
-
 	var finalResult []event.Event
-	if err := cursor.All(ctx, &finalResult); err != nil {
-		_, err := h.grpc.AddLog(context.Background(),
-			"database error while adding new event", err.Error())
+
+	for _, hit := range searchResult.Hits {
+
+		hitJSON, err := json.Marshal(hit)
 		if err != nil {
-			logger.Error("can't send log to manager", "err", err)
+			_, err := h.grpc.AddLog(context.Background(),
+				"error marshaling search result:", err.Error())
+			if err != nil {
+				logger.Error("can't send log to manager", "err", err)
+			}
+			continue
 		}
 
-		return nil, err
+		var newEvent event.Event
+		if err := json.Unmarshal(hitJSON, &newEvent); err != nil {
+			_, err := h.grpc.AddLog(context.Background(),
+				"can't unmarshal search result to event:", err.Error())
+			if err != nil {
+				logger.Error("can't send log to manager", "err", err)
+			}
+			continue
+		}
+
+		finalResult = append(finalResult, newEvent)
 	}
 
 	return finalResult, nil

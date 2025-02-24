@@ -3,7 +3,10 @@ package relay
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
+
+	"github.com/meilisearch/meilisearch-go"
 
 	"github.com/dezh-tech/immortal/config"
 	"github.com/dezh-tech/immortal/delivery/grpc"
@@ -31,6 +34,16 @@ func New(cfg *config.Config) (*Relay, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	// todo: add Timeout to configs so it's not hard coded anymore
+
+	meiliClient := meilisearch.New("http://localhost:7700",
+		meilisearch.WithCustomClient(httpClient))
+	// todo: maybe use other Options such as WithCustomRetries
+	// todo: add default host address to configs so it's not hard coded anymore
 
 	m := metrics.New()
 
@@ -66,7 +79,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	h := repository.New(cfg.Handler, db, c)
+	h := repository.New(cfg.Handler, db, meiliClient, c)
 
 	ws, err := websocket.New(cfg.WebsocketServer, h, m, r, c)
 	if err != nil {
