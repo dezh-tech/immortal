@@ -2,29 +2,29 @@ package repository
 
 import (
 	"fmt"
+	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"strings"
 
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
-	"github.com/meilisearch/meilisearch-go"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Handler struct {
-	db          *database.Database
-	meiliClient meilisearch.ServiceManager
-	grpc        grpcclient.IClient
-	config      Config
+	db     *database.Database
+	meili  *meilisearch.Meili
+	grpc   grpcclient.IClient
+	config Config
 }
 
-func New(cfg Config, db *database.Database, meiliClient meilisearch.ServiceManager, grpc grpcclient.IClient) *Handler {
+func New(cfg Config, db *database.Database, meili *meilisearch.Meili, grpc grpcclient.IClient) *Handler {
 	return &Handler{
-		db:          db,
-		meiliClient: meiliClient,
-		config:      cfg,
-		grpc:        grpc,
+		db:     db,
+		meili:  meili,
+		config: cfg,
+		grpc:   grpc,
 	}
 }
 

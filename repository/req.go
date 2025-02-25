@@ -14,7 +14,6 @@ import (
 func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, error) {
 
 	query := buildMeiliQuery(f)
-	// todo: specify the timeout of the http client for meilisearch when first initializing the
 
 	finalLimit := f.Limit
 	if f.Limit <= 0 || f.Limit >= h.config.MaxQueryLimit {
@@ -27,11 +26,14 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 		sortBy = []string{"created_at:desc", "id:asc"}
 	}
 
-	searchResult, err := h.meiliClient.Index("events").Search("", &meilisearch.SearchRequest{
-		Limit:  int64(finalLimit),
-		Sort:   sortBy,
-		Filter: query,
-	}) // todo: add this name(events) to configs so it's not hard coded
+	defaultCollection := h.meili.DefaultCollection
+
+	searchResult, err := h.meili.Client.Index(defaultCollection).Search("",
+		&meilisearch.SearchRequest{
+			Limit:  int64(finalLimit),
+			Sort:   sortBy,
+			Filter: query,
+		})
 
 	if err != nil {
 		_, err := h.grpc.AddLog(context.Background(),

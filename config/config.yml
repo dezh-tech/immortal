@@ -78,6 +78,20 @@ redis:
   # default is IMMO_WHITE_LIST.
   white_list_filter_name: IMMO_WHITE_LIST
 
+# meili contains MeiliSearch client specification
+meili:
+
+  # host specifies the MeiliSearch server host
+  host: "localhost"
+
+  # port specifies the port on which the MeiliSearch server listens for requests
+  port: 7700
+
+  # timeout_in_ms specifies the maximum duration (in milliseconds) that is used for creating connections to the MeiliSearch server.
+  timeout_in_ms: 5000
+
+  # default_collection specifies the default collection name for documents
+  default_collection: "events"
 
 # log contains configs for logs output in console and file.
 logger:

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"os"
 
 	"github.com/dezh-tech/immortal/delivery/grpc"
@@ -16,13 +17,14 @@ import (
 
 // Config represents the configs used by relay and other concepts on system.
 type Config struct {
-	Environment     string            `yaml:"environment"`
-	GRPCClient      grpcclient.Config `yaml:"manager"`
-	WebsocketServer websocket.Config  `yaml:"ws_server"`
-	Database        database.Config   `yaml:"database"`
-	RedisConf       redis.Config      `yaml:"redis"`
-	GRPCServer      grpc.Config       `yaml:"grpc_server"`
-	Logger          logger.Config     `yaml:"logger"`
+	Environment     string             `yaml:"environment"`
+	GRPCClient      grpcclient.Config  `yaml:"manager"`
+	WebsocketServer websocket.Config   `yaml:"ws_server"`
+	Database        database.Config    `yaml:"database"`
+	RedisConf       redis.Config       `yaml:"redis"`
+	MeiliConf       meilisearch.Config `yaml:"meili"`
+	GRPCServer      grpc.Config        `yaml:"grpc_server"`
+	Logger          logger.Config      `yaml:"logger"`
 	Handler         repository.Config
 }
 
