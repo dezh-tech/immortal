@@ -5,6 +5,17 @@ type (
 	Tags []Tag
 )
 
+func (tags Tags) ContainsTag(tagKey string, tagValue string) bool {
+	for _, tag := range tags {
+		if tag[0] == tagKey && len(tag) > 1 {
+			if tag[1] == tagValue {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (tags Tags) ContainsAny(tagName string, values []string) bool {
 	for _, tag := range tags {
 		if len(tag) < 2 {
