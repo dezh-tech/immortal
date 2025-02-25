@@ -14,25 +14,23 @@ import (
 
 func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, error) {
 
-	query := buildMeiliQuery(f)
+	meiliFilter := buildMeiliQuery(f)
 
 	finalLimit := f.Limit
 	if f.Limit <= 0 || f.Limit >= h.config.MaxQueryLimit {
 		finalLimit = h.config.DefaultQueryLimit
 	}
 
-	var sortBy []string
-	if f.Search == "" {
-		sortBy = []string{"created_at:desc", "id:asc"}
-	}
+	sortBy := []string{"created_at:desc", "id:asc"}
 
 	defaultCollection := h.meili.DefaultCollection
 
-	searchResult, err := h.meili.Client.Index(defaultCollection).Search("",
+	searchResult, err := h.meili.Client.Index(defaultCollection).Search(f.Search,
 		&meilisearch.SearchRequest{
-			Limit:  int64(finalLimit),
-			Sort:   sortBy,
-			Filter: query,
+			AttributesToSearchOn: []string{"content"},
+			Limit:                int64(finalLimit),
+			Sort:                 sortBy,
+			Filter:               meiliFilter,
 		})
 
 	if err != nil {
@@ -69,7 +67,7 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 		}
 
 		if newEvent.Kind == types.KindGiftWrap {
-			if !newEvent.Tags.ContainsTag("p", pubkey) {
+			if newEvent.Tags.ContainsTag("p", pubkey) == false {
 				continue // exclude others gift wrap events from final result
 			}
 		}
