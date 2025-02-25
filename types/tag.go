@@ -7,11 +7,9 @@ type (
 
 func (tags Tags) ContainsTag(tagKey string, tagValue string) bool {
 	for _, tag := range tags {
-		if tag[0] == tagKey {
-			for i := 1; i < len(tag); i++ {
-				if tag[i] == tagValue {
-					return true
-				}
+		if tag[0] == tagKey && len(tag) > 1 {
+			if tag[1] == tagValue {
+				return true
 			}
 		}
 	}
