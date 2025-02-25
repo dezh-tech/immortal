@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"github.com/dezh-tech/immortal/types"
 
 	"github.com/meilisearch/meilisearch-go"
 
@@ -20,7 +21,6 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 		finalLimit = h.config.DefaultQueryLimit
 	}
 
-	// todo: 1059 exclusion using pubkey
 	var sortBy []string
 	if f.Search == "" {
 		sortBy = []string{"created_at:desc", "id:asc"}
@@ -66,6 +66,12 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 				logger.Error("can't send log to manager", "err", err)
 			}
 			continue
+		}
+
+		if newEvent.Kind == types.KindGiftWrap {
+			if !newEvent.Tags.ContainsTag("p", pubkey) {
+				continue // exclude others gift wrap events from final result
+			}
 		}
 
 		finalResult = append(finalResult, newEvent)
