@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"os"
+
+	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 
 	"github.com/dezh-tech/immortal/delivery/grpc"
 	"github.com/dezh-tech/immortal/delivery/websocket"
@@ -58,6 +59,7 @@ func Load(path string) (*Config, error) {
 
 	config.Database.URI = os.Getenv("IMMO_MONGO_URI")
 	config.RedisConf.URI = os.Getenv("IMMO_REDIS_URI")
+	config.MeiliConf.APIKey = os.Getenv("MEILI_API_KEY")
 
 	if err = config.basicCheck(); err != nil {
 		return nil, Error{

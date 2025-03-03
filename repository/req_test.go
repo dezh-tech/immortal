@@ -3,6 +3,12 @@ package repository
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	infra "github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/types"
@@ -13,10 +19,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/meilisearch"
-	"strconv"
-	"strings"
-	"testing"
-	"time"
 )
 
 type MockGRPC struct {
@@ -42,89 +44,92 @@ func (m *MockGRPC) SetID(id string) {
 	m.Called(id)
 }
 
-var currentTime = time.Now().Unix()
-var testEvents = []event.Event{
-	{
-		ID:        "event1",
-		PublicKey: "author1",
-		CreatedAt: currentTime - 500,
-		Kind:      types.KindShortTextNote,
-		Tags:      types.Tags{{"category", "sports"}, {"mood", "happy"}},
-		Content:   "This is a test event about sports",
-		Signature: "sig1",
-	},
-	{
-		ID:        "event2",
-		PublicKey: "author2",
-		CreatedAt: currentTime - 1000,
-		Kind:      types.KindDirectMessage,
-		Tags:      types.Tags{{"category", "news"}},
-		Content:   "Breaking news: Go is awesome!",
-		Signature: "sig2",
-	},
-	{
-		ID:        "event3",
-		PublicKey: "author3",
-		CreatedAt: currentTime - 2000,
-		Kind:      types.KindShortTextNote,
-		Tags:      types.Tags{{"category", "sports"}, {"importance", "high"}},
-		Content:   "sport finals are coming up soon!",
-		Signature: "sig3",
-	},
-	{
-		ID:        "event4",
-		PublicKey: "author4",
-		CreatedAt: currentTime - 300,
-		Kind:      types.KindDirectMessage,
-		Tags:      types.Tags{{"mood", "excited"}},
-		Content:   "Can't wait for the upcoming concert!",
-		Signature: "sig4",
-	},
-	{
-		ID:        "event5",
-		PublicKey: "author5",
-		CreatedAt: currentTime - 400,
-		Kind:      types.KindShortTextNote,
-		Tags:      types.Tags{{"topic", "AI"}, {"tech", "future"}},
-		Content:   "The future of AI looks promising!",
-	},
-	{
-		ID:        "event6",
-		PublicKey: "author6",
-		CreatedAt: currentTime - 800,
-		Kind:      types.KindShortTextNote,
-		Tags:      types.Tags{{"category", "testing"}},
-		Content:   "Sorting test event A",
-		Signature: "sig6",
-	},
-	{
-		ID:        "event7",
-		PublicKey: "author7",
-		CreatedAt: currentTime - 800,
-		Kind:      types.KindShortTextNote,
-		Tags:      types.Tags{{"category", "testing"}},
-		Content:   "Sorting test event B",
-		Signature: "sig7",
-	},
-	{
-		ID:        "event8",
-		PublicKey: "author8",
-		CreatedAt: currentTime - 900,
-		Kind:      types.KindGiftWrap,
-		Tags:      types.Tags{{"p", "pubkey"}},
-		Content:   "GiftWrap event that should be included",
-		Signature: "sig8",
-	},
-	{
-		ID:        "event9",
-		PublicKey: "author9",
-		CreatedAt: currentTime - 950,
-		Kind:      types.KindGiftWrap,
-		Tags:      types.Tags{{"p", "another_pubkey"}},
-		Content:   "GiftWrap event that should be excluded",
-		Signature: "sig9",
-	},
-}
+var (
+	meiliAPIKey = os.Getenv("MEILI_API_KEY")
+	currentTime = time.Now().Unix()
+	testEvents  = []event.Event{
+		{
+			ID:        "event1",
+			PublicKey: "author1",
+			CreatedAt: currentTime - 500,
+			Kind:      types.KindShortTextNote,
+			Tags:      types.Tags{{"category", "sports"}, {"mood", "happy"}},
+			Content:   "This is a test event about sports",
+			Signature: "sig1",
+		},
+		{
+			ID:        "event2",
+			PublicKey: "author2",
+			CreatedAt: currentTime - 1000,
+			Kind:      types.KindDirectMessage,
+			Tags:      types.Tags{{"category", "news"}},
+			Content:   "Breaking news: Go is awesome!",
+			Signature: "sig2",
+		},
+		{
+			ID:        "event3",
+			PublicKey: "author3",
+			CreatedAt: currentTime - 2000,
+			Kind:      types.KindShortTextNote,
+			Tags:      types.Tags{{"category", "sports"}, {"importance", "high"}},
+			Content:   "sport finals are coming up soon!",
+			Signature: "sig3",
+		},
+		{
+			ID:        "event4",
+			PublicKey: "author4",
+			CreatedAt: currentTime - 300,
+			Kind:      types.KindDirectMessage,
+			Tags:      types.Tags{{"mood", "excited"}},
+			Content:   "Can't wait for the upcoming concert!",
+			Signature: "sig4",
+		},
+		{
+			ID:        "event5",
+			PublicKey: "author5",
+			CreatedAt: currentTime - 400,
+			Kind:      types.KindShortTextNote,
+			Tags:      types.Tags{{"topic", "AI"}, {"tech", "future"}},
+			Content:   "The future of AI looks promising!",
+		},
+		{
+			ID:        "event6",
+			PublicKey: "author6",
+			CreatedAt: currentTime - 800,
+			Kind:      types.KindShortTextNote,
+			Tags:      types.Tags{{"category", "testing"}},
+			Content:   "Sorting test event A",
+			Signature: "sig6",
+		},
+		{
+			ID:        "event7",
+			PublicKey: "author7",
+			CreatedAt: currentTime - 800,
+			Kind:      types.KindShortTextNote,
+			Tags:      types.Tags{{"category", "testing"}},
+			Content:   "Sorting test event B",
+			Signature: "sig7",
+		},
+		{
+			ID:        "event8",
+			PublicKey: "author8",
+			CreatedAt: currentTime - 900,
+			Kind:      types.KindGiftWrap,
+			Tags:      types.Tags{{"p", "pubkey"}},
+			Content:   "GiftWrap event that should be included",
+			Signature: "sig8",
+		},
+		{
+			ID:        "event9",
+			PublicKey: "author9",
+			CreatedAt: currentTime - 950,
+			Kind:      types.KindGiftWrap,
+			Tags:      types.Tags{{"p", "another_pubkey"}},
+			Content:   "GiftWrap event that should be excluded",
+			Signature: "sig9",
+		},
+	}
+)
 
 type requestHandlerTest struct {
 	name     string
@@ -267,7 +272,7 @@ func setupMeiliContainer(ctx context.Context, t *testing.T) (testcontainers.Cont
 	meiliContainer, err := meilisearch.Run(
 		ctx,
 		"getmeili/meilisearch",
-		meilisearch.WithMasterKey("key"),
+		meilisearch.WithMasterKey(meiliAPIKey),
 	)
 	require.NoError(t, err, "failed to start Meilisearch container")
 
@@ -299,6 +304,7 @@ func setupMeiliClient(host string, port int, indexName string) *infra.Meili {
 		Port:              port,
 		Timeout:           5000,
 		DefaultCollection: indexName,
+		APIKey:            meiliAPIKey,
 	})
 	return meili
 }
@@ -338,6 +344,7 @@ func addTestDocuments(manager meilisearchGo.IndexManager, events []event.Event, 
 	require.NoError(t, err, "failed to insert events")
 	return addDocsResponse.TaskUID
 }
+
 func waitForMeiliIndexing(manager meilisearchGo.IndexManager, taskID int64, maxRetries int, interval time.Duration) error {
 	for i := 0; i < maxRetries; i++ {
 		task, err := manager.GetTask(taskID)

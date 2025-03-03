@@ -5,4 +5,5 @@ type Config struct {
 	Port              int    `yaml:"port"`
 	Timeout           int16  `yaml:"timeout_in_ms"`
 	DefaultCollection string `yaml:"default_collection"`
+	APIKey            string
 }

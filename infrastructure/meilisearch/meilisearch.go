@@ -2,10 +2,10 @@ package meilisearch
 
 import (
 	"fmt"
-	"github.com/meilisearch/meilisearch-go"
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/meilisearch/meilisearch-go"
 )
 
 type Meili struct {
@@ -14,15 +14,13 @@ type Meili struct {
 }
 
 func New(cfg Config) *Meili {
-
 	httpClient := &http.Client{
 		Timeout: time.Duration(cfg.Timeout) * time.Millisecond,
 	}
-	meiliAPIKey := os.Getenv("MEILI_API_KEY")
 
 	meiliClient := meilisearch.New(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 		meilisearch.WithCustomClient(httpClient),
-		meilisearch.WithAPIKey(meiliAPIKey))
+		meilisearch.WithAPIKey(cfg.APIKey))
 
 	return &Meili{
 		Client:            meiliClient,
