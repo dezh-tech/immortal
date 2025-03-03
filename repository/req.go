@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/dezh-tech/immortal/types"
-
 	"github.com/meilisearch/meilisearch-go"
 
 	"github.com/dezh-tech/immortal/pkg/logger"
+	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
 )
@@ -41,10 +40,9 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 
 		return nil, err
 	}
-	var finalResult []event.Event
+	finalResult := make([]event.Event, 0, len(searchResult.Hits))
 
 	for _, hit := range searchResult.Hits {
-
 		hitJSON, err := json.Marshal(hit)
 		if err != nil {
 			_, err := h.grpc.AddLog(context.Background(),
@@ -52,6 +50,7 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 			if err != nil {
 				logger.Error("can't send log to manager", "err", err)
 			}
+
 			continue
 		}
 
@@ -62,11 +61,12 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 			if err != nil {
 				logger.Error("can't send log to manager", "err", err)
 			}
+
 			continue
 		}
 
 		if newEvent.Kind == types.KindGiftWrap {
-			if newEvent.Tags.ContainsTag("p", pubkey) == false {
+			if !newEvent.Tags.ContainsTag("p", pubkey) {
 				continue // exclude others gift wrap events from final result
 			}
 		}

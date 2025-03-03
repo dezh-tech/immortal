@@ -5,7 +5,7 @@ type (
 	Tags []Tag
 )
 
-func (tags Tags) ContainsTag(tagKey string, tagValue string) bool {
+func (tags Tags) ContainsTag(tagKey, tagValue string) bool {
 	for _, tag := range tags {
 		if tag[0] == tagKey && len(tag) > 1 {
 			if tag[1] == tagValue {
@@ -13,6 +13,7 @@ func (tags Tags) ContainsTag(tagKey string, tagValue string) bool {
 			}
 		}
 	}
+
 	return false
 }
 

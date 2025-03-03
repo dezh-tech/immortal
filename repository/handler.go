@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
+	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Handler struct {
@@ -36,22 +36,23 @@ func buildMeiliQuery(f *filter.Filter) string {
 
 	if len(f.IDs) > 0 {
 		ids := strings.Join(f.IDs, "\", \"")
-		filters = append(filters, fmt.Sprintf("id IN [\"%s\"]", ids))
+		filters = append(filters, fmt.Sprintf("id IN [%q]", ids))
 	}
 
 	if len(f.Kinds) > 0 {
-		var kindStrings []string
-		for _, kind := range f.Kinds {
-			kindStrings = append(kindStrings, fmt.Sprintf("%v", kind))
+		kindStrings := make([]string, len(f.Kinds))
+		for i, kind := range f.Kinds {
+			kindStrings[i] = fmt.Sprintf("%d", kind)
 		}
-
-		kinds := strings.Join(kindStrings, "\", \"")
-		filters = append(filters, fmt.Sprintf("kind IN [\"%s\"]", kinds))
+		filters = append(filters, fmt.Sprintf("kind IN [%s]", strings.Join(kindStrings, ", ")))
 	}
 
 	if len(f.Authors) > 0 {
-		authors := strings.Join(f.Authors, "\", \"")
-		filters = append(filters, fmt.Sprintf("pubkey IN [\"%s\"]", authors))
+		quotedAuthors := make([]string, len(f.Authors))
+		for i, author := range f.Authors {
+			quotedAuthors[i] = fmt.Sprintf("%q", author)
+		}
+		filters = append(filters, fmt.Sprintf("pubkey IN [%s]", strings.Join(quotedAuthors, ", ")))
 	}
 
 	if len(f.Tags) > 0 {
@@ -59,7 +60,8 @@ func buildMeiliQuery(f *filter.Filter) string {
 			var tagConditions []string
 
 			for _, tagValue := range tagValues {
-				tagConditions = append(tagConditions, fmt.Sprintf("tags CONTAINS \"%s\" AND tags CONTAINS \"%s\"", tagKey, tagValue))
+				tagConditions = append(tagConditions,
+					fmt.Sprintf("tags CONTAINS %q AND tags CONTAINS %q", tagKey, tagValue))
 			}
 
 			newFilter := fmt.Sprintf("(%s)", strings.Join(tagConditions, " OR "))

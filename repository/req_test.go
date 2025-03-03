@@ -9,34 +9,38 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
-	infra "github.com/dezh-tech/immortal/infrastructure/meilisearch"
-	"github.com/dezh-tech/immortal/types"
-	"github.com/dezh-tech/immortal/types/event"
-	"github.com/dezh-tech/immortal/types/filter"
 	meilisearchGo "github.com/meilisearch/meilisearch-go"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/meilisearch"
+
+	grpc_client "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
+	infra "github.com/dezh-tech/immortal/infrastructure/meilisearch"
+	"github.com/dezh-tech/immortal/types"
+	"github.com/dezh-tech/immortal/types/event"
+	"github.com/dezh-tech/immortal/types/filter"
 )
 
 type MockGRPC struct {
 	mock.Mock
 }
 
-func (m *MockGRPC) RegisterService(ctx context.Context, port string, region string) (*grpc_client.RegisterServiceResponse, error) {
+func (m *MockGRPC) RegisterService(ctx context.Context, port, region string) (*grpc_client.RegisterServiceResponse, error) {
 	args := m.Called(ctx, port, region)
+
 	return args.Get(0).(*grpc_client.RegisterServiceResponse), args.Error(1)
 }
 
 func (m *MockGRPC) GetParameters(ctx context.Context) (*grpc_client.GetParametersResponse, error) {
 	args := m.Called(ctx)
+
 	return args.Get(0).(*grpc_client.GetParametersResponse), args.Error(1)
 }
 
-func (m *MockGRPC) AddLog(ctx context.Context, msg string, stack string) (*grpc_client.AddLogResponse, error) {
+func (m *MockGRPC) AddLog(ctx context.Context, msg, stack string) (*grpc_client.AddLogResponse, error) {
 	args := m.Called(ctx, msg, stack)
+
 	return args.Get(0).(*grpc_client.AddLogResponse), args.Error(1)
 }
 
@@ -230,15 +234,15 @@ func TestHandleReq(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
 	meiliContainer, meiliAddr := setupMeiliContainer(ctx, t)
-	defer terminateMeiliContainer(meiliContainer, t)
-	host, port := parseMeiliAddress(meiliAddr, t)
+	defer terminateMeiliContainer(t, meiliContainer)
+	host, port := parseMeiliAddress(t, meiliAddr)
 	indexName := "events"
 	meili := setupMeiliClient(host, port, indexName)
-	activateExperimentalFeatures(meili.Client, t)
-	manager := setupMeiliIndex(meili.Client, indexName, t)
+	activateExperimentalFeatures(t, meili.Client)
+	manager := setupMeiliIndex(t, meili.Client, indexName)
 	mockGRPC := setupMockGRPC()
-	configureIndexAttributes(manager, t)
-	taskID := addTestDocuments(manager, testEvents, t)
+	configureIndexAttributes(t, manager)
+	taskID := addTestDocuments(t, manager, testEvents)
 	require.NoError(t, waitForMeiliIndexing(manager, taskID, 20, 500*time.Millisecond),
 		"timeout")
 
@@ -269,6 +273,7 @@ func TestHandleReq(t *testing.T) {
 }
 
 func setupMeiliContainer(ctx context.Context, t *testing.T) (testcontainers.Container, string) {
+	t.Helper()
 	meiliContainer, err := meilisearch.Run(
 		ctx,
 		"getmeili/meilisearch",
@@ -282,20 +287,25 @@ func setupMeiliContainer(ctx context.Context, t *testing.T) (testcontainers.Cont
 	return meiliContainer, meiliAddr
 }
 
-func terminateMeiliContainer(meiliContainer testcontainers.Container, t *testing.T) {
+func terminateMeiliContainer(t *testing.T, meiliContainer testcontainers.Container) {
+	t.Helper()
+
 	if err := testcontainers.TerminateContainer(meiliContainer); err != nil {
 		t.Logf("failed to terminate container: %s", err)
 	}
 }
 
-func parseMeiliAddress(meiliAddr string, t *testing.T) (string, uint16) {
+func parseMeiliAddress(t *testing.T, meiliAddr string) (string, uint16) {
+	t.Helper()
+
 	parts := strings.Split(meiliAddr, ":")
 	portStr := parts[len(parts)-1]
-	port, err := strconv.Atoi(portStr)
+	num, err := strconv.ParseUint(portStr, 10, 16)
 	require.NoError(t, err, "failed to parse port")
-
+	port := uint16(num)
 	host := meiliAddr[0 : len(meiliAddr)-len(portStr)-1]
-	return host, uint16(port)
+
+	return host, port
 }
 
 func setupMeiliClient(host string, port uint16, indexName string) *infra.Meili {
@@ -306,17 +316,23 @@ func setupMeiliClient(host string, port uint16, indexName string) *infra.Meili {
 		DefaultCollection: indexName,
 		APIKey:            meiliAPIKey,
 	})
+
 	return meili
 }
 
-func activateExperimentalFeatures(client meilisearchGo.ServiceManager, t *testing.T) {
+func activateExperimentalFeatures(t *testing.T, client meilisearchGo.ServiceManager) {
+	t.Helper()
+
 	_, err := client.ExperimentalFeatures().SetContainsFilter(true).Update()
 	require.NoError(t, err, "Failed to activate experimental features")
 }
 
-func setupMeiliIndex(client meilisearchGo.ServiceManager, indexName string, t *testing.T) meilisearchGo.IndexManager {
+func setupMeiliIndex(t *testing.T, client meilisearchGo.ServiceManager, indexName string) meilisearchGo.IndexManager {
+	t.Helper()
+
 	manager := client.Index(indexName)
 	require.NoError(t, nil, "failed to create index in Meilisearch")
+
 	return manager
 }
 
@@ -325,10 +341,13 @@ func setupMockGRPC() *MockGRPC {
 	mockGRPC.On("RegisterService", mock.Anything, mock.Anything, mock.Anything).Return(&grpc_client.RegisterServiceResponse{}, nil)
 	mockGRPC.On("GetParameters", mock.Anything).Return(&grpc_client.GetParametersResponse{}, nil)
 	mockGRPC.On("AddLog", mock.Anything, mock.Anything, mock.Anything).Return(&grpc_client.AddLogResponse{}, nil)
+
 	return mockGRPC
 }
 
-func configureIndexAttributes(manager meilisearchGo.IndexManager, t *testing.T) {
+func configureIndexAttributes(t *testing.T, manager meilisearchGo.IndexManager) {
+	t.Helper()
+
 	_, err := manager.UpdateSortableAttributes(&[]string{"created_at", "id"})
 	require.NoError(t, err, "failed to specify sortable attributes")
 
@@ -339,9 +358,12 @@ func configureIndexAttributes(manager meilisearchGo.IndexManager, t *testing.T) 
 	require.NoError(t, err, "failed to specify filterable attributes")
 }
 
-func addTestDocuments(manager meilisearchGo.IndexManager, events []event.Event, t *testing.T) int64 {
+func addTestDocuments(t *testing.T, manager meilisearchGo.IndexManager, events []event.Event) int64 {
+	t.Helper()
+
 	addDocsResponse, err := manager.AddDocuments(events, "id")
 	require.NoError(t, err, "failed to insert events")
+
 	return addDocsResponse.TaskUID
 }
 
@@ -356,5 +378,6 @@ func waitForMeiliIndexing(manager meilisearchGo.IndexManager, taskID int64, maxR
 		}
 		time.Sleep(interval)
 	}
+
 	return fmt.Errorf("adding documents to meilisearch timed out after %v", time.Duration(maxRetries)*interval)
 }
