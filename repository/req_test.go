@@ -288,17 +288,17 @@ func terminateMeiliContainer(meiliContainer testcontainers.Container, t *testing
 	}
 }
 
-func parseMeiliAddress(meiliAddr string, t *testing.T) (string, int) {
+func parseMeiliAddress(meiliAddr string, t *testing.T) (string, uint16) {
 	parts := strings.Split(meiliAddr, ":")
 	portStr := parts[len(parts)-1]
 	port, err := strconv.Atoi(portStr)
 	require.NoError(t, err, "failed to parse port")
 
 	host := meiliAddr[0 : len(meiliAddr)-len(portStr)-1]
-	return host, port
+	return host, uint16(port)
 }
 
-func setupMeiliClient(host string, port int, indexName string) *infra.Meili {
+func setupMeiliClient(host string, port uint16, indexName string) *infra.Meili {
 	meili := infra.New(infra.Config{
 		Host:              host,
 		Port:              port,
