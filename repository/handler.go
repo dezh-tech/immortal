@@ -54,14 +54,15 @@ func buildMeiliQuery(f *filter.Filter) string {
 	}
 
 	if len(f.Tags) > 0 {
-		var tagConditions []string
 		for tagKey, tagValues := range f.Tags {
+			var tagConditions []string
+
 			for _, tagValue := range tagValues {
-				tagConditions = append(tagConditions, fmt.Sprintf("tags CONTAINS [\"%s\", \"%s\"]", tagKey, tagValue))
+				tagConditions = append(tagConditions, fmt.Sprintf("tags CONTAINS \"%s\" AND tags CONTAINS \"%s\"", tagKey, tagValue))
 			}
-		}
-		if len(tagConditions) > 0 {
-			filters = append(filters, fmt.Sprintf("(%s)", strings.Join(tagConditions, " OR ")))
+
+			newFilter := fmt.Sprintf("(%s)", strings.Join(tagConditions, " OR "))
+			filters = append(filters, newFilter)
 		}
 	}
 
