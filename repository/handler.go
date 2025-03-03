@@ -2,8 +2,9 @@ package repository
 
 import (
 	"fmt"
-	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"strings"
+
+	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"

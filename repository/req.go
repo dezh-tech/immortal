@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/dezh-tech/immortal/types"
 
 	"github.com/meilisearch/meilisearch-go"
@@ -13,7 +14,6 @@ import (
 )
 
 func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, error) {
-
 	meiliFilter := buildMeiliQuery(f)
 
 	finalLimit := f.Limit
@@ -32,7 +32,6 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 			Sort:                 sortBy,
 			Filter:               meiliFilter,
 		})
-
 	if err != nil {
 		_, err := h.grpc.AddLog(context.Background(),
 			"search index error while searching for an event", err.Error())
