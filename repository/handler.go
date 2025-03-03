@@ -38,6 +38,16 @@ func buildMeiliQuery(f *filter.Filter) string {
 		filters = append(filters, fmt.Sprintf("id IN [\"%s\"]", ids))
 	}
 
+	if len(f.Kinds) > 0 {
+		var kindStrings []string
+		for _, kind := range f.Kinds {
+			kindStrings = append(kindStrings, fmt.Sprintf("%v", kind))
+		}
+
+		kinds := strings.Join(kindStrings, "\", \"")
+		filters = append(filters, fmt.Sprintf("kind IN [\"%s\"]", kinds))
+	}
+
 	if len(f.Authors) > 0 {
 		authors := strings.Join(f.Authors, "\", \"")
 		filters = append(filters, fmt.Sprintf("pubkey IN [\"%s\"]", authors))
