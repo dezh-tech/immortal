@@ -32,7 +32,7 @@ func New(cfg Config, db *database.Database, meili *meilisearch.Meili, grpc grpcc
 func buildMeiliQuery(f *filter.Filter) string {
 	var filters []string
 
-	filters = append(filters, "pubkey EXISTS")
+	filters = append(filters, "pubkey IS NOT NULL")
 
 	if len(f.IDs) > 0 {
 		ids := strings.Join(f.IDs, "\", \"")
