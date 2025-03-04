@@ -219,13 +219,13 @@ func TestFilter(t *testing.T) {
 	t.Run("Match", func(t *testing.T) {
 		for _, tc := range matchingTestCases {
 			if tc.IsMatch {
-				assert.True(t, tc.Filter.Match(tc.Event),
+				assert.True(t, tc.Filter.Match(tc.Event, ""),
 					"expected event %s to be match with filter %s, note: %s",
 					tc.Event.String(), tc.Filter.String(), tc.Note)
 
 				continue
 			}
-			assert.False(t, tc.Filter.Match(tc.Event),
+			assert.False(t, tc.Filter.Match(tc.Event, ""),
 				"expected event %s not to be match with filter %s, note: %s",
 				tc.Event.String(), tc.Filter.String(), tc.Note)
 		}

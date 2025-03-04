@@ -18,10 +18,11 @@ type Filter struct {
 	Search  string `json:"search"` // see NIP-50.
 }
 
+// todo::: can/should we support nip-50 in match function?
 // Match checks if the event is match with given filter.
 // Note: this method intended to be used for already open subscriptions and recently received events.
 // For new subscriptions and queries for stored data use the database query and don't use this to verify the result.
-func (f *Filter) Match(e *event.Event) bool {
+func (f *Filter) Match(e *event.Event, pubkey string) bool {
 	if e == nil {
 		return false
 	}
@@ -50,6 +51,10 @@ func (f *Filter) Match(e *event.Event) bool {
 		if vals != nil && !e.Tags.ContainsAny(tagName, vals) {
 			return false
 		}
+	}
+
+	if e.Kind == types.KindGiftWrap && !e.Tags.ContainsTag("p", pubkey) {
+		return false
 	}
 
 	return true

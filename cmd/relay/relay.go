@@ -34,9 +34,9 @@ func New(cfg *config.Config) (*Relay, error) {
 	}
 	m := metrics.New()
 
-	meili := meilisearch.New(cfg.MeiliConf)
+	meili := meilisearch.New(cfg.Meili)
 
-	r, err := redis.New(cfg.RedisConf)
+	r, err := redis.New(cfg.Redis)
 	if err != nil {
 		return nil, err
 	}

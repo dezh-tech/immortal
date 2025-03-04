@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/meilisearch/meilisearch-go"
-
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
+	"github.com/meilisearch/meilisearch-go"
 )
 
 func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, error) {

@@ -5,25 +5,29 @@ type (
 	Tags []Tag
 )
 
-func (tags Tags) ContainsTag(tagKey, tagValue string) bool {
+// ContainsTag checks if a tag with an specific name/value is exist.
+func (tags Tags) ContainsTag(name, value string) bool {
 	for _, tag := range tags {
-		if tag[0] == tagKey && len(tag) > 1 {
-			if tag[1] == tagValue {
-				return true
-			}
+		if len(tag) < 2 {
+			continue
+		}
+
+		if tag[0] == name && tag[1] == value {
+			return true
 		}
 	}
 
 	return false
 }
 
-func (tags Tags) ContainsAny(tagName string, values []string) bool {
+// ContainsAny checks if event have a tag with given name that its value is equal to one of given values.
+func (tags Tags) ContainsAny(name string, values []string) bool {
 	for _, tag := range tags {
 		if len(tag) < 2 {
 			continue
 		}
 
-		if "#"+tag[0] != tagName {
+		if "#"+tag[0] != name {
 			continue
 		}
 
@@ -35,13 +39,14 @@ func (tags Tags) ContainsAny(tagName string, values []string) bool {
 	return false
 }
 
-func (tags Tags) GetValue(tagName string) string {
+// GetValue returns the value of first tag with given name.
+func (tags Tags) GetValue(name string) string {
 	for _, tag := range tags {
 		if len(tag) < 2 {
 			continue
 		}
 
-		if tag[0] == tagName {
+		if tag[0] == name {
 			return tag[1]
 		}
 	}
@@ -49,14 +54,15 @@ func (tags Tags) GetValue(tagName string) string {
 	return ""
 }
 
-func (tags Tags) GetValues(tagName string) []string {
+// GetValues returns all values of all tags with same name in an event.
+func (tags Tags) GetValues(name string) []string {
 	values := []string{}
 	for _, tag := range tags {
 		if len(tag) < 2 {
 			continue
 		}
 
-		if tag[0] == tagName {
+		if tag[0] == name {
 			values = append(values, tag[1])
 		}
 	}
