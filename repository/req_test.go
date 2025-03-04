@@ -9,17 +9,16 @@ import (
 	"testing"
 	"time"
 
-	meilisearchGo "github.com/meilisearch/meilisearch-go"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/modules/meilisearch"
-
 	grpc_client "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	infra "github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
+	meilisearchGo "github.com/meilisearch/meilisearch-go"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/meilisearch"
 )
 
 type MockGRPC struct {

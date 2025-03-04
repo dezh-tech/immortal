@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"go.mongodb.org/mongo-driver/bson"
-
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Handler struct {

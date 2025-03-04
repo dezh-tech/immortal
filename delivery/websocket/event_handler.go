@@ -199,7 +199,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 	for conn, client := range s.conns {
 		client.Lock()
 		for id, filter := range client.subs {
-			if !filter.Match(msg.Event) {
+			if !filter.Match(msg.Event, *client.pubkey) {
 				continue
 			}
 			_ = conn.WriteMessage(1, message.MakeEvent(id, msg.Event))
