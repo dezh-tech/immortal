@@ -15,9 +15,7 @@ type Filter struct {
 	Since   int64  `json:"since"`
 	Until   int64  `json:"until"`
 	Limit   uint32 `json:"limit"`
-
-	// todo::: should we proxy search to index server and elastic search?
-	Search string `json:"search"` // see NIP-50.
+	Search  string `json:"search"` // see NIP-50.
 }
 
 // Match checks if the event is match with given filter.

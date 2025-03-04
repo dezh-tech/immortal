@@ -10,6 +10,7 @@ import (
 	"github.com/dezh-tech/immortal/delivery/websocket"
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
+	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/infrastructure/metrics"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"github.com/dezh-tech/immortal/pkg/logger"
@@ -31,8 +32,9 @@ func New(cfg *config.Config) (*Relay, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	m := metrics.New()
+
+	meili := meilisearch.New(cfg.MeiliConf)
 
 	r, err := redis.New(cfg.RedisConf)
 	if err != nil {
@@ -66,7 +68,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	h := repository.New(cfg.Handler, db, c)
+	h := repository.New(cfg.Handler, db, meili, c)
 
 	ws, err := websocket.New(cfg.WebsocketServer, h, m, r, c)
 	if err != nil {
