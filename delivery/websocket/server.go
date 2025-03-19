@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"fmt"
+	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	"net"
 	"net/http"
 	"strconv"
@@ -25,7 +26,7 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	mu sync.RWMutex
 
-	config  Config
+	config  *configs.Config
 	conns   map[*websocket.Conn]clientState
 	handler *repository.Handler
 	metrics *metrics.Metrics
@@ -33,7 +34,7 @@ type Server struct {
 	grpc    grpcclient.IClient
 }
 
-func New(cfg Config, h *repository.Handler, m *metrics.Metrics,
+func New(cfg *configs.Config, h *repository.Handler, m *metrics.Metrics,
 	r *redis.Redis, grpc grpcclient.IClient,
 ) (*Server, error) {
 	return &Server{

@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
+	"github.com/dezh-tech/immortal/repository/query_limit"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,10 +12,10 @@ import (
 type Handler struct {
 	db     *database.Database
 	grpc   grpcclient.IClient
-	config Config
+	config *query_limit.Config
 }
 
-func New(cfg Config, db *database.Database, grpc grpcclient.IClient) *Handler {
+func New(cfg *query_limit.Config, db *database.Database, grpc grpcclient.IClient) *Handler {
 	return &Handler{
 		db:     db,
 		config: cfg,
