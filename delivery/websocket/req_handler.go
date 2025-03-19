@@ -40,7 +40,7 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if (s.config.Limitation.AuthRequired ||
+	if (s.config.GetLimitation().AuthRequired ||
 		slices.Contains(msg.Filter.Kinds, types.KindGiftWrap)) &&
 		!*client.isKnown {
 		client.challenge = utils.GenerateChallenge(10)
@@ -59,18 +59,18 @@ func (s *Server) handleReq(conn *websocket.Conn, m message.Message) {
 		return
 	}
 
-	if len(msg.SubscriptionID) >= int(s.config.Limitation.MaxSubidLength) {
+	if len(msg.SubscriptionID) >= int(s.config.GetLimitation().MaxSubidLength) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of sub id is: %d",
-			s.config.Limitation.MaxSubidLength)))
+			s.config.GetLimitation().MaxSubidLength)))
 
 		status = limitsFail
 
 		return
 	}
 
-	if len(client.subs) >= int(s.config.Limitation.MaxSubscriptions) {
+	if len(client.subs) >= int(s.config.GetLimitation().MaxSubscriptions) {
 		_ = conn.WriteMessage(1, message.MakeNotice(fmt.Sprintf("error: max limit of subs is: %d",
-			s.config.Limitation.MaxSubscriptions)))
+			s.config.GetLimitation().MaxSubscriptions)))
 
 		status = limitsFail
 

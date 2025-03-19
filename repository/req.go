@@ -57,8 +57,8 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 
 	pipeline = append(pipeline, sortStage)
 
-	finalLimit := h.config.DefaultQueryLimit
-	if f.Limit > 0 && f.Limit < h.config.MaxQueryLimit {
+	finalLimit := h.config.GetDefaultQueryLimit()
+	if f.Limit > 0 && f.Limit < h.config.GetMaxQueryLimit() {
 		finalLimit = f.Limit
 	}
 

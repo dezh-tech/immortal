@@ -62,8 +62,8 @@ func (s *Server) handleAuth(conn *websocket.Conn, m message.Message) {
 	}
 
 	if !msg.Event.IsValid(msg.Event.GetRawID()) && msg.Event.Kind != types.KindClientAuthentication &&
-		client.challenge != challenge && s.config.URL.Scheme != relayURL.Scheme || s.config.URL.Host != relayURL.Host ||
-		s.config.URL.Path != relayURL.Path {
+		client.challenge != challenge && s.config.GetURL().Scheme != relayURL.Scheme || s.config.GetURL().Host != relayURL.Host ||
+		s.config.GetURL().Path != relayURL.Path {
 		_ = conn.WriteMessage(1, message.MakeNotice("error: invalid auth event."))
 		status = invalidFail
 
