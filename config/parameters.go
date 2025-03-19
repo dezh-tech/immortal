@@ -18,26 +18,25 @@ func (c *Config) LoadParameters(params *mpb.GetParametersResponse) error {
 		return err
 	}
 
-	c.WebsocketServer.URL = url
+	c.WebsocketServer.SetURL(url)
 
-	c.WebsocketServer.Limitation = &websocket.Limitation{
-		MaxMessageLength:    params.Limitations.MaxMessageLength,
-		MaxSubscriptions:    params.Limitations.MaxSubscriptions,
-		MaxSubidLength:      params.Limitations.MaxSubidLength,
-		MinPowDifficulty:    params.Limitations.MinPowDifficulty,
-		AuthRequired:        params.Limitations.AuthRequired,
-		PaymentRequired:     params.Limitations.PaymentRequired,
-		RestrictedWrites:    params.Limitations.RestrictedWrites,
-		MaxEventTags:        params.Limitations.MaxEventTags,
-		MaxContentLength:    params.Limitations.MaxContentLength,
-		CreatedAtLowerLimit: params.Limitations.CreatedAtLowerLimit,
-		CreatedAtUpperLimit: params.Limitations.CreatedAtUpperLimit,
-	}
+	c.WebsocketServer.SetLimitation(
+		&configs.Limitation{
+			MaxMessageLength:    params.Limitations.MaxMessageLength,
+			MaxSubscriptions:    params.Limitations.MaxSubscriptions,
+			MaxSubidLength:      params.Limitations.MaxSubidLength,
+			MinPowDifficulty:    params.Limitations.MinPowDifficulty,
+			AuthRequired:        params.Limitations.AuthRequired,
+			PaymentRequired:     params.Limitations.PaymentRequired,
+			RestrictedWrites:    params.Limitations.RestrictedWrites,
+			MaxEventTags:        params.Limitations.MaxEventTags,
+			MaxContentLength:    params.Limitations.MaxContentLength,
+			CreatedAtLowerLimit: params.Limitations.CreatedAtLowerLimit,
+			CreatedAtUpperLimit: params.Limitations.CreatedAtUpperLimit,
+		})
 
-	c.Handler = repository.Config{
-		DefaultQueryLimit: params.Limitations.DefaultQueryLimit,
-		MaxQueryLimit:     params.Limitations.MaxQueryLimit,
-	}
+	c.Handler.SetMaxQueryLimit(params.Limitations.MaxQueryLimit)
+	c.Handler.SetDefaultQueryLimit(params.Limitations.DefaultQueryLimit)
 
 	return nil
 }

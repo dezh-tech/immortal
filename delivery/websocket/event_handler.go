@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"fmt"
+	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	"slices"
 	"strconv"
 	"strings"
@@ -55,7 +56,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	if err := s.redis.CheckAcceptability(s.config.Limitation.RestrictedWrites,
+	if err := s.redis.CheckAcceptability(s.config.GetLimitation().RestrictedWrites,
 		eID[:], msg.Event.PublicKey); err != nil {
 		okm := message.MakeOK(false, msg.Event.ID, err.Error())
 		_ = conn.WriteMessage(1, okm)
@@ -81,7 +82,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	accepted, authFail, failType, resp := checkLimitations(client, s.redis, *s.config.Limitation, *msg)
+	accepted, authFail, failType, resp := checkLimitations(client, s.redis, *s.config.GetLimitation(), *msg)
 	if !accepted && authFail {
 		client.challenge = utils.GenerateChallenge(10)
 		authm := message.MakeAuth(client.challenge)
@@ -131,7 +132,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		if msg.Event.Kind == types.KindRightToVanish {
 			relays := msg.Event.Tags.GetValues("relay")
 			if !slices.Contains(relays, "ALL_RELAYS") &&
-				!slices.Contains(relays, s.config.URL.String()) {
+				!slices.Contains(relays, s.config.GetURL().String()) {
 				okm := message.MakeOK(false,
 					msg.Event.ID,
 					"error: can't execute vanish request.",
