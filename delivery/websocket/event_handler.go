@@ -209,7 +209,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 }
 
 func checkLimitations(c clientState, r *redis.Redis,
-	limits Limitation, msg message.Event) (bool, bool,
+	limits configs.Limitation, msg message.Event) (bool, bool,
 	string, string,
 ) {
 	if limits.AuthRequired && !*c.isKnown {

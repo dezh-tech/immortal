@@ -19,7 +19,7 @@ import (
 
 // Relay keeps all concepts such as server, database and manages them.
 type Relay struct {
-	config          config.Config
+	config          *config.Config
 	websocketServer *websocket.Server
 	grpcServer      *grpc.Server
 	database        *database.Database
@@ -68,9 +68,9 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	h := repository.New(cfg.Handler, db, meili, c)
+	h := repository.New(&cfg.Handler, db, meili, c)
 
-	ws, err := websocket.New(cfg.WebsocketServer, h, m, r, c)
+	ws, err := websocket.New(&cfg.WebsocketServer, h, m, r, c)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func New(cfg *config.Config) (*Relay, error) {
 	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now())
 
 	return &Relay{
-		config:          *cfg,
+		config:          cfg,
 		websocketServer: ws,
 		database:        db,
 		redis:           r,
