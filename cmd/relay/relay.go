@@ -3,6 +3,7 @@ package relay
 import (
 	"context"
 	"fmt"
+	"github.com/dezh-tech/immortal/infrastructure/grpc_client/params_keeper"
 	"time"
 
 	"github.com/dezh-tech/immortal/config"
@@ -41,7 +42,12 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	c, err := grpcclient.New(cfg.GRPCClient.Endpoint, cfg.GRPCClient)
+	keeper := params_keeper.ParametersKeeper{
+		Handler:         &cfg.Handler,
+		WebsocketServer: &cfg.WebsocketServer,
+	}
+
+	c, err := grpcclient.New(cfg.GRPCClient.Endpoint, cfg.GRPCClient, keeper)
 	if err != nil {
 		return nil, err
 	}
