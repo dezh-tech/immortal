@@ -6,6 +6,7 @@ option go_package = "github.com/dezh-tech/immortal/infrastructure/grpc_client";
 
 service Parameters {
     rpc GetParameters (GetParametersRequest) returns (GetParametersResponse);
+    rpc UpdateParameters (GetParametersResponse) returns (UpdateParametersResponse);
 }
 
 message Limitations {
@@ -29,4 +30,8 @@ message GetParametersRequest {}
 message GetParametersResponse {
     Limitations limitations = 1;          
     string url = 2;                       
+}
+
+message UpdateParametersResponse {
+    bool success = 1;
 }
