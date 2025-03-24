@@ -3,13 +3,14 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/dezh-tech/immortal/repository/query_limit"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	grpc_client "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
+	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	infra "github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
@@ -25,22 +26,27 @@ type MockGRPC struct {
 	mock.Mock
 }
 
-func (m *MockGRPC) RegisterService(ctx context.Context, port, region string) (*grpc_client.RegisterServiceResponse, error) {
+func (m *MockGRPC) UpdateParameters(ctx context.Context, newParams *grpcclient.GetParametersResponse) error {
+	args := m.Called(ctx, newParams)
+	return args.Error(0)
+}
+
+func (m *MockGRPC) RegisterService(ctx context.Context, port, region string) (*grpcclient.RegisterServiceResponse, error) {
 	args := m.Called(ctx, port, region)
 
-	return args.Get(0).(*grpc_client.RegisterServiceResponse), args.Error(1)
+	return args.Get(0).(*grpcclient.RegisterServiceResponse), args.Error(1)
 }
 
-func (m *MockGRPC) GetParameters(ctx context.Context) (*grpc_client.GetParametersResponse, error) {
+func (m *MockGRPC) GetParameters(ctx context.Context) (*grpcclient.GetParametersResponse, error) {
 	args := m.Called(ctx)
 
-	return args.Get(0).(*grpc_client.GetParametersResponse), args.Error(1)
+	return args.Get(0).(*grpcclient.GetParametersResponse), args.Error(1)
 }
 
-func (m *MockGRPC) AddLog(ctx context.Context, msg, stack string) (*grpc_client.AddLogResponse, error) {
+func (m *MockGRPC) AddLog(ctx context.Context, msg, stack string) (*grpcclient.AddLogResponse, error) {
 	args := m.Called(ctx, msg, stack)
 
-	return args.Get(0).(*grpc_client.AddLogResponse), args.Error(1)
+	return args.Get(0).(*grpcclient.AddLogResponse), args.Error(1)
 }
 
 func (m *MockGRPC) SetID(id string) {
@@ -246,14 +252,13 @@ func TestHandleReq(t *testing.T) {
 		"timeout")
 
 	handler := Handler{
-		db:    nil,
-		meili: meili,
-		grpc:  mockGRPC,
-		config: Config{
-			DefaultQueryLimit: 0,
-			MaxQueryLimit:     10,
-		},
+		db:     nil,
+		meili:  meili,
+		grpc:   mockGRPC,
+		config: &query_limit.Config{},
 	}
+	handler.config.SetDefaultQueryLimit(0)
+	handler.config.SetMaxQueryLimit(10)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -337,9 +342,9 @@ func setupMeiliIndex(t *testing.T, client meilisearchGo.ServiceManager, indexNam
 
 func setupMockGRPC() *MockGRPC {
 	mockGRPC := new(MockGRPC)
-	mockGRPC.On("RegisterService", mock.Anything, mock.Anything, mock.Anything).Return(&grpc_client.RegisterServiceResponse{}, nil)
-	mockGRPC.On("GetParameters", mock.Anything).Return(&grpc_client.GetParametersResponse{}, nil)
-	mockGRPC.On("AddLog", mock.Anything, mock.Anything, mock.Anything).Return(&grpc_client.AddLogResponse{}, nil)
+	mockGRPC.On("RegisterService", mock.Anything, mock.Anything, mock.Anything).Return(&grpcclient.RegisterServiceResponse{}, nil)
+	mockGRPC.On("GetParameters", mock.Anything).Return(&grpcclient.GetParametersResponse{}, nil)
+	mockGRPC.On("AddLog", mock.Anything, mock.Anything, mock.Anything).Return(&grpcclient.AddLogResponse{}, nil)
 
 	return mockGRPC
 }
