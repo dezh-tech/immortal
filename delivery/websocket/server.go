@@ -2,12 +2,12 @@ package websocket
 
 import (
 	"fmt"
-	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	"net"
 	"net/http"
 	"strconv"
 	"sync"
 
+	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/infrastructure/metrics"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
@@ -15,6 +15,7 @@ import (
 	"github.com/dezh-tech/immortal/repository"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
+
 	"github.com/gorilla/websocket"
 )
 

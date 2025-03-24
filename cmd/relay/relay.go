@@ -3,7 +3,6 @@ package relay
 import (
 	"context"
 	"fmt"
-	"github.com/dezh-tech/immortal/infrastructure/grpc_client/params_keeper"
 	"time"
 
 	"github.com/dezh-tech/immortal/config"
@@ -11,6 +10,7 @@ import (
 	"github.com/dezh-tech/immortal/delivery/websocket"
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
+	"github.com/dezh-tech/immortal/infrastructure/grpc_client/paramskeeper"
 	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/infrastructure/metrics"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
@@ -42,7 +42,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	keeper := params_keeper.ParametersKeeper{
+	keeper := paramskeeper.ParametersKeeper{
 		Handler:         &cfg.Handler,
 		WebsocketServer: &cfg.WebsocketServer,
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"github.com/dezh-tech/immortal/pkg/logger"
-	"github.com/dezh-tech/immortal/repository/query_limit"
+	"github.com/dezh-tech/immortal/repository/querylimit"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
@@ -25,7 +25,7 @@ type Config struct {
 	Meili           meilisearch.Config `yaml:"meili"`
 	GRPCServer      grpc.Config        `yaml:"grpc_server"`
 	Logger          logger.Config      `yaml:"logger"`
-	Handler         query_limit.Config
+	Handler         querylimit.Config
 }
 
 // Load loads config from file and env.

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/dezh-tech/immortal/repository/query_limit"
 	"os"
 	"strconv"
 	"strings"
@@ -12,9 +11,11 @@ import (
 
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	infra "github.com/dezh-tech/immortal/infrastructure/meilisearch"
+	"github.com/dezh-tech/immortal/repository/querylimit"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
+
 	meilisearchGo "github.com/meilisearch/meilisearch-go"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -28,6 +29,7 @@ type MockGRPC struct {
 
 func (m *MockGRPC) UpdateParameters(ctx context.Context, newParams *grpcclient.GetParametersResponse) error {
 	args := m.Called(ctx, newParams)
+
 	return args.Error(0)
 }
 
@@ -255,7 +257,7 @@ func TestHandleReq(t *testing.T) {
 		db:     nil,
 		meili:  meili,
 		grpc:   mockGRPC,
-		config: &query_limit.Config{},
+		config: &querylimit.Config{},
 	}
 	handler.config.SetDefaultQueryLimit(0)
 	handler.config.SetMaxQueryLimit(10)

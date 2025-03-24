@@ -1,14 +1,14 @@
-package params_keeper
+package paramskeeper
 
 import (
 	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	"github.com/dezh-tech/immortal/pkg/utils"
-	"github.com/dezh-tech/immortal/repository/query_limit"
+	"github.com/dezh-tech/immortal/repository/querylimit"
 )
 
 type ParametersKeeper struct {
-	Handler         *query_limit.Config
+	Handler         *querylimit.Config
 	WebsocketServer *configs.Config
 }
 

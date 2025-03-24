@@ -7,7 +7,7 @@ import (
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
-	"github.com/dezh-tech/immortal/repository/query_limit"
+	"github.com/dezh-tech/immortal/repository/querylimit"
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,10 +17,10 @@ type Handler struct {
 	db     *database.Database
 	meili  *meilisearch.Meili
 	grpc   grpcclient.IClient
-	config *query_limit.Config
+	config *querylimit.Config
 }
 
-func New(cfg *query_limit.Config, db *database.Database, meili *meilisearch.Meili, grpc grpcclient.IClient) *Handler {
+func New(cfg *querylimit.Config, db *database.Database, meili *meilisearch.Meili, grpc grpcclient.IClient) *Handler {
 	return &Handler{
 		db:     db,
 		meili:  meili,

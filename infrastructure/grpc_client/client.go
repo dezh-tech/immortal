@@ -2,8 +2,9 @@ package grpcclient
 
 import (
 	"context"
+
 	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
-	"github.com/dezh-tech/immortal/infrastructure/grpc_client/params_keeper"
+	"github.com/dezh-tech/immortal/infrastructure/grpc_client/paramskeeper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -16,10 +17,10 @@ type Client struct {
 	id                string
 	config            Config
 	conn              *grpc.ClientConn
-	parametersKeeper  params_keeper.ParametersKeeper
+	parametersKeeper  paramskeeper.ParametersKeeper
 }
 
-func New(endpoint string, cfg Config, keeper params_keeper.ParametersKeeper) (IClient, error) {
+func New(endpoint string, cfg Config, keeper paramskeeper.ParametersKeeper) (IClient, error) {
 	conn, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
