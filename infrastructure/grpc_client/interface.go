@@ -12,6 +12,5 @@ type IClient interface {
 	) (*mpb.RegisterServiceResponse, error)
 	GetParameters(ctx context.Context) (*mpb.GetParametersResponse, error)
 	AddLog(ctx context.Context, msg, stack string) (*mpb.AddLogResponse, error)
-
 	SetID(id string)
 }

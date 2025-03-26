@@ -16,10 +16,10 @@ type Handler struct {
 	db     *database.Database
 	meili  *meilisearch.Meili
 	grpc   grpcclient.IClient
-	config Config
+	config *Config
 }
 
-func New(cfg Config, db *database.Database, meili *meilisearch.Meili, grpc grpcclient.IClient) *Handler {
+func New(cfg *Config, db *database.Database, meili *meilisearch.Meili, grpc grpcclient.IClient) *Handler {
 	return &Handler{
 		db:     db,
 		meili:  meili,

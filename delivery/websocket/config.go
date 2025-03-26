@@ -1,6 +1,9 @@
 package websocket
 
-import "net/url"
+import (
+	"net/url"
+	"sync"
+)
 
 type Limitation struct {
 	MaxMessageLength    int32 // todo?.
@@ -17,8 +20,40 @@ type Limitation struct {
 }
 
 type Config struct {
+	mu sync.RWMutex
+
 	Bind       string `yaml:"bind"`
 	Port       uint16 `yaml:"port"`
-	URL        *url.URL
-	Limitation *Limitation
+	url        *url.URL
+	limitation *Limitation
+}
+
+// GetURL safely retrieves the URL.
+func (c *Config) GetURL() *url.URL {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return c.url
+}
+
+// SetURL safely sets the URL.
+func (c *Config) SetURL(u *url.URL) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.url = u
+}
+
+// GetLimitation safely retrieves the Limitation.
+func (c *Config) GetLimitation() *Limitation {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return c.limitation
+}
+
+// SetLimitation safely sets the Limitation.
+func (c *Config) SetLimitation(l *Limitation) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.limitation = l
 }

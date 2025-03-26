@@ -14,6 +14,7 @@ import (
 	"github.com/dezh-tech/immortal/repository"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -25,7 +26,7 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	mu sync.RWMutex
 
-	config  Config
+	config  *Config
 	conns   map[*websocket.Conn]clientState
 	handler *repository.Handler
 	metrics *metrics.Metrics
@@ -33,7 +34,7 @@ type Server struct {
 	grpc    grpcclient.IClient
 }
 
-func New(cfg Config, h *repository.Handler, m *metrics.Metrics,
+func New(cfg *Config, h *repository.Handler, m *metrics.Metrics,
 	r *redis.Redis, grpc grpcclient.IClient,
 ) (*Server, error) {
 	return &Server{

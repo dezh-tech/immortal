@@ -15,8 +15,8 @@ func (h *Handler) HandleReq(f *filter.Filter, pubkey string) ([]event.Event, err
 	meiliFilter := buildMeiliQuery(f)
 
 	finalLimit := f.Limit
-	if f.Limit <= 0 || f.Limit >= h.config.MaxQueryLimit {
-		finalLimit = h.config.DefaultQueryLimit
+	if f.Limit <= 0 || f.Limit >= h.config.GetMaxQueryLimit() {
+		finalLimit = h.config.GetDefaultQueryLimit()
 	}
 
 	sortBy := []string{"created_at:desc", "id:asc"}

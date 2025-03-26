@@ -1,12 +1,13 @@
 syntax = "proto3";
 
-package manager.v1;
+package relay.v1;
 
-option go_package = "github.com/dezh-tech/immortal/infrastructure/grpc_client";
+option go_package = "github.com/dezh-tech/immortal/delivery/grpc";
 
-service Parameters {
-    rpc GetParameters (GetParametersRequest) returns (GetParametersResponse);
+service ParametersService {
+    rpc UpdateParameters (UpdateParametersRequest) returns (UpdateParametersResponse);
 }
+
 
 message Limitations {
     int32 max_message_length = 1;
@@ -24,9 +25,11 @@ message Limitations {
     uint32 max_query_limit = 14;
 }
 
-message GetParametersRequest {}
-
-message GetParametersResponse {
+message UpdateParametersRequest {
     Limitations limitations = 1;
     string url = 2;
+}
+
+message UpdateParametersResponse {
+  bool success = 1;
 }

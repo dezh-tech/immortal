@@ -22,9 +22,10 @@ type Server struct {
 	StartTime time.Time
 	DB        *database.Database
 	Redis     *redis.Redis
+	keeper    ParametersKeeper
 }
 
-func New(conf *Config, r *redis.Redis, db *database.Database, st time.Time) *Server {
+func New(conf *Config, r *redis.Redis, db *database.Database, st time.Time, keeper ParametersKeeper) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &Server{
@@ -34,6 +35,7 @@ func New(conf *Config, r *redis.Redis, db *database.Database, st time.Time) *Ser
 		StartTime: st,
 		Redis:     r,
 		DB:        db,
+		keeper:    keeper,
 	}
 }
 
@@ -48,9 +50,11 @@ func (s *Server) Start(shutdownch chan struct{}) error {
 
 	healthServer := newHealthServer(s)
 	shutdownServer := newShutdownServer(s, shutdownch)
+	paramsServer := newParamsServer(s)
 
 	rpb.RegisterHealthServiceServer(grpcServer, healthServer)
 	rpb.RegisterShutdownServiceServer(grpcServer, shutdownServer)
+	rpb.RegisterParametersServiceServer(grpcServer, paramsServer)
 
 	s.listener = listener
 	s.grpc = grpcServer

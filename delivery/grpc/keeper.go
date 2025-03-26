@@ -1,20 +1,26 @@
-package config
+package grpc
 
 import (
+	mpb "github.com/dezh-tech/immortal/delivery/grpc/gen"
 	"github.com/dezh-tech/immortal/delivery/websocket"
-	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	"github.com/dezh-tech/immortal/pkg/utils"
+	"github.com/dezh-tech/immortal/repository"
 )
 
-func (c *Config) LoadParameters(params *mpb.GetParametersResponse) error {
+type ParametersKeeper struct {
+	Handler         *repository.Config
+	WebsocketServer *websocket.Config
+}
+
+func (keeper *ParametersKeeper) LoadParameters(params *mpb.UpdateParametersRequest) error {
 	url, err := utils.ParseURL(params.Url)
 	if err != nil {
 		return err
 	}
 
-	c.WebsocketServer.SetURL(url)
+	keeper.WebsocketServer.SetURL(url)
 
-	c.WebsocketServer.SetLimitation(
+	keeper.WebsocketServer.SetLimitation(
 		&websocket.Limitation{
 			MaxMessageLength:    params.Limitations.MaxMessageLength,
 			MaxSubscriptions:    params.Limitations.MaxSubscriptions,
@@ -29,8 +35,8 @@ func (c *Config) LoadParameters(params *mpb.GetParametersResponse) error {
 			CreatedAtUpperLimit: params.Limitations.CreatedAtUpperLimit,
 		})
 
-	c.Handler.SetMaxQueryLimit(params.Limitations.MaxQueryLimit)
-	c.Handler.SetDefaultQueryLimit(params.Limitations.DefaultQueryLimit)
+	keeper.Handler.SetMaxQueryLimit(params.Limitations.MaxQueryLimit)
+	keeper.Handler.SetDefaultQueryLimit(params.Limitations.DefaultQueryLimit)
 
 	return nil
 }
