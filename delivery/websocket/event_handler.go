@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"github.com/dezh-tech/immortal/pkg/logger"
 	"github.com/dezh-tech/immortal/pkg/utils"
@@ -211,7 +210,7 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 }
 
 func checkLimitations(c clientState, r *redis.Redis,
-	limits configs.Limitation, msg message.Event) (bool, bool,
+	limits Limitation, msg message.Event) (bool, bool,
 	string, string,
 ) {
 	if limits.AuthRequired && !*c.isKnown {

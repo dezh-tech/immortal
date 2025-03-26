@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/dezh-tech/immortal/delivery/websocket/configs"
+	"github.com/dezh-tech/immortal/delivery/websocket"
 	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	"github.com/dezh-tech/immortal/pkg/utils"
 )
@@ -15,7 +15,7 @@ func (c *Config) LoadParameters(params *mpb.GetParametersResponse) error {
 	c.WebsocketServer.SetURL(url)
 
 	c.WebsocketServer.SetLimitation(
-		&configs.Limitation{
+		&websocket.Limitation{
 			MaxMessageLength:    params.Limitations.MaxMessageLength,
 			MaxSubscriptions:    params.Limitations.MaxSubscriptions,
 			MaxSubidLength:      params.Limitations.MaxSubidLength,

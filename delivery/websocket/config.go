@@ -1,4 +1,4 @@
-package configs
+package websocket
 
 import (
 	"net/url"

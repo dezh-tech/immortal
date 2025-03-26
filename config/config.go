@@ -3,10 +3,11 @@ package config
 import (
 	"os"
 
+	"github.com/dezh-tech/immortal/delivery/websocket"
+
 	"github.com/dezh-tech/immortal/repository"
 
 	"github.com/dezh-tech/immortal/delivery/grpc"
-	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
@@ -20,7 +21,7 @@ import (
 type Config struct {
 	Environment     string             `yaml:"environment"`
 	GRPCClient      grpcclient.Config  `yaml:"manager"`
-	WebsocketServer configs.Config     `yaml:"ws_server"`
+	WebsocketServer websocket.Config   `yaml:"ws_server"`
 	Database        database.Config    `yaml:"database"`
 	Redis           redis.Config       `yaml:"redis"`
 	Meili           meilisearch.Config `yaml:"meili"`

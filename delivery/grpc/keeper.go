@@ -2,14 +2,14 @@ package grpc
 
 import (
 	mpb "github.com/dezh-tech/immortal/delivery/grpc/gen"
-	"github.com/dezh-tech/immortal/delivery/websocket/configs"
+	"github.com/dezh-tech/immortal/delivery/websocket"
 	"github.com/dezh-tech/immortal/pkg/utils"
 	"github.com/dezh-tech/immortal/repository"
 )
 
 type ParametersKeeper struct {
 	Handler         *repository.Config
-	WebsocketServer *configs.Config
+	WebsocketServer *websocket.Config
 }
 
 func (keeper *ParametersKeeper) LoadParameters(params *mpb.UpdateParametersRequest) error {
@@ -21,7 +21,7 @@ func (keeper *ParametersKeeper) LoadParameters(params *mpb.UpdateParametersReque
 	keeper.WebsocketServer.SetURL(url)
 
 	keeper.WebsocketServer.SetLimitation(
-		&configs.Limitation{
+		&websocket.Limitation{
 			MaxMessageLength:    params.Limitations.MaxMessageLength,
 			MaxSubscriptions:    params.Limitations.MaxSubscriptions,
 			MaxSubidLength:      params.Limitations.MaxSubidLength,
