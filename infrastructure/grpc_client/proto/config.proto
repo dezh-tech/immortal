@@ -6,7 +6,6 @@ option go_package = "github.com/dezh-tech/immortal/infrastructure/grpc_client";
 
 service Parameters {
     rpc GetParameters (GetParametersRequest) returns (GetParametersResponse);
-    rpc UpdateParameters (GetParametersResponse) returns (UpdateParametersResponse);
 }
 
 message Limitations {
@@ -21,8 +20,8 @@ message Limitations {
     int32 max_content_length = 10;
     int64 created_at_lower_limit = 11;
     int64 created_at_upper_limit = 12;
-    uint32 default_query_limit = 13;    
-    uint32 max_query_limit = 14;           
+    uint32 default_query_limit = 13;
+    uint32 max_query_limit = 14;
 }
 
 message GetParametersRequest {}
@@ -30,8 +29,4 @@ message GetParametersRequest {}
 message GetParametersResponse {
     Limitations limitations = 1;
     string url = 2;
-}
-
-message UpdateParametersResponse {
-    bool success = 1;
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
-	"github.com/dezh-tech/immortal/infrastructure/grpc_client/paramskeeper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -17,10 +16,9 @@ type Client struct {
 	id                string
 	config            Config
 	conn              *grpc.ClientConn
-	parametersKeeper  paramskeeper.ParametersKeeper
 }
 
-func New(endpoint string, cfg Config, keeper paramskeeper.ParametersKeeper) (IClient, error) {
+func New(endpoint string, cfg Config) (IClient, error) {
 	conn, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
@@ -32,7 +30,6 @@ func New(endpoint string, cfg Config, keeper paramskeeper.ParametersKeeper) (ICl
 		LogService:        mpb.NewLogClient(conn),
 		config:            cfg,
 		conn:              conn,
-		parametersKeeper:  keeper,
 	}, nil
 }
 
@@ -63,13 +60,4 @@ func (c *Client) AddLog(ctx context.Context, msg, stack string) (*mpb.AddLogResp
 		Message: msg,
 		Stack:   stack,
 	})
-}
-
-func (c *Client) UpdateParameters(ctx context.Context, newParams *mpb.GetParametersResponse) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-		return c.parametersKeeper.LoadParameters(newParams)
-	}
 }

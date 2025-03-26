@@ -10,7 +10,6 @@ import (
 	"github.com/dezh-tech/immortal/delivery/websocket"
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
-	"github.com/dezh-tech/immortal/infrastructure/grpc_client/paramskeeper"
 	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/infrastructure/metrics"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
@@ -42,12 +41,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	keeper := paramskeeper.ParametersKeeper{
-		Handler:         &cfg.Handler,
-		WebsocketServer: &cfg.WebsocketServer,
-	}
-
-	c, err := grpcclient.New(cfg.GRPCClient.Endpoint, cfg.GRPCClient, keeper)
+	c, err := grpcclient.New(cfg.GRPCClient.Endpoint, cfg.GRPCClient)
 	if err != nil {
 		return nil, err
 	}
