@@ -1,8 +1,8 @@
 package grpc
 
 import (
+	mpb "github.com/dezh-tech/immortal/delivery/grpc/gen"
 	"github.com/dezh-tech/immortal/delivery/websocket/configs"
-	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	"github.com/dezh-tech/immortal/pkg/utils"
 	"github.com/dezh-tech/immortal/repository"
 )
@@ -12,7 +12,7 @@ type ParametersKeeper struct {
 	WebsocketServer *configs.Config
 }
 
-func (keeper *ParametersKeeper) LoadParameters(params *mpb.GetParametersResponse) error {
+func (keeper *ParametersKeeper) LoadParameters(params *mpb.UpdateParametersRequest) error {
 	url, err := utils.ParseURL(params.Url)
 	if err != nil {
 		return err

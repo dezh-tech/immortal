@@ -75,7 +75,11 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
-	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now())
+	keeper := grpc.ParametersKeeper{
+		Handler:         &cfg.Handler,
+		WebsocketServer: &cfg.WebsocketServer,
+	}
+	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now(), keeper)
 
 	return &Relay{
 		config:          cfg,
