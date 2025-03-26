@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/dezh-tech/immortal/repository"
 	"os"
+
+	"github.com/dezh-tech/immortal/repository"
 
 	"github.com/dezh-tech/immortal/delivery/grpc"
 	"github.com/dezh-tech/immortal/delivery/websocket/configs"

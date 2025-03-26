@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+
 	mpb "github.com/dezh-tech/immortal/delivery/grpc/gen"
 )
 
