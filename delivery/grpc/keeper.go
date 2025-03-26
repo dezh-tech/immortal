@@ -4,11 +4,11 @@ import (
 	"github.com/dezh-tech/immortal/delivery/websocket/configs"
 	mpb "github.com/dezh-tech/immortal/infrastructure/grpc_client/gen"
 	"github.com/dezh-tech/immortal/pkg/utils"
-	"github.com/dezh-tech/immortal/repository/querylimit"
+	"github.com/dezh-tech/immortal/repository"
 )
 
 type ParametersKeeper struct {
-	Handler         *querylimit.Config
+	Handler         *repository.Config
 	WebsocketServer *configs.Config
 }
 

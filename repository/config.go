@@ -1,4 +1,4 @@
-package querylimit
+package repository
 
 import "sync"
 
