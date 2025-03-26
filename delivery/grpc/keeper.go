@@ -1,4 +1,4 @@
-package paramskeeper
+package grpc
 
 import (
 	"github.com/dezh-tech/immortal/delivery/websocket/configs"
