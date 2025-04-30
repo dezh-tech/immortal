@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package relay.v1;
+
+option go_package = "github.com/dezh-tech/immortal/delivery/grpc";
+
+service Migration {
+    rpc ImportEvents (stream Event) returns (ImportEventResponse);
+    rpc ExportEvents (Filter) returns (stream Event);
+}
+
+message Event {
+    bytes raw = 1;
+}
+
+message Filter {
+    bytes raw = 1;
+    string pubkey = 2;
+}
+
+message ImportEventResponse {
+    bool success = 1;
+    string message = 2;
+}

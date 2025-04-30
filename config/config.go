@@ -3,16 +3,14 @@ package config
 import (
 	"os"
 
-	"github.com/dezh-tech/immortal/delivery/websocket"
-
-	"github.com/dezh-tech/immortal/repository"
-
 	"github.com/dezh-tech/immortal/delivery/grpc"
+	"github.com/dezh-tech/immortal/delivery/websocket"
 	"github.com/dezh-tech/immortal/infrastructure/database"
 	grpcclient "github.com/dezh-tech/immortal/infrastructure/grpc_client"
 	"github.com/dezh-tech/immortal/infrastructure/meilisearch"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"github.com/dezh-tech/immortal/pkg/logger"
+	"github.com/dezh-tech/immortal/repository"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )

@@ -127,7 +127,6 @@ func (e *Event) checkSig(id [32]byte) bool {
 
 // IsValid function validats an event Signature and ID.
 func (e *Event) IsValid(id [32]byte) bool {
-	// make sure the user provided id is valid.
 	if !e.checkID(id) {
 		return false
 	}

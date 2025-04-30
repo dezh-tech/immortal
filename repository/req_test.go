@@ -14,7 +14,6 @@ import (
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/event"
 	"github.com/dezh-tech/immortal/types/filter"
-
 	meilisearchGo "github.com/meilisearch/meilisearch-go"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -48,6 +47,12 @@ func (m *MockGRPC) AddLog(ctx context.Context, msg, stack string) (*grpcclient.A
 	args := m.Called(ctx, msg, stack)
 
 	return args.Get(0).(*grpcclient.AddLogResponse), args.Error(1)
+}
+
+func (m *MockGRPC) SendReport(ctx context.Context, eid string) (*grpcclient.SendReportResponse, error) {
+	args := m.Called(ctx, eid)
+
+	return args.Get(0).(*grpcclient.SendReportResponse), args.Error(1)
 }
 
 func (m *MockGRPC) SetID(id string) {
@@ -346,6 +351,7 @@ func setupMockGRPC() *MockGRPC {
 	mockGRPC.On("RegisterService", mock.Anything, mock.Anything, mock.Anything).Return(&grpcclient.RegisterServiceResponse{}, nil)
 	mockGRPC.On("GetParameters", mock.Anything).Return(&grpcclient.GetParametersResponse{}, nil)
 	mockGRPC.On("AddLog", mock.Anything, mock.Anything, mock.Anything).Return(&grpcclient.AddLogResponse{}, nil)
+	mockGRPC.On("SendReport", mock.Anything).Return(&grpcclient.SendReportResponse{}, nil)
 
 	return mockGRPC
 }

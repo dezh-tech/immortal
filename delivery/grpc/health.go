@@ -24,7 +24,7 @@ func (s healthServer) Status(ctx context.Context, _ *rpb.StatusRequest) (*rpb.St
 	redisStatus := rpb.Status_CONNECTED
 	redisMessage := ""
 
-	if err := s.Redis.Client.Ping(ctx).Err(); err != nil {
+	if err := s.redis.Client.Ping(ctx).Err(); err != nil {
 		redisStatus = rpb.Status_DISCONNECTED
 		redisMessage = err.Error()
 	}
@@ -40,7 +40,7 @@ func (s healthServer) Status(ctx context.Context, _ *rpb.StatusRequest) (*rpb.St
 	mongoStatus := rpb.Status_CONNECTED
 	mongoMessage := ""
 
-	if err := s.DB.Client.Ping(ctx, nil); err != nil {
+	if err := s.database.Client.Ping(ctx, nil); err != nil {
 		mongoStatus = rpb.Status_DISCONNECTED
 		mongoMessage = err.Error()
 	}
@@ -54,7 +54,7 @@ func (s healthServer) Status(ctx context.Context, _ *rpb.StatusRequest) (*rpb.St
 	services = append(services, &mongo)
 
 	return &rpb.StatusResponse{
-		Uptime:   int64(time.Since(s.StartTime).Seconds()),
+		Uptime:   int64(time.Since(s.startTime).Seconds()),
 		Version:  immortal.StringVersion(),
 		Services: services,
 	}, nil

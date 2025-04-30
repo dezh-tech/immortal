@@ -10,11 +10,11 @@ import (
 	"github.com/dezh-tech/immortal/types"
 )
 
-const expirationTaskListName = "expiration_events"
+const ExpirationTaskListName = "expiration_events"
 
 func (s *Server) checkExpiration() { //nolint
 	for range time.Tick(time.Minute) {
-		tasks, err := s.redis.GetReadyTasks(expirationTaskListName)
+		tasks, err := s.redis.GetReadyTasks(ExpirationTaskListName)
 		if err != nil {
 			_, err := s.grpc.AddLog(context.Background(),
 				"redis error while receiving ready tasks", err.Error())
@@ -52,7 +52,7 @@ func (s *Server) checkExpiration() { //nolint
 
 		if len(failedTasks) != 0 {
 			for _, ft := range failedTasks {
-				if err := s.redis.AddDelayedTask(expirationTaskListName,
+				if err := s.redis.AddDelayedTask(ExpirationTaskListName,
 					ft, time.Minute*10); err != nil {
 					continue
 				}
