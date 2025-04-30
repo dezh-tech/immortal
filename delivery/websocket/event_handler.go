@@ -131,12 +131,16 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 			}
 		}
 
-		go func() {
-			_, err := s.grpc.SendReport(context.Background(), msg.Event.ID)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		go func(ctx context.Context, eventID string) {
+			defer cancel()
+			_, err := s.grpc.SendReport(ctx, eventID)
 			if err != nil {
-				logger.Error("can't send report to manager", "eventID", msg.Event.ID, "error", err.Error())
+				logger.Error("can't send report to manager", "eventID", eventID, "error", err.Error())
 			}
-		}()
+		}(ctx, msg.Event.ID)
 
 		if msg.Event.Kind == types.KindRightToVanish {
 			relays := msg.Event.Tags.GetValues("relay")
