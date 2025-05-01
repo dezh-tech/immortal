@@ -4,7 +4,7 @@ package relay.v1;
 
 option go_package = "github.com/dezh-tech/immortal/delivery/grpc";
 
-service HealthService {
+service Health {
     rpc Status (StatusRequest) returns (StatusResponse);
 }
 

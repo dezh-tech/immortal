@@ -14,7 +14,6 @@ import (
 	"github.com/dezh-tech/immortal/repository"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
-
 	"github.com/gorilla/websocket"
 )
 

@@ -79,7 +79,7 @@ func New(cfg *config.Config) (*Relay, error) {
 		Handler:         &cfg.Handler,
 		WebsocketServer: &cfg.WebsocketServer,
 	}
-	gs := grpc.New(&cfg.GRPCServer, r, db, time.Now(), keeper)
+	gs := grpc.New(cfg.GRPCServer, r, *db, *h, time.Now(), keeper)
 
 	return &Relay{
 		config:          cfg,

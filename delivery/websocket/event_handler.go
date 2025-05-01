@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strconv"
@@ -13,7 +14,6 @@ import (
 	"github.com/dezh-tech/immortal/types"
 	"github.com/dezh-tech/immortal/types/filter"
 	"github.com/dezh-tech/immortal/types/message"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -56,18 +56,20 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 		return
 	}
 
-	if err := s.redis.CheckAcceptability(s.config.GetLimitation().RestrictedWrites,
-		eID[:], msg.Event.PublicKey); err != nil {
-		okm := message.MakeOK(false, msg.Event.ID, err.Error())
-		_ = conn.WriteMessage(1, okm)
+	if (msg.Event.Kind != types.KindRightToVanish) && (msg.Event.Kind != types.KindEventDeletionRequest) {
+		if err := s.redis.CheckAcceptability(s.config.GetLimitation().RestrictedWrites,
+			eID[:], msg.Event.PublicKey); err != nil {
+			okm := message.MakeOK(false, msg.Event.ID, err.Error())
+			_ = conn.WriteMessage(1, okm)
 
-		status = limitsFail
+			status = limitsFail
 
-		if strings.HasPrefix(err.Error(), "internal") {
-			status = serverFail
+			if strings.HasPrefix(err.Error(), "internal") {
+				status = serverFail
+			}
+
+			return
 		}
-
-		return
 	}
 
 	client, ok := s.conns[conn]
@@ -128,6 +130,17 @@ func (s *Server) handleEvent(conn *websocket.Conn, m message.Message) { //nolint
 				return
 			}
 		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		go func(ctx context.Context, eventID string) {
+			defer cancel()
+			_, err := s.grpc.SendReport(ctx, eventID)
+			if err != nil {
+				logger.Error("can't send report to manager", "eventID", eventID, "error", err.Error())
+			}
+		}(ctx, msg.Event.ID)
 
 		if msg.Event.Kind == types.KindRightToVanish {
 			relays := msg.Event.Tags.GetValues("relay")
@@ -234,7 +247,7 @@ func checkLimitations(c clientState, r *redis.Redis,
 				time.Unix(expiration, 0).String())
 		}
 
-		if err := r.AddDelayedTask(expirationTaskListName,
+		if err := r.AddDelayedTask(ExpirationTaskListName,
 			fmt.Sprintf("%s:%d", msg.Event.ID, msg.Event.Kind), time.Until(time.Unix(expiration, 0))); err != nil {
 			return false, false, serverFail, "error: can't add event to expiration queue."
 		}

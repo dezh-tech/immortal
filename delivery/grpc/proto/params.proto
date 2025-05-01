@@ -4,7 +4,7 @@ package relay.v1;
 
 option go_package = "github.com/dezh-tech/immortal/delivery/grpc";
 
-service ParametersService {
+service Parameters {
     rpc UpdateParameters (UpdateParametersRequest) returns (UpdateParametersResponse);
 }
 

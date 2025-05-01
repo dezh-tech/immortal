@@ -13,6 +13,7 @@ type Client struct {
 	RegistryService   mpb.ServiceRegistryClient
 	ParametersService mpb.ParametersClient
 	LogService        mpb.LogClient
+	ReportService     mpb.ReportClient
 	id                string
 	config            Config
 	conn              *grpc.ClientConn
@@ -59,5 +60,11 @@ func (c *Client) AddLog(ctx context.Context, msg, stack string) (*mpb.AddLogResp
 	return c.LogService.AddLog(ctx, &mpb.AddLogRequest{
 		Message: msg,
 		Stack:   stack,
+	})
+}
+
+func (c *Client) SendReport(ctx context.Context, eid string) (*mpb.SendReportResponse, error) {
+	return c.ReportService.SendReport(ctx, &mpb.SendReportRequest{
+		EventId: eid,
 	})
 }
