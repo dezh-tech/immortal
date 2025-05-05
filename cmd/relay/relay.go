@@ -13,6 +13,7 @@ import (
 	"github.com/dezh-tech/immortal/infrastructure/metrics"
 	"github.com/dezh-tech/immortal/infrastructure/redis"
 	"github.com/dezh-tech/immortal/pkg/logger"
+	"github.com/dezh-tech/immortal/pkg/utils"
 	"github.com/dezh-tech/immortal/repository"
 )
 
@@ -44,8 +45,13 @@ func New(cfg *config.Config) (*Relay, error) {
 		return nil, err
 	}
 
+	oip, err := utils.GetOverlayIPAddress()
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := c.RegisterService(context.Background(), fmt.Sprint(cfg.GRPCServer.Port),
-		cfg.GRPCClient.Region)
+		cfg.GRPCClient.Region, oip)
 	if err != nil {
 		return nil, err
 	}

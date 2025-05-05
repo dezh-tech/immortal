@@ -38,13 +38,14 @@ func (c *Client) SetID(id string) {
 }
 
 func (c *Client) RegisterService(ctx context.Context,
-	port, region string,
+	port, region, url string,
 ) (*mpb.RegisterServiceResponse, error) {
 	return c.RegistryService.RegisterService(ctx, &mpb.RegisterServiceRequest{
 		Type:                   mpb.ServiceTypeEnum_RELAY,
 		Port:                   port,
 		HeartbeatDurationInSec: c.config.Heartbeat,
 		Region:                 region,
+		Url:                    url,
 	})
 }
 

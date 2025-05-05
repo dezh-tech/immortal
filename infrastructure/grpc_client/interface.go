@@ -8,7 +8,7 @@ import (
 
 type IClient interface {
 	RegisterService(ctx context.Context,
-		port, region string,
+		port, region, url string,
 	) (*mpb.RegisterServiceResponse, error)
 	GetParameters(ctx context.Context) (*mpb.GetParametersResponse, error)
 	AddLog(ctx context.Context, msg, stack string) (*mpb.AddLogResponse, error)

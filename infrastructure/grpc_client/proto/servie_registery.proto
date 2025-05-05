@@ -9,19 +9,21 @@ service ServiceRegistry {
 }
 
 message RegisterServiceRequest {
-    string port = 1;                   
-    uint32 heartbeat_duration_in_sec = 2;
-    ServiceTypeEnum type = 3;           
-    string region = 4;               
+    string port = 1;
+    string url = 2;
+    uint32 heartbeat_duration_in_sec = 3;
+    ServiceTypeEnum type = 4;
+    string region = 5;
 }
-  
+
 message RegisterServiceResponse {
-    bool success = 1;             
-    optional string message = 2;       
-    string token = 3;            
+    bool success = 1;
+    optional string message = 2;
+    string token = 3;
 }
 
 enum ServiceTypeEnum {
     UNKNOWN = 0;
     RELAY = 1;
+    NIP05 = 2;
 }
