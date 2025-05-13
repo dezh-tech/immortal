@@ -19,15 +19,15 @@ Please follow these guidelines when contributing to the project:
 
 ### Makefile Targets
 
-There is some make file targets which you can use when developing this codebase:
+There are some makefile targets that you can use when developing this codebase:
 
-- `devtools`: will install all devtools you need in development proccess.
+- `devtools`: will install all devtools you need in the development process.
 - `unit-test`, `test`, `test-race`: runs all existing tests.
-- `fmt`: formats the code using gofumpt. (run before `check` target always.)
+- `fmt`: formats the code using gofumpt. (Run before `check` target always.)
 - `check`: runs golangci-lint linter based on its [config](./.golangci.yml).
-- `build`: build an immortal binary on `build/immortal` path.
-- `pre-commit`: executes formatter, linter and tests.
-- `compose-up`: spin ups the development docker compose which runs all requiered third-party services for developement.
+- `build`: build an immortal binary on the `build/immortal` path.
+- `pre-commit`: executes formatter, linter, and tests.
+- `compose-up`: spins up the development docker compose, which runs all required third-party development services.
 - `compose-down`: stops the development docker compose stuff.
 - `models-generate`: generates the SQL tables using sqlboiler, only use it when you change the database.
 
@@ -42,12 +42,12 @@ Error and log messages should not start with a capital letter (unless it's a pro
 
 ### Testing
 
-All changes on core must contain proper and well-defined unit-tests, also previous tests must be passed as well.
-This codebase used `testify` for unit tests, make sure you follow these guide for tests:
+All changes to the core must contain proper and well-defined unit tests, also previous tests must be passed as well.
+This codebase uses `testify` for unit tests, make sure you follow this guide for tests:
 
-- For panic cases make sure you use `assert.Panics`
-- For checking err using `assert.ErrorIs` make sure you pass expected error as second argument.
-- For checking equality using `assert.Equal` make sure you pass expected value as the first argument.
+- For panic cases, make sure you use `assert.Panics`
+- For checking err using `assert.ErrorIs` make sure you pass the expected error as the second argument.
+- For checking equality using `assert.Equal`, make sure you pass the expected value as the first argument.
 
 ### Benchmarking
 
@@ -58,7 +58,7 @@ Make sure you follow [this guide](https://100go.co/89-benchmarks) when you write
 Follow these rules for help messages for CLI commands and flags:
 
 - Help string should not start with a capital letter.
-- Don't include default value in the help string.
+- Don't include the default value in the help string.
 - Include the acceptable range for the flags that accept a range of values.
 
 ## Commit Guidelines
@@ -97,7 +97,7 @@ Multiple scopes can be used if the changes impact several areas.
 
 - Keep the commit message under 50 characters.
 - Start the commit message with a lowercase letter and do not end with punctuation.
-- Write commit messages in the imperative: "fix bug" not "fixed bug" or "fixes bug".
+- Write commit messages in the imperative: "fix bug", not "fixed bug" or "fixes bug".
 
 ### Examples
 
