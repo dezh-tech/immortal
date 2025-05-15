@@ -11,11 +11,11 @@ Immortal
 
 The Immortal is a [Nostr](https://nostr.com) relay implementation in Golang.
 
-Immortal aimed and designed to be **scalable**, **high-performance**, and **configurable**. It's a good choice for paid relays or big community relays and not a good choice for a personal relay.
+Immortal is aimed and designed to be **scalable**, **high-performance**, and **configurable**. It's a good choice for paid relays or big community relays, and not a good choice for a personal relay.
 
 ## Supported NIPs
 
-You can find supported NIPs details [here](./documents/NIPs.md).
+You can find the details of supported NIPs [here](./documents/NIPs.md).
 
 ## Updates
 
@@ -33,15 +33,15 @@ Donations and financial support for the development process are possible using B
 **on-chain**:
 
 ```
-bc1qa0z44j7m0v0rx85q0cag5juhxdshnmnrxnlr32
+bc1qfw30k9ztahppatweycnll05rzmrn6u07slehmc
 ```
 
 **lightning**: 
 
 ```
-dezh@coinos.io
+donate@dezh.tech
 ```
 
 ## License
 
-The Immortal software is published under the [MIT License](./LICENSE) and contributing and using this code means you agree with the license.
+The Immortal software is published under the [MIT License](./LICENSE), and contributing to and using this code means you agree with the license.
