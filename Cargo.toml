@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+nostr-lmdb = "0.44.0"
+nostr-relay-builder = "0.44.0"
+tokio = { version = "1.48.0", features = ["full"] }
