@@ -1,3 +1,24 @@
-build
-.vscode
+# Rust
+/target/
+/Cargo.lock
+/Cargo.toml.orig
+/Cargo.toml.bak
+
+# IDEs and Editors
 .idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Operating System Files
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Dependencies (if not managed by Cargo)
+# For example, if you have a vendor directory for C dependencies:
+# /vendor/
+
+nostr-relay
