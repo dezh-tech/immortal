@@ -9,13 +9,34 @@ Immortal
 <br/>
 
 
-The Immortal is a [Nostr](https://nostr.com) relay implementation in Golang.
+The Immortal is a [Nostr](https://nostr.com) relay implementation in Rust.
 
 Immortal is aimed and designed to be **scalable**, **high-performance**, and **configurable**. It's a good choice for paid relays or big community relays, and not a good choice for a personal relay.
 
-## Supported NIPs
+## Installation & Running
 
-You can find the details of supported NIPs [here](./documents/NIPs.md).
+### Prerequisites
+
+- Rust 1.70 or later
+- Cargo (comes with Rust)
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/dezh-tech/immortal.git
+cd immortal
+
+# Build the project
+cargo build --release
+
+# Run the relay
+cargo run --release
+```
+
+### Configuration
+
+The relay can be configured using a `config.toml` file. See the example configuration in the repository.
 
 ## Updates
 

@@ -11,25 +11,35 @@ Please read these guidelines before submitting a pull request or opening an issu
 We strive to maintain clean, readable, and maintainable code.
 Please follow these guidelines when contributing to the project:
 
-- Follow the [Effective Go](https://golang.org/doc/effective_go.html) guidelines.
-- Follow the [Go Doc Comments](https://go.dev/doc/comment) guidelines.
+- Follow the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/) and [The Rust Programming Language](https://doc.rust-lang.org/book/) best practices.
+- Use `rustfmt` for code formatting and `clippy` for linting.
 - Follow the principles of clean code as outlined in
   Robert C. Martin's "[Clean Code](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)" book.
-- Write tests/benchmarks for new code or changes to existing code, and make sure all tests pass before submitting a pull request.
+- Write comprehensive tests and benchmarks for new code or changes to existing code.
+- Ensure all tests pass before submitting a pull request.
+- Use meaningful variable and function names.
+- Prefer explicit error handling over panic.
 
-### Makefile Targets
+### Development Commands
 
-There are some makefile targets that you can use when developing this codebase:
+Use these Cargo commands for development:
 
-- `devtools`: will install all devtools you need in the development process.
-- `unit-test`, `test`, `test-race`: runs all existing tests.
-- `fmt`: formats the code using gofumpt. (Run before `check` target always.)
-- `check`: runs golangci-lint linter based on its [config](./.golangci.yml).
-- `build`: build an immortal binary on the `build/immortal` path.
-- `pre-commit`: executes formatter, linter, and tests.
-- `compose-up`: spins up the development docker compose, which runs all required third-party development services.
-- `compose-down`: stops the development docker compose stuff.
-- `models-generate`: generates the SQL tables using sqlboiler, only use it when you change the database.
+- `cargo check`: quickly check your code for compile errors
+- `cargo fmt`: format the code using rustfmt
+- `cargo clippy`: run the Clippy linter for additional checks
+- `cargo test`: run all tests
+- `cargo bench`: run benchmarks
+- `cargo build`: build the project
+- `cargo run`: build and run the project
+- `cargo doc --open`: generate and open documentation
+
+### Code Style
+
+- Use `snake_case` for variable and function names.
+- Use `PascalCase` for types and traits.
+- Use `SCREAMING_SNAKE_CASE` for constants.
+- Document public APIs with `///` doc comments.
+- Use `#[must_use]` attribute for functions that return values that should be used.
 
 ### Error and Log Messages
 
@@ -42,16 +52,22 @@ Error and log messages should not start with a capital letter (unless it's a pro
 
 ### Testing
 
-All changes to the core must contain proper and well-defined unit tests, also previous tests must be passed as well.
-This codebase uses `testify` for unit tests, make sure you follow this guide for tests:
+All changes to the core must contain proper and well-defined unit tests. Previous tests must continue to pass.
+This codebase uses Rust's built-in testing framework:
 
-- For panic cases, make sure you use `assert.Panics`
-- For checking err using `assert.ErrorIs` make sure you pass the expected error as the second argument.
-- For checking equality using `assert.Equal`, make sure you pass the expected value as the first argument.
+- Use `#[test]` attribute for unit tests.
+- Use `#[cfg(test)]` module for test-only code.
+- Use `assert!`, `assert_eq!`, `assert_ne!` macros for assertions.
+- Use `#[should_panic]` attribute for tests that should panic.
+- Place integration tests in the `tests/` directory.
 
 ### Benchmarking
 
-Make sure you follow [this guide](https://100go.co/89-benchmarks) when you write or change benchmarks to reach an accurate result.
+Use Rust's built-in benchmarking framework or the `criterion` crate for benchmarks:
+
+- Use `#[bench]` attribute for benchmarks (requires nightly Rust).
+- For stable Rust, use the `criterion` crate for more detailed benchmarking.
+- Run benchmarks with `cargo bench`.
 
 ### Help Messages
 
