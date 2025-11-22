@@ -5,7 +5,7 @@ mod config;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cfg = config::load("config.toml")?; 
+    let cfg = config::load("config.toml")?;
     let database = NostrLMDB::open(format!("{}/database", cfg.working_dir))?;
     let builder = RelayBuilder::default()
         .port(cfg.port)
