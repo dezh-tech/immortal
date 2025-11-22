@@ -1,0 +1,39 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+*.pdb
+
+# Git
+.git/
+.gitignore
+
+# Documentation and development files
+*.md
+LICENSE
+SECURITY.md
+CONTRIBUTING.md
+
+# Development and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Database files (if you don't want to include existing data)
+immo/database/
+
+# Docker files (avoid recursion)
+Dockerfile*
+.dockerignore
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
