@@ -76,7 +76,7 @@ impl WritePolicy for ReportEvents {
                     return PolicyResult::Accept;
                 }
 
-                let mut report_details = format!("🚨 New Report\n\n");
+                let mut report_details = "🚨 New Report\n\n".to_string();
                 report_details.push_str(&format!("Report Event ID: `{}`\n", event.id));
                 report_details.push_str(&format!("Reason: {}\n", report_reason));
                 report_details.push_str(&format!(
