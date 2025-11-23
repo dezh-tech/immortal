@@ -1,10 +1,10 @@
-use teloxide::prelude::*;
-use teloxide::utils::command::BotCommands;
-use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
-use std::error::Error;
-use std::sync::Arc;
 use nostr_lmdb::NostrLMDB;
 use nostr_relay_builder::prelude::*;
+use std::error::Error;
+use std::sync::Arc;
+use teloxide::prelude::*;
+use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
+use teloxide::utils::command::BotCommands;
 
 pub struct TelegramBot {
     bot: Bot,
@@ -15,27 +15,34 @@ pub struct TelegramBot {
 impl TelegramBot {
     pub fn new(token: String, group_chat_id: Option<i64>, database: Arc<NostrLMDB>) -> Self {
         let bot = Bot::new(token);
-        Self { 
+        Self {
             bot,
             group_chat_id,
             database,
         }
     }
 
-    pub async fn send_report_notification(&self, event_id: &str, report_details: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
-        log::info!("received new report {:}", event_id);
+    pub async fn send_report_notification(
+        &self,
+        event_id: &str,
+        report_details: &str,
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
         if let Some(chat_id) = self.group_chat_id {
-            log::info!("Sending Telegram notification to chat_id: {}", chat_id);
-            
             // Shorten event_id to first 16 chars to fit within Telegram's 64-byte callback_data limit
             let short_id = &event_id[..std::cmp::min(16, event_id.len())];
-            
+
             let keyboard = InlineKeyboardMarkup::new(vec![vec![
-                InlineKeyboardButton::callback("🗑️ Delete", format!("d:{}", short_id)),
-                InlineKeyboardButton::callback("❌ Ignore", format!("i:{}", short_id)),
+                // TODO::: currently, we only delete all user events in BAN case, later we need to blacklist them.
+                InlineKeyboardButton::callback("⛔ Ban Reported User", format!("p:{}", short_id)),
+                InlineKeyboardButton::callback(
+                    "🗑️ Delete Reported Event",
+                    format!("e:{}", short_id),
+                ),
+                InlineKeyboardButton::callback("✅ Ignore", format!("i:{}", short_id)),
             ]]);
 
-            match self.bot
+            match self
+                .bot
                 .send_message(ChatId(chat_id), report_details)
                 .reply_markup(keyboard)
                 .await
@@ -57,7 +64,7 @@ impl TelegramBot {
     pub async fn handle_commands(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
         let database = self.database.clone();
         let bot = self.bot.clone();
-        
+
         let handler = dptree::entry()
             .branch(
                 Update::filter_message()
@@ -68,15 +75,12 @@ impl TelegramBot {
                     )
                     .branch(dptree::endpoint(Self::message_handler)),
             )
-            .branch(
-                Update::filter_callback_query()
-                    .endpoint(move |bot_inner: Bot, q: CallbackQuery| {
-                        let db = database.clone();
-                        async move {
-                            Self::callback_handler_with_db(bot_inner, q, db).await
-                        }
-                    }),
-            );
+            .branch(Update::filter_callback_query().endpoint(
+                move |bot_inner: Bot, q: CallbackQuery| {
+                    let db = database.clone();
+                    async move { Self::callback_handler_with_db(bot_inner, q, db).await }
+                },
+            ));
 
         Dispatcher::builder(bot, handler)
             .dependencies(dptree::deps![])
@@ -106,11 +110,8 @@ impl TelegramBot {
                 .await?;
             }
             Command::Status => {
-                bot.send_message(
-                    msg.chat.id,
-                    "Relay is running and healthy! 🟢",
-                )
-                .await?;
+                bot.send_message(msg.chat.id, "Relay is running and healthy! 🟢")
+                    .await?;
             }
         }
         Ok(())
@@ -125,7 +126,11 @@ impl TelegramBot {
         Ok(())
     }
 
-    async fn callback_handler_with_db(bot: Bot, q: CallbackQuery, database: Arc<NostrLMDB>) -> Result<(), Box<dyn Error + Send + Sync>> {
+    async fn callback_handler_with_db(
+        bot: Bot,
+        q: CallbackQuery,
+        database: Arc<NostrLMDB>,
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
         if let Some(data) = q.data {
             let parts: Vec<&str> = data.split(':').collect();
             if parts.len() == 2 {
@@ -133,50 +138,45 @@ impl TelegramBot {
                 let short_id = parts[1];
 
                 match action {
-                    "d" => {
+                    "e" => {
                         log::info!("Delete requested for event ID (short): {}", short_id);
-                        
-                        // Get the database reference
                         let db = database.as_ref();
-                        
+
                         // Query all reporting events to find one matching the short_id
                         // This is a workaround since we only have the short ID
+                        // TODO::: find a better solution!
                         let filter = Filter::new().kind(Kind::Reporting);
-                        
+
                         if let Ok(events) = db.query(filter).await {
                             // Find the report event with matching short_id
-                            if let Some(report_event) = events.into_iter()
-                                .find(|e| e.id.to_string().starts_with(short_id)) {
-                                log::info!("Found report event: {}", report_event.id);
-                                
-                                // Parse tags to find what to delete
+                            if let Some(report_event) = events
+                                .into_iter()
+                                .find(|e| e.id.to_string().starts_with(short_id))
+                            {
                                 for tag in report_event.tags.iter() {
                                     let tag_slice = tag.as_slice();
                                     if tag_slice.len() >= 2 {
                                         if tag_slice[0] == "e" {
-                                            // Event report - delete the reported event
                                             let reported_event_id = &tag_slice[1];
-                                            log::info!("Deleting reported event: {}", reported_event_id);
-                                            
-                                            if let Ok(event_id) = EventId::parse(reported_event_id) {
+                                            log::info!(
+                                                "Deleting reported event: {}",
+                                                reported_event_id
+                                            );
+
+                                            if let Ok(event_id) = EventId::parse(reported_event_id)
+                                            {
                                                 let delete_filter = Filter::new().id(event_id);
                                                 if let Err(e) = db.delete(delete_filter).await {
-                                                    log::error!("Failed to delete event {}: {}", reported_event_id, e);
+                                                    log::error!(
+                                                        "Failed to delete event {}: {}",
+                                                        reported_event_id,
+                                                        e
+                                                    );
                                                 } else {
-                                                    log::info!("✅ Successfully deleted event: {}", reported_event_id);
-                                                }
-                                            }
-                                        } else if tag_slice[0] == "p" {
-                                            // Profile report - delete all events by this pubkey
-                                            let reported_pubkey = &tag_slice[1];
-                                            log::info!("Deleting all events by pubkey: {}", reported_pubkey);
-                                            
-                                            if let Ok(pubkey) = PublicKey::parse(reported_pubkey) {
-                                                let delete_filter = Filter::new().author(pubkey);
-                                                if let Err(e) = db.delete(delete_filter).await {
-                                                    log::error!("Failed to delete events by pubkey {}: {}", reported_pubkey, e);
-                                                } else {
-                                                    log::info!("✅ Successfully deleted all events by pubkey: {}", reported_pubkey);
+                                                    log::info!(
+                                                        "✅ Successfully deleted event: {}",
+                                                        reported_event_id
+                                                    );
                                                 }
                                             }
                                         }
@@ -188,12 +188,73 @@ impl TelegramBot {
                         } else {
                             log::error!("Failed to query report events");
                         }
-                        
+
                         // Delete the Telegram message
                         if let Some(message) = q.message {
                             bot.delete_message(message.chat.id, message.id).await?;
                         }
-                        
+
+                        // Send confirmation
+                        bot.answer_callback_query(q.id)
+                            .text("✅ Content deleted successfully")
+                            .await?;
+                    }
+                    "p" => {
+                        log::info!("Delete requested for event ID (short): {}", short_id);
+                        let db = database.as_ref();
+
+                        // Query all reporting events to find one matching the short_id
+                        // This is a workaround since we only have the short ID
+                        // TODO::: find a better solution!
+                        let filter = Filter::new().kind(Kind::Reporting);
+
+                        if let Ok(events) = db.query(filter).await {
+                            // Find the report event with matching short_id
+                            if let Some(report_event) = events
+                                .into_iter()
+                                .find(|e| e.id.to_string().starts_with(short_id))
+                            {
+                                for tag in report_event.tags.iter() {
+                                    let tag_slice = tag.as_slice();
+                                    if tag_slice.len() >= 2 {
+                                        if tag_slice[0] == "p" {
+                                            // Profile report - delete all events by this pubkey
+                                            let reported_pubkey = &tag_slice[1];
+                                            log::info!(
+                                                "Deleting all events by pubkey: {}",
+                                                reported_pubkey
+                                            );
+
+                                            if let Ok(pubkey) = PublicKey::parse(reported_pubkey) {
+                                                let delete_filter = Filter::new().author(pubkey);
+                                                if let Err(e) = db.delete(delete_filter).await {
+                                                    log::error!(
+                                                        "Failed to delete events by pubkey {}: {}",
+                                                        reported_pubkey,
+                                                        e
+                                                    );
+                                                } else {
+                                                    log::info!(
+                                                        "✅ Successfully deleted all events by pubkey: {}",
+                                                        reported_pubkey
+                                                    );
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                log::warn!("Report event not found with short ID: {}", short_id);
+                            }
+                        } else {
+                            log::error!("Failed to query report events");
+                        }
+
+                        // Delete the Telegram message
+                        if let Some(message) = q.message {
+                            bot.delete_message(message.chat.id, message.id).await?;
+                        }
+
                         // Send confirmation
                         bot.answer_callback_query(q.id)
                             .text("✅ Content deleted successfully")
@@ -201,12 +262,12 @@ impl TelegramBot {
                     }
                     "i" => {
                         log::info!("Ignore requested for event ID (short): {}", short_id);
-                        
+
                         // Just delete the Telegram message
                         if let Some(message) = q.message {
                             bot.delete_message(message.chat.id, message.id).await?;
                         }
-                        
+
                         bot.answer_callback_query(q.id)
                             .text("❌ Report ignored")
                             .await?;

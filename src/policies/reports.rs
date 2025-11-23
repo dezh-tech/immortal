@@ -35,34 +35,23 @@ impl WritePolicy for ReportEvents {
     fn admit_event<'a>(
         &'a self,
         event: &'a Event,
-        addr: &'a SocketAddr,
+        _: &'a SocketAddr,
     ) -> BoxedFuture<'a, PolicyResult> {
         Box::pin(async move {
-            println!(
-                "Checking event {:} with kind {:} (numeric: {}) from {}",
-                event.id,
-                event.kind,
-                event.kind.as_u16(),
-                addr
-            );
-
-            // Check if this is a reporting event (Kind 1984)
-            // Using numeric comparison since Kind::Reporting might not be the right variant
+            // TODO::: check the event more carefully to make sure it's not a spam
+            // TODO::: pre-check the event with some moderation AI before sending to admins
             if event.kind.as_u16() == 1984 {
-                log::info!("✅ Detected reporting event with kind 1984");
                 log::info!(
                     "🚨 Received reporting event {} from {}",
                     event.id,
                     event.pubkey
                 );
 
-                // Extract report details (simplified parsing for now)
                 let mut report_reason = "other".to_string();
                 let mut reported_pubkey = None;
                 let mut reported_event_id = None;
                 let mut has_relevant_tags = false;
 
-                // Try to find p or e tags by checking tag contents
                 for tag in event.tags.iter() {
                     let tag_slice = tag.as_slice();
                     if tag_slice.len() >= 2 {
@@ -87,38 +76,36 @@ impl WritePolicy for ReportEvents {
                     return PolicyResult::Accept;
                 }
 
-                // Format the report message
-                let mut report_details = format!("🚨 **New Report (Kind 1984)**\n\n");
-                report_details.push_str(&format!("**Report ID:** `{}`\n", event.id));
-                report_details.push_str(&format!("**Reason:** {}\n", report_reason));
-                report_details.push_str(&format!("**Reported by:** `{}`\n", event.pubkey));
+                let mut report_details = format!("🚨 New Report\n\n");
+                report_details.push_str(&format!("Report Event ID: `{}`\n", event.id));
+                report_details.push_str(&format!("Reason: {}\n", report_reason));
+                report_details.push_str(&format!(
+                    "Reported by: `https://npub.world/{}`\n",
+                    event.pubkey
+                ));
 
                 if !event.content.is_empty() {
-                    report_details.push_str(&format!("**Additional info:** {}\n", event.content));
+                    report_details.push_str(&format!("Additional info: {}\n", event.content));
                 }
 
                 if let Some(pubkey) = &reported_pubkey {
-                    report_details.push_str(&format!("**Reported pubkey:** `{}`\n", pubkey));
+                    report_details.push_str(&format!(
+                        "Reported pubkey: `https://npub.world/{}`\n",
+                        pubkey
+                    ));
                 }
 
                 if let Some(event_id) = &reported_event_id {
-                    report_details.push_str(&format!("**Reported event:** `{}`\n", event_id));
+                    report_details.push_str(&format!("Reported event: `{}`\n", event_id));
                 }
 
-                report_details.push_str("\n**Choose an action:**");
+                report_details.push_str("\nChoose an action:");
 
-                log::info!("Report details: {}", report_details);
-
-                // Send to Telegram bot if sender is available
                 if let Some(sender) = &self.report_sender {
-                    log::error!("1", );
-
                     let notification = ReportNotification {
                         event_id: event.id.to_string(),
                         message: report_details,
                     };
-                    log::error!("2", );
-
 
                     if let Err(e) = sender.send(notification) {
                         log::error!("Failed to send report notification: {}", e);
