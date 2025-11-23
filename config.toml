@@ -1,7 +1,0 @@
-port=7777
-working_dir="immo"
-max_reqs=128
-notes_per_minute=30
-
-# Telegram Bot Configuration (optional)
-# telegram_bot_token = "YOUR_BOT_TOKEN_HERE"
