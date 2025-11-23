@@ -38,6 +38,25 @@ cargo run --release
 
 The relay can be configured using a `config.toml` file. See the example configuration in the repository.
 
+#### Telegram Bot Integration
+
+Immortal includes optional Telegram bot integration for monitoring and notifications. To enable the bot:
+
+1. Create a new bot with [@BotFather](https://t.me/botfather) on Telegram
+2. Get your bot token
+3. Add the token to your `config.toml`:
+
+```toml
+telegram_bot_token = "YOUR_BOT_TOKEN_HERE"
+```
+
+The bot supports the following commands:
+- `/start` - Welcome message
+- `/status` - Get relay status
+- `/help` - Show available commands
+
+If no token is provided, the relay will run without the Telegram bot.
+
 ## Updates
 
 Updates, changes, or community discussions can be followed on the GitHub issue/discussion or the [Dezh Technologies Nostr profile](https://njump.me/dezh.tech).

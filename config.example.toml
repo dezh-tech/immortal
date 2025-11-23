@@ -1,0 +1,18 @@
+# Example configuration for Immortal relay
+
+# Basic relay configuration
+port = 7777
+working_dir = "immo"
+max_reqs = 128
+notes_per_minute = 30
+
+# Telegram Bot Configuration (optional)
+# Uncomment and replace with your actual bot token to enable Telegram bot
+# telegram_bot_token = "1234567890:ABCdefGHIjklMNOpqrsTUVwxyZ"
+
+# How to get a Telegram bot token:
+# 1. Message @BotFather on Telegram
+# 2. Use /newbot command
+# 3. Follow the instructions to create your bot
+# 4. Copy the token provided by BotFather
+# 5. Replace the example token above with your real token
