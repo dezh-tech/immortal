@@ -155,31 +155,29 @@ impl TelegramBot {
                             {
                                 for tag in report_event.tags.iter() {
                                     let tag_slice = tag.as_slice();
-                                    if tag_slice.len() >= 2
-                                        && tag_slice[0] == "e" {
-                                            let reported_event_id = &tag_slice[1];
-                                            log::info!(
-                                                "Deleting reported event: {}",
-                                                reported_event_id
-                                            );
+                                    if tag_slice.len() >= 2 && tag_slice[0] == "e" {
+                                        let reported_event_id = &tag_slice[1];
+                                        log::info!(
+                                            "Deleting reported event: {}",
+                                            reported_event_id
+                                        );
 
-                                            if let Ok(event_id) = EventId::parse(reported_event_id)
-                                            {
-                                                let delete_filter = Filter::new().id(event_id);
-                                                if let Err(e) = db.delete(delete_filter).await {
-                                                    log::error!(
-                                                        "Failed to delete event {}: {}",
-                                                        reported_event_id,
-                                                        e
-                                                    );
-                                                } else {
-                                                    log::info!(
-                                                        "✅ Successfully deleted event: {}",
-                                                        reported_event_id
-                                                    );
-                                                }
+                                        if let Ok(event_id) = EventId::parse(reported_event_id) {
+                                            let delete_filter = Filter::new().id(event_id);
+                                            if let Err(e) = db.delete(delete_filter).await {
+                                                log::error!(
+                                                    "Failed to delete event {}: {}",
+                                                    reported_event_id,
+                                                    e
+                                                );
+                                            } else {
+                                                log::info!(
+                                                    "✅ Successfully deleted event: {}",
+                                                    reported_event_id
+                                                );
                                             }
                                         }
+                                    }
                                 }
                             } else {
                                 log::warn!("Report event not found with short ID: {}", short_id);
@@ -215,31 +213,30 @@ impl TelegramBot {
                             {
                                 for tag in report_event.tags.iter() {
                                     let tag_slice = tag.as_slice();
-                                    if tag_slice.len() >= 2
-                                        && tag_slice[0] == "p" {
-                                            // Profile report - delete all events by this pubkey
-                                            let reported_pubkey = &tag_slice[1];
-                                            log::info!(
-                                                "Deleting all events by pubkey: {}",
-                                                reported_pubkey
-                                            );
+                                    if tag_slice.len() >= 2 && tag_slice[0] == "p" {
+                                        // Profile report - delete all events by this pubkey
+                                        let reported_pubkey = &tag_slice[1];
+                                        log::info!(
+                                            "Deleting all events by pubkey: {}",
+                                            reported_pubkey
+                                        );
 
-                                            if let Ok(pubkey) = PublicKey::parse(reported_pubkey) {
-                                                let delete_filter = Filter::new().author(pubkey);
-                                                if let Err(e) = db.delete(delete_filter).await {
-                                                    log::error!(
-                                                        "Failed to delete events by pubkey {}: {}",
-                                                        reported_pubkey,
-                                                        e
-                                                    );
-                                                } else {
-                                                    log::info!(
-                                                        "✅ Successfully deleted all events by pubkey: {}",
-                                                        reported_pubkey
-                                                    );
-                                                }
+                                        if let Ok(pubkey) = PublicKey::parse(reported_pubkey) {
+                                            let delete_filter = Filter::new().author(pubkey);
+                                            if let Err(e) = db.delete(delete_filter).await {
+                                                log::error!(
+                                                    "Failed to delete events by pubkey {}: {}",
+                                                    reported_pubkey,
+                                                    e
+                                                );
+                                            } else {
+                                                log::info!(
+                                                    "✅ Successfully deleted all events by pubkey: {}",
+                                                    reported_pubkey
+                                                );
                                             }
                                         }
+                                    }
                                 }
                             } else {
                                 log::warn!("Report event not found with short ID: {}", short_id);
